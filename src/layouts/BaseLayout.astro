@@ -1,0 +1,21 @@
+---
+import '../styles/global.css';
+import '../styles/overrides.css';
+
+const { title = 'Missão Internacional Resgate' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071b36" />
+    <meta name="description" content="Missão Internacional Resgate em São José, SC. Uma igreja que acolhe pessoas de todas as nações." />
+    <link rel="icon" type="image/png" href="/logos/LOGO%20iglesia.png" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

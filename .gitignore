@@ -1,0 +1,24 @@
+# build
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# os / editor
+.DS_Store
+*.local
+
+# screenshots de verificação local
+.verify-*.png
