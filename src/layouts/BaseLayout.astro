@@ -38,8 +38,9 @@ const jsonLd = structuredData({ lang, page, title, base });
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     {canonical && <link rel="canonical" href={canonical} />}
     {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />)}
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/apple-touch-icon.png" />
 
     <!-- Prévia do link no WhatsApp, Facebook e outras redes -->
     <meta property="og:type" content="website" />
