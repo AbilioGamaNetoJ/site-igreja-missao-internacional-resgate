@@ -1,7 +1,8 @@
 ---
+import Icon from './Icon.astro';
 import { content } from '../i18n/content.js';
 import { languages, navPages, pathFor } from '../i18n/routes.js';
-import { site } from '../data/site.js';
+import { site, whatsappLink } from '../data/site.js';
 
 const { lang, page } = Astro.props;
 const t = content[lang];
@@ -28,7 +29,7 @@ const t = content[lang];
         </ul>
       </nav>
       <div class="menu-tools">
-        <a class="button button-gold nav-cta" href={site.whatsapp} target="_blank" rel="noopener noreferrer">{t.ui.talk}</a>
+        <a class="button button-gold nav-cta" href={whatsappLink(t.ui.whatsappMessage)} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={16} />{t.ui.talk}</a>
         <ul class="language-switcher" aria-label={t.ui.language}>
           {Object.entries(languages).map(([code, language]) => (
             <li>

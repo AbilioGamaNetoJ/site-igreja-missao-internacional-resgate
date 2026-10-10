@@ -6,8 +6,9 @@ import FeatureBlock from '../components/FeatureBlock.astro';
 import DarkBand from '../components/DarkBand.astro';
 import Story from '../components/Story.astro';
 import QuickLinks from '../components/QuickLinks.astro';
+import Icon from '../components/Icon.astro';
 import { content } from '../i18n/content.js';
-import { site } from '../data/site.js';
+import { site, whatsappLink } from '../data/site.js';
 import { photos } from '../data/photos.js';
 
 const { lang } = Astro.props;
@@ -28,7 +29,7 @@ const blockPhotos = ['praise', 'hallTables'];
   </Story>
 
   <DarkBand title={outreach.help.title} text={outreach.help.text}>
-    <a class="button button-gold" href={site.whatsapp} target="_blank" rel="noopener noreferrer">{t.ui.whatsapp}</a>
+    <a class="button button-gold" href={whatsappLink(t.ui.whatsappMessage)} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} />{t.ui.whatsapp}</a>
   </DarkBand>
 
   <QuickLinks lang={lang} current="outreach" title={t.ui.readyTitle} />

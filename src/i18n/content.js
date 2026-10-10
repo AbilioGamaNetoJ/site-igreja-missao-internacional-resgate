@@ -23,6 +23,8 @@ export const content = {
       skip: 'Pular para o conteúdo', menu: 'Abrir menu', closeMenu: 'Fechar menu', language: 'Escolher idioma', mainNav: 'Navegação principal',
       talk: 'Fale com a gente', whatsapp: 'Chamar no WhatsApp', call: 'Ligar agora', planVisit: 'Planeje sua visita', seeTimes: 'Ver horários',
       openMap: 'Abrir no Google Maps', readyTitle: 'Quer conhecer a gente um pouco mais?', mapTitle: 'Mapa com a localização da Missão Internacional Resgate',
+      // Mensagem que já aparece escrita ao abrir a conversa no WhatsApp por qualquer botão do site.
+      whatsappMessage: 'Olá! Vi o site da Missão Internacional Resgate e gostaria de mais informações sobre a igreja.',
     },
     times: [
       { day: 'Sexta-feira', hour: '20h — 21h30' },
@@ -130,6 +132,7 @@ export const content = {
       skip: 'Saltar al contenido', menu: 'Abrir menú', closeMenu: 'Cerrar menú', language: 'Elegir idioma', mainNav: 'Navegación principal',
       talk: 'Escríbenos', whatsapp: 'Escribir por WhatsApp', call: 'Llamar ahora', planVisit: 'Planea tu visita', seeTimes: 'Ver horarios',
       openMap: 'Abrir en Google Maps', readyTitle: '¿Quieres conocernos un poco más?', mapTitle: 'Mapa con la ubicación de Missão Internacional Resgate',
+      whatsappMessage: '¡Hola! Vi el sitio de Missão Internacional Resgate y me gustaría recibir más información sobre la iglesia.',
     },
     times: [
       { day: 'Viernes', hour: '20:00 — 21:30' },
@@ -237,6 +240,7 @@ export const content = {
       skip: 'Skip to content', menu: 'Open menu', closeMenu: 'Close menu', language: 'Choose language', mainNav: 'Main navigation',
       talk: 'Talk to us', whatsapp: 'Message on WhatsApp', call: 'Call now', planVisit: 'Plan your visit', seeTimes: 'See gathering times',
       openMap: 'Open in Google Maps', readyTitle: 'Want to get to know us a little more?', mapTitle: 'Map showing the location of Missão Internacional Resgate',
+      whatsappMessage: 'Hi! I saw the Missão Internacional Resgate website and would like more information about the church.',
     },
     times: [
       { day: 'Friday', hour: '8:00 PM — 9:30 PM' },

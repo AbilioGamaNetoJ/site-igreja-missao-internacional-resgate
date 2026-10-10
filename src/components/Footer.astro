@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 import { content } from '../i18n/content.js';
 import { navPages, pathFor } from '../i18n/routes.js';
-import { site } from '../data/site.js';
+import { site, whatsappLink } from '../data/site.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
@@ -35,7 +35,7 @@ const year = new Date().getFullYear();
       <h2 class="footer-title">{t.footer.contactTitle}</h2>
       <ul class="footer-list footer-contact">
         <li><Icon name="phone" size={18} /><a href={site.phone.href}>{site.phone.display}</a></li>
-        <li><Icon name="message" size={18} /><a href={site.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+        <li><Icon name="whatsapp" size={18} /><a href={whatsappLink(t.ui.whatsappMessage)} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
         <li><Icon name="pin" size={18} /><a href={site.map.link} target="_blank" rel="noopener noreferrer">{site.address.street}<br />{site.address.city}</a></li>
         {site.email && <li><Icon name="mail" size={18} /><a href={`mailto:${site.email}`}>{site.email}</a></li>}
       </ul>

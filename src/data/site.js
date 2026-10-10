@@ -51,3 +51,6 @@ export const site = {
   // É um print da home em 1200x630, o tamanho que as redes usam na prévia. Ao mudar o topo da home, tire o print de novo.
   shareImage: { src: '/og-image.jpg', width: 1200, height: 630 },
 };
+
+// Link do WhatsApp com a mensagem padrão já escrita. O texto de cada idioma fica em ui.whatsappMessage, em src/i18n/content.js.
+export const whatsappLink = (message) => `${site.whatsapp}?text=${encodeURIComponent(message)}`;
