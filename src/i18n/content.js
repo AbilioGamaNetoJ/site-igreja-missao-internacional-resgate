@@ -15,6 +15,8 @@ export const content = {
         outreach: 'Doação de roupas e mesa compartilhada: veja como a Missão Internacional Resgate cuida de quem chega de outros países em São José (SC).',
         visit: 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José (SC). Veja o mapa, os horários dos cultos em espanhol e fale com a gente pelo WhatsApp.',
       },
+      // Texto alternativo da imagem de compartilhamento (images/og-image.jpg, um print da home).
+      shareImageAlt: 'Página inicial do site da Missão Internacional Resgate: "Uma casa para quem veio de longe.", com os horários dos cultos',
     },
     nav: { home: 'Início', church: 'A Igreja', gatherings: 'Encontros', outreach: 'Ações', visit: 'Visite' },
     ui: {
@@ -121,6 +123,7 @@ export const content = {
         outreach: 'Donación de ropa y mesa compartida: así cuida Missão Internacional Resgate a quienes llegan de otros países a São José (SC).',
         visit: 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José (SC), en la Gran Florianópolis. Mira el mapa y los horarios, y escríbenos por WhatsApp.',
       },
+      shareImageAlt: 'Página de inicio del sitio de Missão Internacional Resgate: "Uma casa para quem veio de longe.", con los horarios de los cultos',
     },
     nav: { home: 'Inicio', church: 'La Iglesia', gatherings: 'Encuentros', outreach: 'Acciones', visit: 'Visítanos' },
     ui: {
@@ -227,6 +230,7 @@ export const content = {
         outreach: 'Clothing donations and a shared table: how Missão Internacional Resgate cares for people arriving from other countries in São José (SC), Brazil.',
         visit: 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José (SC), Brazil. See the map and service times, and message us on WhatsApp.',
       },
+      shareImageAlt: 'Missão Internacional Resgate home page: "Uma casa para quem veio de longe." ("A home for those who came from afar"), with service times',
     },
     nav: { home: 'Home', church: 'The Church', gatherings: 'Gatherings', outreach: 'Outreach', visit: 'Visit' },
     ui: {

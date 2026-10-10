@@ -48,5 +48,6 @@ export const site = {
   logo: { src: '/logos/logo-horizontal.webp', width: 720, height: 416 },
   symbol: { src: '/logos/logo-simbolo.webp', width: 400, height: 540 },
   // Imagem que aparece ao compartilhar o link (WhatsApp, Facebook) e nos resultados de busca.
-  shareImage: { src: '/capa.jpeg', width: 839, height: 469 },
+  // É um print da home em 1200x630, o tamanho que as redes usam na prévia. Ao mudar o topo da home, tire o print de novo.
+  shareImage: { src: '/og-image.jpg', width: 1200, height: 630 },
 };

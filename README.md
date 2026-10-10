@@ -93,6 +93,7 @@ O Wrangler lê o `.env` sozinho, sem precisar de `wrangler login`.
 - Endereços das páginas: `src/i18n/routes.js`
 - Domínio, nome, telefone, endereço, CEP, horários e redes: `src/data/site.js`
 - Imagens públicas (logos, fotos, favicon): pasta `images/`
+- Imagem da prévia do link no WhatsApp e nas redes: `images/og-image.jpg`, um print da home em 1200x630. Ao mudar o topo da home, tire o print de novo no mesmo tamanho.
 
 ## SEO e IA
 
