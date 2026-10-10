@@ -1,0 +1,8 @@
+# Cabeçalhos extras da Cloudflare (Workers Static Assets).
+# Sem o charset, a Cloudflare entrega os .txt como text/plain puro e os acentos podem sair embaralhados.
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
