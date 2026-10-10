@@ -11,7 +11,8 @@
 <style>
   .story {
     position: relative;
-    overflow: hidden;
+    /* Clip, e não hidden: hidden vira contêiner de rolagem e impede o position: sticky da foto da home. */
+    overflow: clip;
     padding-block: clamp(4.5rem, 9vw, 7.5rem);
     background:
       linear-gradient(90deg, rgba(17, 18, 20, 0.035) 1px, transparent 1px),

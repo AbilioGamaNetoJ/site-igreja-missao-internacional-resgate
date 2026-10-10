@@ -219,6 +219,8 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
     position: sticky;
     top: calc(var(--header-h) + 32px);
     aspect-ratio: 1 / 1;
+    /* Em janelas baixas a foto encolhe em altura, para não ficar cortada embaixo enquanto acompanha a rolagem. */
+    max-height: calc(100svh - var(--header-h) - 64px);
     overflow: hidden;
     border-radius: var(--radius-photo);
   }
@@ -238,6 +240,7 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
       position: static;
       order: -1;
       aspect-ratio: 4 / 3;
+      max-height: none;
     }
   }
 
