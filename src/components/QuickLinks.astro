@@ -1,0 +1,106 @@
+---
+// Atalhos para as outras páginas, na mesma linguagem visual dos CTAs da home.
+import { content } from '../i18n/content.js';
+import { navPages, pathFor } from '../i18n/routes.js';
+
+const { lang, current, title } = Astro.props;
+const t = content[lang];
+const pages = navPages.filter((id) => id !== current);
+---
+
+<section class="quick-links section section-dark">
+  <div class="frame" data-reveal>
+    {title && <h2>{title}</h2>}
+    <ul>
+      {pages.map((id) => <li><a class="button button-gold" href={pathFor(id, lang)}>{t.nav[id]}</a></li>)}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .quick-links {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(3.5rem, 6vw, 5rem);
+    background:
+      radial-gradient(circle at 14% 112%, rgba(221, 186, 103, 0.23), transparent 22rem),
+      linear-gradient(115deg, #111214, #000);
+  }
+
+  .quick-links::after {
+    position: absolute;
+    top: -14rem;
+    right: -8rem;
+    width: 27rem;
+    height: 27rem;
+    border: 1px solid rgba(221, 186, 103, 0.19);
+    border-radius: 50%;
+    content: '';
+    pointer-events: none;
+  }
+
+  .frame {
+    position: relative;
+    z-index: 1;
+  }
+
+  h2 {
+    margin-bottom: 36px;
+    font-family: var(--display);
+    font-size: clamp(2.2rem, 4.6vw, 3.7rem);
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 14px;
+    counter-reset: quick-link;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 15px 16px 16px;
+    border-top: 1px solid rgba(221, 186, 103, 0.48);
+    background: rgba(255, 255, 255, 0.06);
+    counter-increment: quick-link;
+  }
+
+  li::before {
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    content: '0' counter(quick-link);
+  }
+
+  .button {
+    width: 100%;
+    margin-top: auto;
+  }
+
+  @media (max-width: 600px) {
+    ul {
+      grid-template-columns: 1fr;
+    }
+
+    li {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    li::before {
+      flex: 0 0 auto;
+    }
+
+    .button {
+      margin-top: 0;
+    }
+  }
+</style>

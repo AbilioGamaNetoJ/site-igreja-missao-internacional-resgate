@@ -1,0 +1,18 @@
+{
+  // Mesmo nome do Worker criado no painel da Cloudflare da igreja.
+  "name": "site-igreja-missao-internacional-resgate",
+  // Site estático: o Astro gera HTML em dist/ e o Worker só entrega esses arquivos.
+  "compatibility_date": "2026-10-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    // /a-igreja abre dist/a-igreja/index.html, sem barra no final, igual aos links do site.
+    // /a-igreja/ redireciona para /a-igreja, então cada página tem um único endereço para os buscadores.
+    "html_handling": "drop-trailing-slash"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 }
+  }
+}

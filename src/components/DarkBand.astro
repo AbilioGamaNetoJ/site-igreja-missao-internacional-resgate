@@ -1,0 +1,63 @@
+---
+// Faixa preta centralizada para mensagens de destaque (missão, chamadas para ajudar).
+const { label, title, text } = Astro.props;
+---
+
+<section class="dark-band section section-dark">
+  <div class="frame" data-reveal>
+    {label && <p class="label">{label}</p>}
+    <h2>{title}</h2>
+    {text && <p class="text rich" set:html={text} />}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .label,
+  h2 {
+    max-width: 900px;
+    font-family: var(--display);
+    font-size: clamp(2rem, 4.2vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .label {
+    margin-bottom: 8px;
+    color: var(--gold);
+  }
+
+  .text {
+    max-width: 620px;
+    margin-top: 20px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.125rem;
+  }
+
+  .frame > :global(:last-child:not(h2, p)) {
+    margin-top: 36px;
+  }
+
+  .frame > :global(.dark-band-link) {
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: clamp(1.5rem, 2.8vw, 2.3rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+
+  .frame > :global(.dark-band-link:hover) {
+    opacity: 0.8;
+  }
+</style>

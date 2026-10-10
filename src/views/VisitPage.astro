@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import IntroStatement from '../components/IntroStatement.astro';
+import FeatureBlock from '../components/FeatureBlock.astro';
+import Faq from '../components/Faq.astro';
+import Story from '../components/Story.astro';
+import QuickLinks from '../components/QuickLinks.astro';
+import { content } from '../i18n/content.js';
+import { pathFor } from '../i18n/routes.js';
+import { site } from '../data/site.js';
+import { photos } from '../data/photos.js';
+
+const { lang } = Astro.props;
+const t = content[lang];
+const visit = t.visit;
+---
+
+<BaseLayout lang={lang} page="visit">
+  <PageHero image={photos.hall} title={visit.hero.title} cta={{ href: pathFor('gatherings', lang), label: t.ui.seeTimes }} mono={false} />
+  <IntroStatement title={visit.meet.title} text={visit.meet.text} />
+
+  <Story>
+    <FeatureBlock {...visit.location} image={photos.facade} alt={t.photos.facade}>
+      <address>{site.address.street}<br />{site.address.city}</address>
+      <div class="button-row">
+        <a class="button button-dark" href={site.map.link} target="_blank" rel="noopener noreferrer">{t.ui.openMap}</a>
+        <a class="button button-gold" href={site.whatsapp} target="_blank" rel="noopener noreferrer">{t.ui.whatsapp}</a>
+      </div>
+      <a class="phone" href={site.phone.href}>{site.phone.display}</a>
+    </FeatureBlock>
+  </Story>
+
+  <section class="map section section-dark">
+    <div class="map-grid frame" data-reveal>
+      <div class="map-copy">
+        <h2 class="display-title">{visit.mapBand.title}</h2>
+        <p class="script">{visit.mapBand.script}</p>
+        <p class="body-text rich" set:html={visit.mapBand.text} />
+        <address>{site.address.street}<br />{site.address.city}</address>
+      </div>
+      <iframe src={site.map.embed} title={t.ui.mapTitle} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+  </section>
+
+  <Faq title={visit.faqTitle} items={visit.faq} />
+
+  <QuickLinks lang={lang} current="visit" title={t.ui.readyTitle} />
+</BaseLayout>
+
+<style>
+  .map-grid {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+  }
+
+  .map-copy .display-title {
+    font-size: clamp(2.2rem, 4.4vw, 3.5rem);
+  }
+
+  .map-copy .script {
+    margin-top: 12px;
+    color: var(--gold);
+  }
+
+  .map-copy .body-text {
+    margin-top: 16px;
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .map-copy address {
+    margin-top: 24px;
+    color: var(--white);
+  }
+
+  @media (max-width: 860px) {
+    .map-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  address {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .phone {
+    display: inline-block;
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .phone:hover {
+    color: var(--gold-ink);
+  }
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: clamp(320px, 40vw, 460px);
+    border: 0;
+    border-radius: var(--radius-photo);
+    background: var(--paper);
+  }
+</style>

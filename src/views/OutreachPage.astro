@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import IntroStatement from '../components/IntroStatement.astro';
+import FeatureBlock from '../components/FeatureBlock.astro';
+import DarkBand from '../components/DarkBand.astro';
+import Story from '../components/Story.astro';
+import QuickLinks from '../components/QuickLinks.astro';
+import { content } from '../i18n/content.js';
+import { site } from '../data/site.js';
+import { photos } from '../data/photos.js';
+
+const { lang } = Astro.props;
+const t = content[lang];
+const outreach = t.outreach;
+// PROVISÓRIO: trocar pelas fotos reais da doação de roupas e da mesa compartilhada.
+const blockPhotos = ['praise', 'hallTables'];
+---
+
+<BaseLayout lang={lang} page="outreach">
+  <PageHero image={photos.worship} titleA={outreach.hero.a} titleB={outreach.hero.b} />
+  <IntroStatement title={outreach.statement} text={outreach.intro} />
+
+  <Story>
+    {outreach.blocks.map((block, index) => (
+      <FeatureBlock {...block} image={photos[blockPhotos[index]]} alt={t.photos[blockPhotos[index]]} reverse={index % 2 === 1} />
+    ))}
+  </Story>
+
+  <DarkBand title={outreach.help.title} text={outreach.help.text}>
+    <a class="button button-gold" href={site.whatsapp} target="_blank" rel="noopener noreferrer">{t.ui.whatsapp}</a>
+  </DarkBand>
+
+  <QuickLinks lang={lang} current="outreach" title={t.ui.readyTitle} />
+</BaseLayout>

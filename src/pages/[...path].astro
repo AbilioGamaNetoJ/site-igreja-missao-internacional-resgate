@@ -1,0 +1,25 @@
+---
+// Gera todas as páginas nos três idiomas: /, /a-igreja, /es, /es/la-iglesia, /en/the-church...
+// Os endereços de cada página ficam em src/i18n/routes.js.
+import HomePage from '../views/HomePage.astro';
+import ChurchPage from '../views/ChurchPage.astro';
+import GatheringsPage from '../views/GatheringsPage.astro';
+import OutreachPage from '../views/OutreachPage.astro';
+import VisitPage from '../views/VisitPage.astro';
+import { languages, pageIds, pathFor } from '../i18n/routes.js';
+
+export function getStaticPaths() {
+  return Object.keys(languages).flatMap((lang) =>
+    pageIds.map((page) => ({
+      params: { path: pathFor(page, lang).slice(1) || undefined },
+      props: { lang, page },
+    })),
+  );
+}
+
+const views = { home: HomePage, church: ChurchPage, gatherings: GatheringsPage, outreach: OutreachPage, visit: VisitPage };
+const { lang, page } = Astro.props;
+const View = views[page];
+---
+
+<View lang={lang} />

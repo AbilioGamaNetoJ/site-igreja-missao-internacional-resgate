@@ -1,0 +1,171 @@
+---
+import Icon from './Icon.astro';
+import { content } from '../i18n/content.js';
+import { navPages, pathFor } from '../i18n/routes.js';
+import { site } from '../data/site.js';
+
+const { lang } = Astro.props;
+const t = content[lang];
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-grid frame">
+    <div class="footer-brand">
+      <img src={site.symbol.src} width={site.symbol.width} height={site.symbol.height} alt={site.name} loading="lazy" />
+      <p>{t.footer.about}</p>
+      <a class="button button-light" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
+    </div>
+
+    <div>
+      <h2 class="footer-title">{t.footer.navTitle}</h2>
+      <ul class="footer-list">
+        {navPages.map((id) => <li><a href={pathFor(id, lang)}>{t.nav[id]}</a></li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">{t.footer.timesTitle}</h2>
+      <ul class="footer-list">
+        {t.times.map((time) => <li><strong>{time.day}</strong><br />{time.hour}</li>)}
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="footer-title">{t.footer.contactTitle}</h2>
+      <ul class="footer-list footer-contact">
+        <li><Icon name="phone" size={18} /><a href={site.phone.href}>{site.phone.display}</a></li>
+        <li><Icon name="message" size={18} /><a href={site.whatsapp} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+        <li><Icon name="pin" size={18} /><a href={site.map.link} target="_blank" rel="noopener noreferrer">{site.address.street}<br />{site.address.city}</a></li>
+        {site.email && <li><Icon name="mail" size={18} /><a href={`mailto:${site.email}`}>{site.email}</a></li>}
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom frame">
+    <ul class="social" aria-label={t.footer.socialTitle}>
+      {site.social.map((network) => (
+        <li><a href={network.href || '#'} aria-label={network.name} target={network.href ? '_blank' : undefined} rel={network.href ? 'noopener noreferrer' : undefined}><Icon name={network.icon} size={18} /></a></li>
+      ))}
+    </ul>
+    <p>© {year} {t.footer.rights}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: clamp(4rem, 8vw, 6rem) 0 2rem;
+    background: var(--black);
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.92rem;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr 1.25fr;
+    gap: 48px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .footer-brand img {
+    width: 104px;
+    height: auto;
+  }
+
+  .footer-brand p {
+    max-width: 260px;
+    margin: 20px 0 24px;
+    line-height: 1.65;
+  }
+
+  .footer-title {
+    margin-bottom: 18px;
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .footer-list {
+    display: grid;
+    gap: 12px;
+    line-height: 1.5;
+  }
+
+  .footer-list strong {
+    color: var(--white);
+    font-weight: 700;
+  }
+
+  .footer-list a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .footer-list a:hover {
+    color: var(--gold);
+  }
+
+  .footer-contact li {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .footer-contact :global(svg) {
+    margin-top: 2px;
+    color: var(--gold);
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    padding-top: 32px;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .social {
+    display: flex;
+    gap: 12px;
+  }
+
+  .social a {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--black);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .social a:hover {
+    background: var(--gold);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: 36px;
+    }
+  }
+</style>

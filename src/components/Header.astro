@@ -1,0 +1,326 @@
+---
+import { content } from '../i18n/content.js';
+import { languages, navPages, pathFor } from '../i18n/routes.js';
+import { site } from '../data/site.js';
+
+const { lang, page } = Astro.props;
+const t = content[lang];
+---
+
+<div class="header-space">
+<header class="site-header" data-header>
+  <div class="header-bar frame">
+    <a class="brand" href={pathFor('home', lang)}>
+      <img src={site.logo.src} width={site.logo.width} height={site.logo.height} alt={site.name} />
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" data-menu-toggle data-label-open={t.ui.menu} data-label-close={t.ui.closeMenu}>
+      <span class="menu-icon" aria-hidden="true"></span>
+      <span class="sr-only" data-menu-label>{t.ui.menu}</span>
+    </button>
+
+    <div class="site-menu" id="site-menu">
+      <nav aria-label={t.ui.mainNav}>
+        <ul class="nav-list">
+          {navPages.map((id) => (
+            <li><a href={pathFor(id, lang)} aria-current={page === id ? 'page' : undefined}>{t.nav[id]}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <div class="menu-tools">
+        <a class="button button-gold nav-cta" href={site.whatsapp} target="_blank" rel="noopener noreferrer">{t.ui.talk}</a>
+        <ul class="language-switcher" aria-label={t.ui.language}>
+          {Object.entries(languages).map(([code, language]) => (
+            <li>
+              <a href={pathFor(page, code)} hreflang={language.htmlLang} lang={language.htmlLang} aria-current={code === lang ? 'true' : undefined}>
+                <span aria-hidden="true">{language.flag} {language.label}</span>
+                <span class="sr-only">{language.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
+</header>
+</div>
+
+<style>
+  /* Altura fixa no fluxo: encolher a barra não pode mudar o scroll, senão a classe liga e desliga em loop. */
+  .header-space {
+    height: var(--header-h);
+  }
+
+  .site-header {
+    position: fixed;
+    z-index: 50;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--white);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .site-header.is-scrolled {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: var(--header-h);
+    transition: height 0.3s ease;
+  }
+
+  .site-header.is-scrolled .header-bar {
+    height: 76px;
+  }
+
+  .brand {
+    display: block;
+    flex: 0 0 auto;
+    line-height: 0;
+  }
+
+  .brand img {
+    width: auto;
+    height: 76px;
+    transition: height 0.3s ease;
+    /* O arquivo é um dourado claro, feito para fundo preto. Sobre o branco ele some.
+       Escurece só esta cópia; o símbolo do rodapé continua o original. */
+    filter: brightness(0.6) saturate(1.45) contrast(1.05);
+  }
+
+  .site-header.is-scrolled .brand img {
+    height: 58px;
+  }
+
+  .site-menu {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .nav-list {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .nav-list a {
+    position: relative;
+    display: block;
+    padding: 6px 0;
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .nav-list a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.3s ease-out;
+  }
+
+  .nav-list a:hover {
+    color: var(--gold-ink);
+  }
+
+  .nav-list a:hover::after,
+  .nav-list a[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  .menu-tools {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .nav-cta {
+    min-height: 2.75rem;
+    padding: 0 1.2rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  .language-switcher {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+  }
+
+  .language-switcher a {
+    display: block;
+    padding: 7px 10px;
+    border-radius: 999px;
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .language-switcher a:hover {
+    background: var(--paper);
+  }
+
+  .language-switcher a[aria-current='true'] {
+    background: var(--black);
+    color: var(--white);
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  @media (max-width: 1080px) {
+    .brand img,
+    .site-header.is-scrolled .brand img {
+      height: 50px;
+    }
+
+    .site-header.is-scrolled .header-bar {
+      height: var(--header-h);
+    }
+
+    .menu-toggle {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      margin-right: -10px;
+      border: 0;
+      background: none;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .menu-icon,
+    .menu-icon::before,
+    .menu-icon::after {
+      display: block;
+      width: 26px;
+      height: 2.5px;
+      border-radius: 2px;
+      background: currentColor;
+      transition: transform 0.3s ease, background-color 0.2s ease;
+    }
+
+    .menu-icon {
+      position: relative;
+    }
+
+    .menu-icon::before,
+    .menu-icon::after {
+      content: '';
+      position: absolute;
+      left: 0;
+    }
+
+    .menu-icon::before {
+      transform: translateY(-8px);
+    }
+
+    .menu-icon::after {
+      transform: translateY(8px);
+    }
+
+    .site-header[data-open] .menu-icon {
+      background: transparent;
+    }
+
+    .site-header[data-open] .menu-icon::before {
+      transform: rotate(45deg);
+    }
+
+    .site-header[data-open] .menu-icon::after {
+      transform: rotate(-45deg);
+    }
+
+    .site-menu {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: none;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 32px;
+      padding: 12px 20px 32px;
+      overflow-y: auto;
+      background: var(--white);
+      border-top: 1px solid var(--line);
+    }
+
+    .site-header[data-open] .site-menu {
+      display: flex;
+    }
+
+    .nav-list {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .nav-list li {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-list a {
+      padding: 18px 0;
+      font-size: 1.9rem;
+    }
+
+    .nav-list a::after {
+      bottom: 14px;
+      right: auto;
+      width: 48px;
+    }
+
+    .menu-tools {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .nav-cta {
+      min-height: 3.25rem;
+      font-size: 0.95rem;
+    }
+
+    .language-switcher {
+      justify-content: space-between;
+    }
+
+    .language-switcher li {
+      flex: 1;
+    }
+
+    .language-switcher a {
+      padding: 12px;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+  }
+</style>

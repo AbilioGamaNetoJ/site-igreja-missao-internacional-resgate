@@ -1,0 +1,232 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import QuickLinks from '../components/QuickLinks.astro';
+import Story from '../components/Story.astro';
+import DarkBand from '../components/DarkBand.astro';
+import { content } from '../i18n/content.js';
+import { pathFor } from '../i18n/routes.js';
+import { photos } from '../data/photos.js';
+
+const { lang } = Astro.props;
+const t = content[lang];
+const home = t.home;
+const pillarPages = ['church', 'gatherings', 'outreach'];
+---
+
+<BaseLayout lang={lang} page="home">
+  <section class="hero section-dark">
+    <img class="hero-image" src={photos.congregation} alt="" fetchpriority="high" />
+    <div class="hero-content frame">
+      <p class="eyebrow">{home.hero.eyebrow}</p>
+      <h1>{home.hero.title}</h1>
+      <p class="hero-welcome">{home.hero.welcome}</p>
+      <p class="hero-schedule">{home.hero.schedule}</p>
+      <p class="hero-intro">{home.hero.intro}</p>
+      <a class="button button-gold" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
+    </div>
+  </section>
+
+  <nav class="pillar-band section-dark" aria-label={home.pillars.map((pillar) => pillar.title).join(', ')}>
+    <ul class="frame">
+      {home.pillars.map((pillar, index) => (
+        <li>
+          <a href={`#pilar-${index + 1}`}>
+            <Icon name="arrow-down" size={44} />
+            <span>{pillar.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <Story>
+    <div class="pillars-grid">
+      <div class="pillars-list">
+        {home.pillars.map((pillar, index) => (
+          <article class="pillar" id={`pilar-${index + 1}`} data-reveal>
+            <h2 class="display-title">{pillar.title}</h2>
+            <p class="script">{pillar.script}</p>
+            <p class="body-text rich" set:html={pillar.text} />
+            <a class="arrow-link" href={pathFor(pillarPages[index], lang)}>{pillar.link}<Icon name="arrow-right" size={18} /></a>
+          </article>
+        ))}
+      </div>
+      <figure class="pillars-photo">
+        <img src={photos.preaching} alt={t.photos.preaching} loading="lazy" />
+      </figure>
+    </div>
+  </Story>
+
+  <DarkBand label={home.mission.label} title={home.mission.statement}>
+    <a class="dark-band-link" href={pathFor('church', lang)}>{home.mission.link} <span aria-hidden="true">&gt;&gt;</span></a>
+  </DarkBand>
+
+  <QuickLinks lang={lang} />
+</BaseLayout>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    min-height: max(560px, min(calc(100svh - var(--header-h)), 860px));
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .hero-image {
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.38);
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-block: 72px;
+  }
+
+  .eyebrow {
+    color: var(--gold);
+  }
+
+  h1 {
+    max-width: 15ch;
+    margin-top: 18px;
+    font-family: var(--display);
+    font-size: clamp(2.9rem, 6.6vw, 5.6rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .hero-welcome {
+    margin-top: 26px;
+    font-family: var(--display);
+    font-size: clamp(1.25rem, 2.2vw, 1.85rem);
+    font-weight: 700;
+  }
+
+  .hero-schedule {
+    margin-top: 10px;
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: clamp(1.15rem, 2.2vw, 1.85rem);
+    font-weight: 700;
+  }
+
+  .hero-intro {
+    max-width: 54ch;
+    margin: 22px 0 36px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+    font-weight: 300;
+    line-height: 1.55;
+  }
+
+  .pillar-band {
+    padding: 28px 0 56px;
+  }
+
+  .pillar-band ul {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .pillar-band a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--white);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .pillar-band span {
+    font-family: var(--script);
+    font-size: clamp(2.4rem, 5.6vw, 4.6rem);
+    line-height: 1.25;
+    letter-spacing: 0.04em;
+    word-spacing: 0.18em;
+  }
+
+  .pillar-band :global(svg) {
+    transition: transform 0.3s ease;
+  }
+
+  .pillar-band a:hover {
+    color: var(--gold);
+  }
+
+  .pillar-band a:hover :global(svg) {
+    transform: translateY(6px);
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: start;
+  }
+
+  .pillars-list {
+    display: grid;
+    gap: clamp(3.5rem, 6vw, 5rem);
+  }
+
+  .pillar .script {
+    margin-top: 12px;
+  }
+
+  .pillar .body-text {
+    max-width: 540px;
+    margin: 16px 0 20px;
+  }
+
+  .pillars-photo {
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: var(--radius-photo);
+  }
+
+  .pillars-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 860px) {
+    .pillars-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .pillars-photo {
+      position: static;
+      order: -1;
+      aspect-ratio: 4 / 3;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .pillar-band {
+      padding: 20px 0 40px;
+    }
+
+    .pillar-band :global(svg) {
+      width: 32px;
+      height: 32px;
+    }
+  }
+</style>

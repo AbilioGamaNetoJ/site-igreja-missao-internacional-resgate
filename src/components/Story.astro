@@ -1,0 +1,46 @@
+---
+// Faixa de fundo quadriculado com um fio dourado ao centro, que envolve os FeatureBlock de cada página.
+---
+
+<section class="story">
+  <div class="frame story-frame">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .story {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(4.5rem, 9vw, 7.5rem);
+    background:
+      linear-gradient(90deg, rgba(17, 18, 20, 0.035) 1px, transparent 1px),
+      var(--paper);
+    background-size: 5.5rem 5.5rem;
+  }
+
+  .story-frame {
+    position: relative;
+  }
+
+  .story-frame::before {
+    position: absolute;
+    top: 8%;
+    bottom: 8%;
+    left: 50%;
+    width: 2px;
+    border-radius: 999px;
+    background: linear-gradient(transparent, var(--gold), var(--gold), transparent);
+    content: '';
+  }
+
+  .story-frame :global(.feature) {
+    position: relative;
+  }
+
+  @media (max-width: 860px) {
+    .story-frame::before {
+      display: none;
+    }
+  }
+</style>
