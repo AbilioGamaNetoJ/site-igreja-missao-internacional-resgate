@@ -100,6 +100,8 @@ const year = new Date().getFullYear();
 
   .footer-list a {
     color: inherit;
+    /* Um e-mail comprido, quando houver, não pode empurrar a página para o lado. */
+    overflow-wrap: anywhere;
     text-decoration: none;
     transition: color 0.2s ease;
   }
@@ -162,10 +164,18 @@ const year = new Date().getFullYear();
     }
   }
 
+  /* Navegação e horários ficam lado a lado; marca e contato ocupam a linha toda. */
   @media (max-width: 560px) {
     .footer-grid {
-      grid-template-columns: 1fr;
-      gap: 36px;
+      gap: 36px 24px;
+    }
+
+    .footer-grid > :last-child {
+      grid-column: 1 / -1;
+    }
+
+    .footer-bottom p {
+      text-wrap: balance;
     }
   }
 </style>

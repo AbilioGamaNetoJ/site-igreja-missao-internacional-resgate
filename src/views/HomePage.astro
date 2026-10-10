@@ -21,7 +21,7 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
       <p class="eyebrow">{home.hero.eyebrow}</p>
       <h1>{home.hero.title}</h1>
       <p class="hero-welcome">{home.hero.welcome}</p>
-      <p class="hero-schedule">{home.hero.schedule}</p>
+      <p class="hero-schedule">{home.hero.schedule.split(' · ').map((item, index) => <Fragment>{index > 0 && ' '}<span>{item}</span></Fragment>)}</p>
       <p class="hero-intro">{home.hero.intro}</p>
       <a class="button button-gold" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
     </div>
@@ -101,7 +101,7 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
     max-width: 15ch;
     margin-top: 18px;
     font-family: var(--display);
-    font-size: clamp(2.9rem, 6.6vw, 5.6rem);
+    font-size: clamp(2.5rem, 6.6vw, 5.6rem);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.02em;
@@ -113,14 +113,36 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
     font-family: var(--display);
     font-size: clamp(1.25rem, 2.2vw, 1.85rem);
     font-weight: 700;
+    text-wrap: balance;
   }
 
+  /* Cada horário é um bloco que não quebra no meio; o "·" entre eles some no celular, onde a linha quebraria sobrando um ponto. */
   .hero-schedule {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    column-gap: 0.7em;
+    row-gap: 2px;
     margin-top: 10px;
     color: var(--gold);
     font-family: var(--display);
     font-size: clamp(1.15rem, 2.2vw, 1.85rem);
     font-weight: 700;
+  }
+
+  .hero-schedule span + span::before {
+    margin-right: 0.7em;
+    content: '·';
+  }
+
+  @media (max-width: 640px) {
+    .hero-schedule {
+      column-gap: 1.1em;
+    }
+
+    .hero-schedule span + span::before {
+      display: none;
+    }
   }
 
   .hero-intro {
@@ -219,14 +241,36 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
     }
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 640px) {
     .pillar-band {
-      padding: 20px 0 40px;
+      padding: 12px 0 36px;
+    }
+
+    /* Três colunas não comportam a fonte manuscrita no celular: empilha, com a seta ao lado do nome. */
+    .pillar-band ul {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .pillar-band li + li {
+      border-top: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .pillar-band a {
+      flex-direction: row;
+      justify-content: center;
+      gap: 14px;
+      padding: 10px 0;
+    }
+
+    .pillar-band span {
+      font-size: 2.5rem;
     }
 
     .pillar-band :global(svg) {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
     }
   }
 </style>

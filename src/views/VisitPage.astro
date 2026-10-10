@@ -84,7 +84,8 @@ const visit = t.visit;
 
   address {
     font-family: var(--display);
-    font-size: 1.35rem;
+    /* "Rua Vereador Manoel Mariano, 2014" ocupa ~16em: o segundo valor evita a quebra antes do "2014" em celulares comuns. */
+    font-size: clamp(1.05rem, calc((100vw - 40px) / 17), 1.35rem);
     font-style: normal;
     font-weight: 700;
     line-height: 1.35;

@@ -86,7 +86,8 @@ const { title, script, text, image, alt, position = 'center', reverse = false, v
   }
 
   .display-title {
-    font-size: clamp(2.5rem, 5.2vw, 4.25rem);
+    /* "COMPARTILHADA" mede ~7,5em: o segundo valor do min() a mantém dentro da coluna em telas de 320px. */
+    font-size: min(clamp(2.5rem, 5.2vw, 4.25rem), calc((100vw - 40px) / 8));
   }
 
   .script {
@@ -121,6 +122,10 @@ const { title, script, text, image, alt, position = 'center', reverse = false, v
     .feature--panel {
       padding: 1.25rem;
       border-radius: 1.75rem;
+    }
+
+    .feature-copy > :global(.button) {
+      display: flex;
     }
   }
 </style>

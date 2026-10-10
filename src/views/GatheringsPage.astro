@@ -31,7 +31,7 @@ const [expect, firstTime] = gatherings.blocks;
           </li>
         ))}
       </ul>
-      <p class="times-address"><Icon name="pin" size={18} />{site.address.street} · {site.address.city}</p>
+      <p class="times-address"><Icon name="pin" size={18} /><span>{site.address.street}</span><span class="times-sep" aria-hidden="true">·</span><span>{site.address.city}</span></p>
     </div>
   </section>
 
@@ -110,6 +110,31 @@ const [expect, firstTime] = gatherings.blocks;
 
     .times-grid li {
       padding: 24px 16px;
+    }
+  }
+
+  /* No celular o endereço vira duas linhas, sem o "·" que ficaria sobrando no fim da primeira. */
+  @media (max-width: 600px) {
+    h2 {
+      margin-bottom: 32px;
+    }
+
+    .times-address {
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 24px;
+    }
+
+    .times-address :global(svg) {
+      margin-bottom: 4px;
+    }
+
+    .times-address span {
+      text-wrap: balance;
+    }
+
+    .times-sep {
+      display: none;
     }
   }
 </style>

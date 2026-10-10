@@ -42,6 +42,8 @@ body {
   color: var(--ink);
   font: 500 1.0625rem/1.65 var(--sans);
   -webkit-font-smoothing: antialiased;
+  /* Rede de segurança: nada, nem um texto longo traduzido, cria rolagem lateral. Clip, e não hidden, para não virar um contêiner de rolagem. */
+  overflow-x: clip;
 }
 
 h1, h2, h3, h4, p, figure, ul {
@@ -139,6 +141,7 @@ img {
 .body-text {
   font-size: 1.0625rem;
   line-height: 1.7;
+  text-wrap: pretty;
 }
 
 .rich strong {
@@ -269,8 +272,13 @@ html.js [data-reveal].is-visible {
 
   .button {
     min-height: 3rem;
-    padding: 0 1.4rem;
+    padding: 0.5rem 1.4rem;
     font-size: 0.85rem;
+  }
+
+  /* Botões lado a lado não cabem; empilhados e na largura toda ficam mais fáceis de tocar. */
+  .button-row .button {
+    flex: 1 1 100%;
   }
 }
 

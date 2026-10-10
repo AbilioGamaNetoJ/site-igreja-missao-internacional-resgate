@@ -53,9 +53,17 @@ const { image, titleA, titleB, title, cta, mono = true } = Astro.props;
     padding-block: 64px;
   }
 
+  @media (max-width: 600px) {
+    .page-hero-content {
+      gap: 24px;
+      padding-block: 48px;
+    }
+  }
+
   h1 {
     font-family: var(--display);
-    font-size: clamp(3.1rem, 9.5vw, 7.75rem);
+    /* A palavra mais larga ("ENCUENTROS") mede 6,65em. O segundo valor do min() a mantém dentro das margens em telas estreitas. */
+    font-size: min(clamp(3.1rem, 9.5vw, 7.75rem), calc((100vw - 40px) / 7));
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: 0.04em;
