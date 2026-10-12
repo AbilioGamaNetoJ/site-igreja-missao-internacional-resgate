@@ -10,7 +10,7 @@ import { languages, pageIds, pathFor } from '../i18n/routes.js';
 
 export function getStaticPaths() {
   return Object.keys(languages).flatMap((lang) =>
-    pageIds.map((page) => ({
+    pageIds.filter((page) => page !== 'home').map((page) => ({
       params: { path: pathFor(page, lang).slice(1) || undefined },
       props: { lang, page },
     })),

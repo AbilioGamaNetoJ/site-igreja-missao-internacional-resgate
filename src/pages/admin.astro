@@ -33,6 +33,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         display: flex;
         flex-direction: column;
         min-height: 100vh;
+        max-width: 100%;
+        overflow-x: clip;
         background: var(--sand);
       }
 
@@ -46,9 +48,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-bar-inner {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
+        gap: 8px 16px;
+        min-width: 0;
+        max-width: 100%;
         padding-block: 14px;
       }
 
@@ -93,8 +98,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-login {
         display: grid;
-        grid-template-columns: minmax(0, 1.16fr) minmax(420px, 0.84fr);
+        grid-template-columns: minmax(0, 1.16fr) minmax(0, 0.84fr);
         min-height: calc(100dvh - 61px);
+        max-width: 100%;
+        overflow-x: clip;
         background: var(--black);
         isolation: isolate;
       }
@@ -217,6 +224,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         position: relative;
         display: grid;
         align-content: center;
+        min-width: 0;
+        max-width: 100%;
         padding: clamp(32px, 5.5vw, 76px);
         background: var(--sand);
       }
@@ -235,6 +244,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-login-card {
         width: min(100%, 430px);
+        min-width: 0;
+        max-width: 100%;
       }
 
       .admin-login-card > p {
@@ -249,11 +260,13 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-login-card h1 {
         margin-bottom: 10px;
+        max-width: 100%;
         font-family: var(--display);
         font-size: clamp(2rem, 3vw, 2.8rem);
         font-weight: 800;
         letter-spacing: -0.035em;
         line-height: 0.98;
+        overflow-wrap: anywhere;
         text-transform: uppercase;
       }
 
@@ -276,6 +289,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       .admin-field {
         display: grid;
         gap: 6px;
+        min-width: 0;
+        max-width: 100%;
         margin-bottom: 16px;
         font-size: 0.9rem;
         font-weight: 700;
@@ -285,12 +300,27 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       .admin-field select,
       .admin-field textarea {
         width: 100%;
+        min-width: 0;
+        max-width: 100%;
         padding: 10px 14px;
         border: 1px solid var(--line);
         border-radius: 10px;
         background: var(--white);
         color: var(--ink);
         font: 500 1rem/1.5 var(--sans);
+      }
+
+      .admin-field-hint {
+        margin-top: -2px;
+        color: var(--muted);
+        font: 600 0.72rem/1.35 var(--sans);
+      }
+
+      .admin-field input[readonly] {
+        border-style: dashed;
+        background: var(--paper);
+        color: var(--muted);
+        cursor: default;
       }
 
       .admin-login-card .admin-field {
@@ -401,7 +431,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       .admin-error {
         min-height: 1.4em;
         margin-top: 14px;
-        color: #a3312d;
+        color: #b42318;
         font-size: 0.9rem;
         font-weight: 700;
       }
@@ -506,9 +536,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-post {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 8px 16px;
         align-items: center;
+        min-width: 0;
+        max-width: 100%;
         padding: 18px 22px;
         background: var(--white);
         border: 1px solid var(--line);
@@ -555,6 +587,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         color: var(--black);
       }
 
+      .admin-featured-badge {
+        background: #20130f;
+        color: var(--gold);
+      }
+
       .admin-empty {
         padding: 40px 24px;
         border: 1px dashed var(--line);
@@ -569,6 +606,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         display: grid;
         gap: 16px;
         margin-bottom: 20px;
+        min-width: 0;
+        max-width: 100%;
       }
 
       .admin-editor-row {
@@ -576,53 +615,907 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         flex-wrap: wrap;
         align-items: end;
         gap: 16px;
+        min-width: 0;
+        max-width: 100%;
       }
 
       .admin-editor-row .admin-field {
         flex: 1 1 220px;
+        min-width: 0;
         margin-bottom: 0;
+      }
+
+      /* Categoria e autor ficam em uma segunda linha dentro do mesmo cartão. */
+      .admin-editor-details {
+        display: flex;
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+        gap: 16px;
+        min-width: 0;
+      }
+
+      /* Dropdown de categoria: escolher, editar, excluir e criar no mesmo lugar. */
+      #category-combo {
+        position: relative;
+      }
+
+      .admin-combo-button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid rgba(17, 18, 20, 0.16);
+        border-radius: 9px;
+        background: var(--white);
+        color: var(--ink);
+        font: 500 1rem/1.5 var(--sans);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .admin-combo-button:focus-visible,
+      .admin-combo-button[aria-expanded='true'] {
+        border-color: var(--gold-script);
+        box-shadow: 0 0 0 3px rgba(221, 186, 103, 0.2);
+        outline: 0;
+      }
+
+      .admin-combo-button svg {
+        flex: none;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.2s ease;
+      }
+
+      .admin-combo-button[aria-expanded='true'] svg {
+        transform: rotate(180deg);
+      }
+
+      .admin-combo-menu {
+        position: absolute;
+        z-index: 30;
+        top: calc(100% + 6px);
+        right: 0;
+        left: 0;
+        max-height: 340px;
+        overflow-y: auto;
+        padding: 6px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--white);
+        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
+        font-weight: 600;
+      }
+
+      .admin-combo-menu[hidden] {
+        display: none;
+      }
+
+      .admin-combo-list {
+        display: grid;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .admin-combo-row {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        border-radius: 8px;
+      }
+
+      .admin-combo-row:hover,
+      .admin-combo-row:focus-within {
+        background: var(--paper);
+      }
+
+      .admin-combo-pick {
+        flex: 1;
+        min-width: 0;
+        padding: 9px 10px;
+        border: 0;
+        background: none;
+        color: var(--ink);
+        font: 600 0.95rem/1.3 var(--sans);
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      .admin-combo-pick[aria-current='true'] {
+        color: var(--gold-ink);
+        font-weight: 800;
+      }
+
+      .admin-combo-pick[aria-current='true']::after {
+        content: ' ✓';
+      }
+
+      .admin-combo-icon {
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 8px;
+        background: none;
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .admin-combo-icon:hover,
+      .admin-combo-icon:focus-visible {
+        background: rgba(17, 18, 20, 0.08);
+        color: var(--ink);
+      }
+
+      .admin-combo-icon[data-danger]:hover,
+      .admin-combo-icon[data-danger]:focus-visible {
+        background: #fdecea;
+        color: #b42318;
+      }
+
+      .admin-combo-icon svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-combo-add {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        margin-top: 6px;
+        padding: 11px 10px;
+        border: 0;
+        border-top: 1px solid var(--line);
+        border-radius: 0 0 8px 8px;
+        background: none;
+        color: var(--gold-ink);
+        font: 800 0.9rem/1.2 var(--sans);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .admin-combo-add:hover,
+      .admin-combo-add:focus-visible {
+        background: var(--paper);
+      }
+
+      .admin-combo-add svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2.4;
+        stroke-linecap: round;
+      }
+
+      .admin-dialog {
+        width: min(460px, calc(100% - 32px));
+        max-height: calc(100dvh - 32px);
+        margin: auto; /* o reset global zera a margem que centraliza o <dialog> */
+        padding: 0;
+        border: 1px solid rgba(221, 186, 103, 0.45);
+        border-radius: 18px;
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.35);
+      }
+
+      .admin-dialog::backdrop {
+        background: rgba(17, 18, 20, 0.55);
+      }
+
+      .admin-dialog form {
+        padding: 24px;
+      }
+
+      .admin-dialog h2 {
+        margin-bottom: 4px;
+        font: 800 1.3rem/1.2 var(--display);
+      }
+
+      .admin-dialog-lead {
+        margin-bottom: 18px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .admin-dialog-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      /* Sem isto, a regra de "Situação" (último campo da linha) estreitaria o autor. */
+      .admin-editor-row .admin-editor-details .admin-field:is(:first-child, :last-child) {
+        flex: 1 1 220px;
+      }
+
+      .admin-feature-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        min-height: 48px;
+        padding: 9px 12px;
+        border: 1px solid rgba(17, 18, 20, 0.16);
+        border-radius: 10px;
+        background: var(--white);
+        color: var(--ink);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-feature-toggle:hover,
+      .admin-feature-toggle:focus-visible {
+        border-color: var(--gold-script);
+        box-shadow: 0 0 0 3px rgba(221, 186, 103, 0.2);
+        outline: 0;
+      }
+
+      .admin-feature-toggle[aria-pressed='true'] {
+        border-color: rgba(157, 116, 40, 0.62);
+        background: #fff8e8;
+      }
+
+      .admin-feature-toggle > span:last-child {
+        display: grid;
+        gap: 2px;
+      }
+
+      .admin-feature-toggle strong {
+        font-size: 0.82rem;
+        line-height: 1.25;
+      }
+
+      .admin-feature-toggle small {
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .admin-feature-switch {
+        position: relative;
+        flex: none;
+        width: 36px;
+        height: 21px;
+        border-radius: 999px;
+        background: rgba(17, 18, 20, 0.2);
+        transition: background-color 0.2s ease;
+      }
+
+      .admin-feature-switch span {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: var(--white);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.26);
+        transition: transform 0.2s ease;
+      }
+
+      .admin-feature-toggle[aria-pressed='true'] .admin-feature-switch {
+        background: var(--gold-ink);
+      }
+
+      .admin-feature-toggle[aria-pressed='true'] .admin-feature-switch span {
+        transform: translateX(15px);
+      }
+
+      .admin-editor-back {
+        flex: 0 1 auto;
+        align-self: center;
+        width: auto;
+        max-width: 100%;
+        min-height: 3rem;
+        padding: 0.7rem 1.2rem;
+        font-size: 0.78rem;
+        white-space: normal;
       }
 
       .admin-editor-actions {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin-top: 22px;
       }
 
       .admin-editor-actions .button {
-        min-height: 2.9rem;
-        padding: 0.5rem 1.3rem;
-        font-size: 0.82rem;
+        flex: 1 1 200px;
+        width: auto;
+        max-width: 100%;
+        min-height: 3.05rem;
+        padding: 0.7rem 1.2rem;
+        font-size: 0.78rem;
+        line-height: 1.25;
+        white-space: normal;
+        overflow-wrap: anywhere;
       }
 
-      .admin-cover {
+      .admin-editor-actions .button-light {
+        background: var(--white);
+        color: var(--ink);
+        box-shadow: inset 0 0 0 1.5px var(--line);
+      }
+
+      .admin-editor-actions .button-light:hover {
+        background: var(--paper);
+      }
+
+      .admin-editor-actions .button-outline {
+        background: var(--white);
+      }
+
+      @keyframes adminSpin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes adminSuccessPop {
+        0% {
+          transform: scale(0.7);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.12);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes adminShimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+      .admin-spin {
+        width: 22px;
+        height: 22px;
+        animation: adminSpin 0.85s linear infinite;
+      }
+
+      .admin-success-icon {
+        width: 24px;
+        height: 24px;
+        stroke: #16a34a;
+        stroke-width: 2.4;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        animation: adminSuccessPop 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      /* Upload Card (Compartilhado entre Capa e Editor) */
+      .admin-upload-card {
+        width: min(420px, calc(100% - 24px));
+        padding: 20px 22px;
+        background: var(--white);
+        border: 1px solid rgba(221, 186, 103, 0.45);
+        border-radius: 16px;
+        box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        animation: adminSuccessPop 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+        text-align: left;
+      }
+
+      .admin-upload-card-top {
         display: flex;
         align-items: center;
+        gap: 14px;
+      }
+
+      .admin-upload-spinner {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: rgba(221, 186, 103, 0.15);
+        border: 1px solid rgba(157, 116, 40, 0.24);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold-script);
+      }
+
+      .admin-upload-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .admin-upload-title {
+        font-family: var(--display);
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .admin-upload-sub {
+        font-size: 0.78rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .admin-upload-percent {
+        font-family: var(--display);
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--gold-script);
+        letter-spacing: -0.02em;
+        flex-shrink: 0;
+      }
+
+      .admin-upload-progress-track {
+        width: 100%;
+        height: 8px;
+        background: rgba(0, 0, 0, 0.07);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .admin-upload-progress-bar {
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #9d7428 0%, #ddba67 50%, #e9cc85 100%);
+        background-size: 200% 100%;
+        transition: width 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 0 10px rgba(221, 186, 103, 0.5);
+        animation: adminShimmer 2.2s infinite linear;
+      }
+
+      /* Seção de Capa */
+      .admin-cover {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         gap: 16px;
-        margin-bottom: 20px;
-        padding: 16px;
+        min-width: 0;
+        max-width: 100%;
+        margin-bottom: 24px;
+        padding: 20px;
         background: var(--white);
         border: 1px solid var(--line);
-        border-radius: 16px;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
       }
 
-      .admin-cover img {
-        width: 180px;
-        aspect-ratio: 3 / 2;
-        object-fit: cover;
-        border-radius: 10px;
+      .admin-cover:focus-within {
+        border-color: rgba(157, 116, 40, 0.35);
       }
 
-      .admin-cover-buttons {
+      .admin-cover-header {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px 16px;
+        min-width: 0;
+      }
+
+      .admin-cover-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .admin-cover-badge-icon {
+        width: 38px;
+        height: 38px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        background: rgba(221, 186, 103, 0.14);
+        border: 1px solid rgba(157, 116, 40, 0.22);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold-script);
+      }
+
+      .admin-cover-badge-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-cover-heading {
+        font-family: var(--display);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+
+      .admin-cover-desc {
+        font-size: 0.8rem;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .admin-cover-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
+      }
+
+      .admin-cover-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 2.35rem;
+        padding: 0.4rem 1.1rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .admin-cover-btn svg {
+        width: 17px;
+        height: 17px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.2s ease;
+      }
+
+      .admin-cover-btn:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 4px 14px rgba(157, 116, 40, 0.18);
+      }
+
+      .admin-cover-btn:hover svg {
+        transform: translateY(-1.5px);
+      }
+
+      .admin-cover-remove-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 2.35rem;
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border-radius: 10px;
+        color: #dc2626;
+        border-color: rgba(220, 38, 38, 0.25);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .admin-cover-remove-btn svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-cover-remove-btn:hover {
+        background: rgba(220, 38, 38, 0.08);
+        border-color: #dc2626;
+        color: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+      }
+
+      .admin-cover-stage {
+        position: relative;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        min-height: 210px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(221, 186, 103, 0.05);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .admin-cover-stage[data-empty] {
+        border: 2px dashed rgba(157, 116, 40, 0.35);
+        cursor: pointer;
+      }
+
+      .admin-cover-stage[data-empty]:hover {
+        border-color: var(--gold-script);
+        background: rgba(221, 186, 103, 0.12);
+        box-shadow: 0 8px 24px -4px rgba(157, 116, 40, 0.18);
+        transform: translateY(-1.5px);
+      }
+
+      .admin-cover-stage[data-empty]:hover .admin-cover-empty-icon {
+        transform: translateY(-4px) scale(1.08);
+        background: rgba(221, 186, 103, 0.28);
+        border-color: var(--gold-script);
+        color: var(--gold-ink);
+        box-shadow: 0 6px 16px rgba(157, 116, 40, 0.22);
+      }
+
+      .admin-cover-stage[data-drag] {
+        border-color: var(--gold-script) !important;
+        border-style: solid !important;
+        background: rgba(221, 186, 103, 0.2) !important;
+        box-shadow: 0 0 0 4px rgba(221, 186, 103, 0.28), 0 8px 24px rgba(157, 116, 40, 0.25) !important;
+      }
+
+      .admin-cover-stage:not([data-empty]) {
+        border: 1px solid rgba(17, 18, 20, 0.14);
+        background: #111214;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+      }
+
+      .admin-cover-stage img {
+        display: block;
+        width: 100%;
+        height: 250px;
+        max-width: 100%;
+        object-fit: cover;
+        object-position: center;
+        transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+      }
+
+      .admin-cover-stage:not([data-empty]):hover img {
+        transform: scale(1.025);
+        filter: brightness(0.92);
+      }
+
+      /* Hover Overlay sobre a Capa */
+      .admin-cover-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.25) 40%, rgba(0, 0, 0, 0.75) 100%);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+
+      .admin-cover-stage:not([data-empty]):hover .admin-cover-overlay {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .admin-cover-overlay-top {
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .admin-cover-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.65);
+        border: 1px solid rgba(221, 186, 103, 0.45);
+        color: var(--gold);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        backdrop-filter: blur(6px);
+      }
+
+      .admin-cover-tag svg {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        stroke-width: 2.2;
+        fill: none;
+      }
+
+      .admin-cover-overlay-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-block: auto;
+      }
+
+      .admin-overlay-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      }
+
+      .admin-overlay-action-btn svg {
+        width: 16px;
+        height: 16px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-overlay-change {
+        background: rgba(255, 255, 255, 0.95);
+        color: var(--ink);
+      }
+
+      .admin-overlay-change:hover {
+        background: var(--white);
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .admin-overlay-delete {
+        background: rgba(220, 38, 38, 0.9);
+        color: #fff;
+      }
+
+      .admin-overlay-delete:hover {
+        background: #dc2626;
+        transform: translateY(-2px) scale(1.03);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
+      }
+
+      .admin-cover-overlay-foot {
+        text-align: center;
+        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.88);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+      }
+
+      /* Estado vazio da Capa */
+      .admin-cover-empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 24px;
+        text-align: center;
+        user-select: none;
+      }
+
+      .admin-cover-stage:not([data-empty]) .admin-cover-empty {
+        display: none;
+      }
+
+      .admin-cover-empty-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: rgba(221, 186, 103, 0.16);
+        border: 1px solid rgba(157, 116, 40, 0.24);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold-script);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .admin-cover-empty-icon svg {
+        width: 26px;
+        height: 26px;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-cover-empty-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .admin-cover-empty-primary {
+        font-size: 0.95rem;
+        color: var(--ink);
+      }
+
+      .admin-cover-empty-primary strong {
+        color: var(--gold-script);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .admin-cover-empty-secondary {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      .admin-cover-loading {
+        position: absolute;
+        z-index: 10;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        margin: 0;
+        background: rgba(246, 244, 241, 0.88);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: inherit;
       }
 
       .admin-tabs {
         display: flex;
         gap: 4px;
+        max-width: 100%;
+        min-width: 0;
         margin-bottom: -1px;
+        overflow-x: auto;
       }
 
       .admin-tab {
@@ -698,75 +1591,335 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-md-tools {
         display: flex;
-        gap: 10px;
-        margin-bottom: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
       }
 
-      .admin-md-tools .button {
-        min-height: 2.4rem;
-        padding: 0.35rem 1rem;
-        font-size: 0.75rem;
-      }
-
-      .admin-md-preview {
-        margin-top: 12px;
-        padding: 18px 20px;
-        border: 1px dashed var(--line);
-        border-radius: 12px;
-        font-size: 1rem;
-        line-height: 1.7;
-      }
-
-      .admin-md-preview h1,
-      .admin-md-preview h2,
-      .admin-md-preview h3 {
-        font-family: var(--display);
-        line-height: 1.2;
-        margin: 1.2em 0 0.5em;
-      }
-
-      .admin-md-preview img {
+      .admin-insert-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 2.45rem;
+        padding: 0.45rem 1.15rem;
+        font-size: 0.8rem;
+        font-weight: 700;
         border-radius: 10px;
+        cursor: pointer;
+        background: var(--white);
+        border: 1px solid rgba(157, 116, 40, 0.32);
+        color: var(--ink);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
-      .admin-md-preview ul,
-      .admin-md-preview ol {
-        padding-left: 1.4em;
-        list-style: revert;
+      .admin-insert-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: var(--gold-script);
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: transform 0.2s ease;
+      }
+
+      .admin-insert-btn:hover {
+        background: rgba(221, 186, 103, 0.12);
+        border-color: var(--gold-script);
+        color: var(--gold-ink);
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 16px rgba(157, 116, 40, 0.18);
+      }
+
+      .admin-insert-btn:hover svg {
+        transform: scale(1.12);
+      }
+
+      .admin-md-shortcut-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.78rem;
+        color: var(--muted);
+        line-height: 1.3;
+      }
+
+      .admin-md-shortcut-hint svg {
+        width: 15px;
+        height: 15px;
+        flex-shrink: 0;
+        stroke: var(--gold-script);
+        stroke-width: 1.8;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-composer-card {
+        margin-top: 14px;
+        margin-bottom: 24px;
+        padding: 20px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-composer-card:focus-within {
+        border-color: rgba(157, 116, 40, 0.35);
+      }
+
+      .admin-insert-dropzone {
+        position: relative;
+        min-height: 120px;
+        cursor: pointer;
+        border: 2px dashed rgba(157, 116, 40, 0.35);
+        background: rgba(221, 186, 103, 0.05);
+        border-radius: 14px;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .admin-insert-dropzone:hover {
+        border-color: var(--gold-script);
+        background: rgba(221, 186, 103, 0.12);
+        box-shadow: 0 8px 24px -4px rgba(157, 116, 40, 0.18);
+        transform: translateY(-1.5px);
+      }
+
+      .admin-insert-dropzone:hover .admin-cover-empty-icon {
+        transform: translateY(-4px) scale(1.08);
+        background: rgba(221, 186, 103, 0.28);
+        border-color: var(--gold-script);
+        color: var(--gold-ink);
+        box-shadow: 0 6px 16px rgba(157, 116, 40, 0.22);
+      }
+
+      .admin-insert-dropzone:hover .admin-cover-empty-primary strong {
+        color: var(--gold-script);
+      }
+
+      .admin-insert-dropzone[data-drag] {
+        border-color: var(--gold-script) !important;
+        border-style: solid !important;
+        background: rgba(221, 186, 103, 0.2) !important;
+        box-shadow: 0 0 0 4px rgba(221, 186, 103, 0.28), 0 8px 24px rgba(157, 116, 40, 0.25) !important;
+      }
+
+      .admin-composer-intro {
+        display: grid;
+        gap: 4px;
+      }
+
+      .admin-composer-intro strong {
+        font-family: var(--display);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .admin-composer-intro p {
+        margin: 0;
+        max-width: 62ch;
+        color: var(--muted);
+        font-size: 0.9rem;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      .admin-md-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 10px 0;
+        padding: 10px;
+        border-radius: 12px;
+        background: rgba(246, 244, 241, 0.96);
+      }
+
+      .admin-md-bar button {
+        min-width: 44px;
+        min-height: 34px;
+        padding: 6px 12px;
+        border: 1px solid rgba(17, 18, 20, 0.12);
+        border-radius: 10px;
+        background: var(--white);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 0.82rem;
+        font-weight: 800;
+        line-height: 1;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .admin-md-bar button:hover,
+      .admin-md-bar button:focus-visible {
+        border-color: var(--gold-script);
+        background: rgba(221, 186, 103, 0.28);
+        color: var(--ink);
+      }
+
+      .admin-md-bar button[data-md='bold'] {
+        font-weight: 900;
+      }
+
+      .admin-composer-stage {
+        position: relative;
+        min-width: 0;
+        max-width: 100%;
+        min-height: 320px;
+        border: 1px solid rgba(17, 18, 20, 0.16);
+        border-radius: 14px;
+        background: var(--white);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+      }
+
+      .admin-composer-stage[data-drag] {
+        border-color: var(--gold-script);
+        background: rgba(221, 186, 103, 0.12);
+        box-shadow: 0 0 0 3px rgba(221, 186, 103, 0.25);
+      }
+
+      .admin-composer-surface {
+        position: relative;
+        z-index: 1;
+        min-height: 320px;
+        max-width: 100%;
+        padding: 18px 18px 22px;
+        color: var(--ink);
+        font: 500 1rem/1.7 var(--sans);
+        outline: none;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .admin-composer-surface:focus {
+        box-shadow: inset 0 0 0 2px rgba(221, 186, 103, 0.45);
+      }
+
+      .admin-composer-surface p {
+        margin: 0 0 0.75em;
+      }
+
+      .admin-composer-surface img {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        margin: 16px auto;
+        border-radius: 14px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      }
+
+      .admin-composer-surface img:hover {
+        border-color: var(--gold-script);
+        box-shadow: 0 8px 24px rgba(157, 116, 40, 0.18);
+        transform: translateY(-2px);
+      }
+
+      .admin-composer-hint {
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        left: 50%;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: min(320px, calc(100% - 40px));
+        min-height: 124px;
+        margin: 0;
+        padding: 20px 18px;
+        border: 2px dashed var(--gold-script);
+        border-radius: 16px;
+        background: rgba(221, 186, 103, 0.14);
+        backdrop-filter: blur(4px);
+        color: var(--gold-ink);
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(157, 116, 40, 0.15);
+      }
+
+      .admin-composer-hint-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(221, 186, 103, 0.24);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold-script);
+      }
+
+      .admin-composer-hint-icon svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-composer-hint-title {
+        font-family: var(--display);
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .admin-composer-hint-desc {
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      .admin-composer-stage[data-empty] .admin-composer-hint,
+      .admin-composer-stage[data-drag] .admin-composer-hint {
+        display: flex;
+      }
+
+      .admin-composer-loading {
+        position: absolute;
+        z-index: 10;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        margin: 0;
+        border-radius: inherit;
+        background: rgba(246, 244, 241, 0.88);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
       }
 
       @media (max-width: 900px) {
         .admin-login {
           grid-template-columns: 1fr;
-          grid-template-rows: minmax(360px, 0.8fr) auto;
+          grid-template-rows: 1fr;
+          min-height: calc(100dvh - 61px);
         }
 
         .admin-login-intro {
-          min-height: 0;
-          padding: 36px clamp(28px, 7vw, 68px) 28px;
-          background:
-            linear-gradient(90deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.57) 100%),
-            linear-gradient(0deg, rgba(0, 0, 0, 0.68), transparent 72%),
-            url('/capa.webp') center 44% / cover;
-        }
-
-        .admin-login-intro::before {
-          top: -210px;
-          left: auto;
-          right: -125px;
-          width: 390px;
-        }
-
-        .admin-login-copy {
-          padding-block: 54px 42px;
-        }
-
-        .admin-login-copy h1 {
-          max-width: 13ch;
-          font-size: clamp(3.2rem, 8.2vw, 4.8rem);
+          display: none;
         }
 
         .admin-login-panel {
+          min-height: calc(100dvh - 61px);
           padding: clamp(40px, 8vw, 68px);
         }
 
@@ -777,6 +1930,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       @media (max-width: 640px) {
         .admin-bar-inner {
+          width: calc(100% - 32px);
           padding-block: 12px;
         }
 
@@ -790,42 +1944,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         }
 
         .admin-login {
-          grid-template-rows: auto auto;
           min-height: calc(100dvh - 56px);
         }
 
         .admin-login-intro {
-          min-height: 350px;
-          padding: 28px 28px 24px;
-        }
-
-        .admin-login-brand {
-          width: 184px;
-        }
-
-        .admin-login-copy {
-          padding-block: 44px 32px;
-        }
-
-        .admin-login-eyebrow {
-          margin-bottom: 16px;
-          font-size: 0.67rem;
-        }
-
-        .admin-login-copy h1 {
-          font-size: clamp(2.75rem, 13vw, 4.2rem);
-        }
-
-        .admin-login-copy p:last-child {
-          margin-top: 18px;
-          font-size: 0.9rem;
-        }
-
-        .admin-login-location {
-          font-size: 0.66rem;
+          display: none;
         }
 
         .admin-login-panel {
+          min-height: calc(100dvh - 56px);
           padding: 46px 28px 52px;
         }
 
@@ -847,19 +1974,1001 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           grid-row: auto;
         }
       }
+
+      /* ------------------------------------------------------------------
+         Área autenticada: uma estação de trabalho mais silenciosa, com a
+         navegação separada das ações de escrita. */
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .admin-login-main {
+        min-height: calc(100dvh - 61px);
+      }
+
+      .admin-body:not([data-view='login']) .admin-login-bar,
+      .admin-body:not([data-view='login']) .admin-login-main {
+        display: none;
+      }
+
+      .admin-app {
+        display: grid;
+        min-height: 100dvh;
+        max-width: 100%;
+        grid-template-columns: 264px minmax(0, 1fr);
+        background: var(--sand);
+        overflow-x: clip;
+      }
+
+      .admin-sidebar {
+        position: sticky;
+        z-index: 4;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100dvh;
+        padding: 28px 16px 20px;
+        background:
+          linear-gradient(180deg, rgba(221, 186, 103, 0.12), transparent 24%),
+          var(--black);
+        color: var(--white);
+      }
+
+      .admin-sidebar-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+
+      .admin-sidebar-brand {
+        display: grid;
+        gap: 10px;
+        min-width: 0;
+        padding: 0 4px;
+        color: var(--white);
+        text-decoration: none;
+      }
+
+      .admin-sidebar-brand img {
+        width: 146px;
+        height: 42px;
+        object-fit: contain;
+        object-position: left center;
+      }
+
+      .admin-brand-mark {
+        display: none;
+      }
+
+      .admin-sidebar-collapse {
+        position: absolute;
+        top: 50%;
+        right: -14px;
+        z-index: 5;
+        display: grid;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        border: 1px solid rgba(221, 186, 103, 0.55);
+        border-radius: 50%;
+        background: var(--black);
+        color: var(--gold);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+        cursor: pointer;
+        transform: translateY(-50%);
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+      }
+
+      .admin-sidebar-collapse:hover,
+      .admin-sidebar-collapse:focus-visible {
+        border-color: var(--gold);
+        background: var(--gold);
+        color: var(--black);
+        transform: translateY(-50%);
+      }
+
+      .admin-sidebar-collapse svg {
+        width: 16px;
+        height: 16px;
+        margin: auto;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+        transition: transform 0.2s ease;
+      }
+
+      .admin-sidebar-brand span {
+        color: rgba(255, 255, 255, 0.54);
+        font-family: var(--display);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.17em;
+        text-transform: uppercase;
+      }
+
+      .admin-sidebar-nav {
+        display: grid;
+        gap: 4px;
+      }
+
+      .admin-nav-link,
+      .admin-profile-summary,
+      .admin-top-profile,
+      .admin-logout,
+      .admin-text-action,
+      .admin-shortcut,
+      .admin-next-card button,
+      .admin-mobile-nav button {
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .admin-nav-link {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        width: 100%;
+        min-height: 48px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.88rem;
+        font-weight: 700;
+        text-align: left;
+        transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+      }
+
+      .admin-nav-link svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.7;
+      }
+
+      .admin-nav-link:hover,
+      .admin-nav-link[aria-current='page'] {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--white);
+      }
+
+      .admin-nav-link[aria-current='page'] {
+        box-shadow: inset 3px 0 var(--gold);
+      }
+
+      .admin-sidebar-footer {
+        display: grid;
+        gap: 16px;
+        margin-top: auto;
+        padding: 20px 12px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.13);
+      }
+
+      .admin-profile-summary {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--white);
+        text-align: left;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-profile-summary:hover,
+      .admin-profile-summary:focus-visible {
+        background: rgba(221, 186, 103, 0.18);
+        box-shadow: inset 0 0 0 1px rgba(221, 186, 103, 0.55);
+        color: var(--white);
+      }
+
+      .admin-profile-summary:hover small,
+      .admin-profile-summary:focus-visible small {
+        color: var(--gold);
+      }
+
+      .admin-profile-summary > span:last-child {
+        display: grid;
+        gap: 1px;
+        min-width: 0;
+      }
+
+      .admin-profile-summary strong {
+        overflow: hidden;
+        font-size: 0.83rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .admin-profile-summary small {
+        color: rgba(255, 255, 255, 0.52);
+        font-size: 0.7rem;
+      }
+
+      .admin-avatar,
+      .admin-profile-avatar {
+        position: relative;
+        display: grid;
+        flex: 0 0 auto;
+        width: 38px;
+        height: 38px;
+        overflow: hidden;
+        border: 1px solid rgba(221, 186, 103, 0.7);
+        border-radius: 50%;
+        background: var(--gold);
+        color: var(--ink);
+        place-items: center;
+      }
+
+      .admin-avatar img,
+      .admin-profile-avatar img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .admin-avatar > span,
+      .admin-profile-avatar > span {
+        font-family: var(--display);
+        font-size: 0.75rem;
+        font-weight: 800;
+      }
+
+      .admin-site-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--gold);
+        font-family: var(--display);
+        font-size: 0.73rem;
+        font-weight: 700;
+        letter-spacing: 0.09em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .admin-site-link:hover {
+        color: var(--gold-hover);
+      }
+
+      .admin-stage {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: clip;
+      }
+
+      .admin-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-width: 0;
+        max-width: 100%;
+        min-height: 68px;
+        padding: 0 clamp(16px, 4vw, 56px);
+        border-bottom: 1px solid var(--line);
+        background: rgba(246, 244, 241, 0.88);
+        backdrop-filter: blur(12px);
+      }
+
+      .admin-mobile-brand {
+        display: none;
+      }
+
+      .admin-context {
+        display: flex;
+        gap: 9px;
+        min-width: 0;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 0.78rem;
+      }
+
+      .admin-context span,
+      .admin-context strong {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .admin-context strong {
+        color: var(--ink);
+        font-weight: 800;
+      }
+
+      .admin-topbar-actions {
+        display: flex;
+        flex: 0 1 auto;
+        align-items: center;
+        gap: 18px;
+        min-width: 0;
+      }
+
+      .admin-top-site {
+        color: var(--muted);
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .admin-top-site:hover {
+        color: var(--gold-ink);
+      }
+
+      .admin-top-profile {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        max-width: 100%;
+        padding: 4px 12px 4px 4px;
+        border-radius: 999px;
+        background: transparent;
+        color: var(--ink);
+        font-size: 0.78rem;
+        font-weight: 700;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-top-profile:hover,
+      .admin-top-profile:focus-visible {
+        background: rgba(221, 186, 103, 0.32);
+        box-shadow: inset 0 0 0 1px rgba(157, 116, 40, 0.45);
+        color: var(--ink);
+      }
+
+      .admin-top-profile > span:last-child {
+        display: block;
+        min-width: 0;
+        max-width: min(22ch, 28vw);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .admin-avatar-small {
+        width: 30px;
+        height: 30px;
+      }
+
+      .admin-avatar-small > span {
+        font-size: 0.64rem;
+      }
+
+      .admin-logout {
+        padding: 0;
+        background: transparent;
+        color: var(--gold-ink);
+        font-family: var(--display);
+        font-size: 0.73rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .admin-logout:hover {
+        color: var(--ink);
+      }
+
+      .admin-main {
+        width: min(1120px, calc(100% - 64px));
+        min-width: 0;
+        max-width: 100%;
+        margin-inline: auto;
+        padding: clamp(40px, 5vw, 76px) 0 72px;
+      }
+
+      .admin-main > section {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .admin-kicker {
+        margin-bottom: 10px;
+        color: var(--gold-script);
+        font-family: var(--display);
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .admin-list-head h1,
+      .admin-profile-head h1,
+      .admin-editor-titlebar h1 {
+        margin: 0;
+        max-width: 100%;
+        color: var(--ink);
+        font-family: var(--display);
+        font-size: clamp(2.1rem, 4.6vw, 3.65rem);
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 0.95;
+        overflow-wrap: anywhere;
+        text-wrap: balance;
+        text-transform: uppercase;
+      }
+
+      .admin-list-head p:not(.admin-kicker),
+      .admin-profile-head p:not(.admin-kicker),
+      .admin-editor-copy p:not(.admin-kicker) {
+        max-width: min(54ch, 100%);
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        overflow-wrap: break-word;
+      }
+
+      .admin-hint {
+        margin: 0 0 24px;
+        max-width: 100%;
+        border-color: rgba(157, 116, 40, 0.5);
+        background: rgba(221, 186, 103, 0.16);
+        overflow-wrap: anywhere;
+      }
+
+      .admin-profile-card h2 {
+        color: var(--ink);
+        font-family: var(--display);
+        font-size: clamp(1.55rem, 2.8vw, 2.25rem);
+        font-weight: 800;
+        letter-spacing: -0.045em;
+        line-height: 0.98;
+        overflow-wrap: break-word;
+        text-transform: uppercase;
+      }
+
+      .admin-list-head,
+      .admin-profile-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        min-width: 0;
+        max-width: 100%;
+        margin-bottom: 32px;
+      }
+
+      .admin-editor-titlebar {
+        min-width: 0;
+        max-width: 100%;
+        margin-bottom: 28px;
+      }
+
+      .admin-editor-copy {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .admin-editor-title-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 20px;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .admin-editor-title-row h1 {
+        flex: 1 1 12rem;
+        min-width: 0;
+      }
+
+      .admin-list-head h1,
+      .admin-profile-head h1,
+      .admin-editor-titlebar h1 {
+        font-size: clamp(2.3rem, 4.4vw, 3.65rem);
+      }
+
+      .admin-list-head .button {
+        flex: 0 0 auto;
+      }
+
+      .admin-posts {
+        gap: 10px;
+      }
+
+      .admin-post {
+        padding: 20px 22px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.8);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-post:hover {
+        border-color: rgba(157, 116, 40, 0.42);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      }
+
+      .admin-post-title {
+        font-size: 1.16rem;
+      }
+
+      .admin-post-actions .button {
+        min-height: 2.6rem;
+        padding: 0.4rem 1rem;
+        font-size: 0.74rem;
+      }
+
+      .admin-profile-head {
+        align-items: start;
+      }
+
+      .admin-profile-head > div > p:not(.admin-kicker) {
+        max-width: 60ch;
+      }
+
+      .admin-account-label {
+        flex: 0 0 auto;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: rgba(221, 186, 103, 0.32);
+        color: var(--gold-ink);
+        font-size: 0.71rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .admin-profile-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.75fr);
+        gap: 14px;
+        align-items: start;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .admin-profile-card {
+        padding: clamp(22px, 3vw, 32px);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .admin-profile-card .admin-field:last-of-type {
+        margin-bottom: 0;
+      }
+
+      .admin-profile-card .button {
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .admin-profile-card-head {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .admin-profile-card-head h2 {
+        font-size: 1.45rem;
+      }
+
+      .admin-profile-card-head p {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 0.77rem;
+        line-height: 1.45;
+      }
+
+      .admin-profile-avatar {
+        width: 58px;
+        height: 58px;
+      }
+
+      .admin-profile-avatar > span {
+        font-size: 1rem;
+      }
+
+      .admin-profile-card-icon {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: var(--black);
+        color: var(--gold);
+        font-family: var(--display);
+        font-size: 1.4rem;
+        place-items: center;
+      }
+
+      .admin-avatar-upload {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 44px;
+        margin: 0 0 20px;
+        padding: 9px 13px;
+        border: 1px dashed rgba(157, 116, 40, 0.48);
+        border-radius: 10px;
+        color: var(--gold-ink);
+        cursor: pointer;
+      }
+
+      .admin-avatar-upload:hover {
+        background: rgba(221, 186, 103, 0.18);
+      }
+
+      .admin-avatar-upload span {
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      .admin-avatar-upload small {
+        color: var(--muted);
+        font-size: 0.68rem;
+      }
+
+      .admin-form-message {
+        min-height: 1.35em;
+        margin: 14px 0 0;
+        color: var(--gold-ink);
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .admin-form-message[data-error] {
+        color: #b42318;
+      }
+
+      .admin-editor-head {
+        gap: 0;
+        margin-bottom: 22px;
+      }
+
+      .admin-editor-row {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      .admin-editor-row .admin-field:last-child {
+        flex: 0 1 180px;
+      }
+
+      .admin-cover {
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.78);
+      }
+
+      .admin-panel {
+        padding: 26px clamp(18px, 3vw, 32px) 30px;
+        border-radius: 0 16px 16px 16px;
+        background: rgba(255, 255, 255, 0.88);
+      }
+
+      .admin-field input,
+      .admin-field select,
+      .admin-field textarea {
+        border-color: rgba(17, 18, 20, 0.16);
+        border-radius: 9px;
+      }
+
+      .admin-field input:focus,
+      .admin-field select:focus,
+      .admin-field textarea:focus {
+        border-color: var(--gold-script);
+        box-shadow: 0 0 0 3px rgba(221, 186, 103, 0.2);
+        outline: 0;
+      }
+
+      .admin-app[data-collapsed] {
+        grid-template-columns: 84px minmax(0, 1fr);
+      }
+
+      .admin-app[data-collapsed] .admin-sidebar {
+        align-items: center;
+        padding-inline: 10px;
+      }
+
+      .admin-app[data-collapsed] .admin-sidebar-head {
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .admin-app[data-collapsed] .admin-sidebar-brand {
+        justify-items: center;
+        padding: 0;
+      }
+
+      .admin-app[data-collapsed] .admin-brand-full,
+      .admin-app[data-collapsed] .admin-sidebar-brand span,
+      .admin-app[data-collapsed] .admin-nav-link span,
+      .admin-app[data-collapsed] .admin-profile-summary > span:last-child,
+      .admin-app[data-collapsed] .admin-site-link-label {
+        display: none;
+      }
+
+      .admin-app[data-collapsed] .admin-brand-mark {
+        display: block;
+        width: 36px;
+        height: 48px;
+      }
+
+      .admin-app[data-collapsed] .admin-sidebar-collapse svg {
+        transform: rotate(180deg);
+      }
+
+      .admin-app[data-collapsed] .admin-nav-link {
+        justify-content: center;
+        width: 48px;
+        padding-inline: 0;
+      }
+
+      .admin-app[data-collapsed] .admin-sidebar-footer {
+        justify-items: center;
+        width: 100%;
+        padding-inline: 0;
+      }
+
+      .admin-app[data-collapsed] .admin-profile-summary {
+        justify-content: center;
+        width: 48px;
+        padding-inline: 0;
+      }
+
+      .admin-app[data-collapsed] .admin-site-link {
+        justify-content: center;
+        width: 48px;
+      }
+
+      .admin-mobile-nav {
+        display: none;
+      }
+
+      @media (max-width: 900px) {
+        .admin-app {
+          display: block;
+          padding-bottom: 76px;
+        }
+
+        .admin-sidebar {
+          display: none;
+        }
+
+        .admin-topbar {
+          position: sticky;
+          z-index: 10;
+          top: 0;
+          min-height: 60px;
+          padding: 0 20px;
+        }
+
+        .admin-mobile-brand {
+          display: block;
+          width: 30px;
+          height: 34px;
+          overflow: hidden;
+        }
+
+        .admin-mobile-brand img {
+          width: 30px;
+          height: 34px;
+          object-fit: contain;
+        }
+
+        .admin-context {
+          flex: 1;
+          margin-left: 12px;
+        }
+
+        .admin-topbar-actions {
+          gap: 10px;
+        }
+
+        .admin-top-profile > span:last-child,
+        .admin-top-site {
+          display: none;
+        }
+
+        .admin-logout {
+          display: block;
+          font-size: 0.68rem;
+        }
+
+        .admin-main {
+          width: min(100% - 40px, 760px);
+          padding: 34px 0 46px;
+        }
+
+        .admin-profile-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .admin-mobile-nav {
+          position: fixed;
+          z-index: 20;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          min-height: 72px;
+          max-width: 100%;
+          padding: 6px max(12px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          background: var(--black);
+          box-shadow: 0 -8px 26px rgba(0, 0, 0, 0.18);
+        }
+
+        .admin-mobile-nav button {
+          display: grid;
+          gap: 3px;
+          padding: 4px;
+          background: transparent;
+          color: rgba(255, 255, 255, 0.6);
+          font-family: var(--sans);
+          font-size: 0.61rem;
+          font-weight: 700;
+          place-items: center;
+        }
+
+        .admin-mobile-nav svg {
+          width: 19px;
+          height: 19px;
+          fill: none;
+          stroke: currentColor;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+          stroke-width: 1.8;
+        }
+
+        .admin-mobile-nav button[aria-current='page'] {
+          color: var(--gold);
+        }
+
+        .admin-mobile-nav .admin-mobile-create {
+          color: var(--gold);
+        }
+
+        .admin-mobile-create svg {
+          display: grid;
+          width: 34px;
+          height: 34px;
+          margin-top: -20px;
+          padding: 7px;
+          border-radius: 50%;
+          background: var(--gold);
+          color: var(--black);
+          box-shadow: 0 5px 12px rgba(0, 0, 0, 0.24);
+        }
+
+        .admin-mobile-create span {
+          margin-top: -1px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .admin-login-main {
+          min-height: calc(100dvh - 56px);
+        }
+
+        .admin-main {
+          width: calc(100% - 32px);
+          padding-top: 28px;
+        }
+
+        .admin-list-head h1,
+        .admin-profile-head h1,
+        .admin-editor-titlebar h1,
+        .admin-login-card h1 {
+          font-size: clamp(1.9rem, 8.6vw, 2.55rem);
+          overflow-wrap: break-word;
+        }
+
+        .admin-list-head .button {
+          width: 100%;
+        }
+
+        .admin-list-head,
+        .admin-profile-head {
+          display: block;
+          margin-bottom: 24px;
+        }
+
+        .admin-editor-titlebar {
+          margin-bottom: 24px;
+        }
+
+        .admin-editor-title-row {
+          align-items: stretch;
+        }
+
+        .admin-editor-back {
+          order: -1;
+          flex: 1 1 100%;
+          width: 100%;
+        }
+
+        .admin-list-head .button {
+          margin-top: 20px;
+        }
+
+        .admin-account-label {
+          display: inline-block;
+          margin-top: 16px;
+        }
+
+        .admin-editor-actions .button {
+          flex-basis: 100%;
+          width: 100%;
+        }
+
+        .admin-editor-row {
+          padding: 16px;
+        }
+
+        .admin-editor-row .admin-field:last-child {
+          flex-basis: 100%;
+        }
+
+        .admin-cover-stage img {
+          height: 180px;
+        }
+
+        .admin-tabs {
+          gap: 2px;
+          overflow-x: auto;
+          padding-bottom: 1px;
+        }
+
+        .admin-tab {
+          flex: 0 0 auto;
+          padding: 10px 12px;
+          font-size: 0.76rem;
+        }
+
+        .admin-tab .admin-tab-badge {
+          display: none;
+        }
+
+        .admin-panel {
+          padding: 22px 16px 26px;
+          border-radius: 0 12px 12px 12px;
+        }
+
+        .admin-md-tools {
+          flex-wrap: wrap;
+        }
+
+        .admin-profile-card {
+          padding: 22px 18px;
+        }
+      }
     </style>
   </head>
 
   <body class="admin-body" data-view="login" data-supabase-url={supabaseUrl} data-supabase-anon={supabaseAnonKey}>
-    <header class="admin-bar">
+    <header class="admin-bar admin-login-bar">
       <div class="frame admin-bar-inner">
-        <a href={site.url || '/'}>← Site</a>
-        <span class="admin-bar-title">Painel do blog</span>
-        <button id="logout" class="button button-light" type="button" hidden>Sair</button>
+        <a href={site.url || '/'}>← Voltar ao site</a>
+        <span class="admin-bar-title">Área da equipe</span>
       </div>
     </header>
 
-    <main class="admin-main">
+    <main class="admin-login-main">
       <noscript>Este painel precisa de JavaScript para funcionar.</noscript>
 
       <section id="view-login" class="admin-login" hidden aria-labelledby="login-title">
@@ -918,22 +3027,157 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           </div>
         </div>
       </section>
+    </main>
 
-      <section id="view-list" hidden>
-        <div class="admin-list-head">
-          <h1>Publicações</h1>
-          <button id="new-post" class="button button-gold" type="button">Nova publicação</button>
+    <div id="admin-app" class="admin-app" hidden>
+      <aside class="admin-sidebar" aria-label="Navegação do painel">
+        <div class="admin-sidebar-head">
+          <a class="admin-sidebar-brand" href={site.url || '/'} aria-label={`Abrir ${site.name}`}>
+            <img class="admin-brand-full" src={site.logo.src} width={site.logo.width} height={site.logo.height} alt="" />
+            <img class="admin-brand-mark" src={site.symbol.src} width={site.symbol.width} height={site.symbol.height} alt="" />
+            <span>Área da equipe</span>
+          </a>
         </div>
-        <p class="admin-hint" id="admin-hint" hidden>
-          Sua conta ainda não está liberada como administradora do blog. Ela consegue entrar, mas não
-          consegue escrever: peça para alguém rodar o insert da tabela <code>admins</code> (supabase/schema.sql)
-          com o seu usuário.
-        </p>
-        <ul class="admin-posts" id="post-list"></ul>
-      </section>
+        <button id="sidebar-collapse" class="admin-sidebar-collapse" type="button" aria-expanded="true" aria-controls="admin-app" aria-label="Minimizar menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6.5 9 12l5.5 5.5" /></svg>
+        </button>
 
-      <section id="view-editor" hidden>
+        <nav class="admin-sidebar-nav" aria-label="Seções">
+          <button class="admin-nav-link" type="button" data-nav="list" aria-current="page" title="Publicações">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 10h14M5 16h9M5 22h14" /></svg>
+            <span>Publicações</span>
+          </button>
+          <button class="admin-nav-link" type="button" data-new-post title="Nova publicação">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+            <span>Nova publicação</span>
+          </button>
+        </nav>
+
+        <div class="admin-sidebar-footer">
+          <button id="sidebar-profile" class="admin-profile-summary" type="button" data-nav="profile" title="Editar perfil">
+            <span class="admin-avatar" aria-hidden="true">
+              <img data-user-avatar alt="" hidden />
+              <span data-user-initial>AR</span>
+            </span>
+            <span>
+              <strong data-user-name>Minha conta</strong>
+              <small>Editar perfil</small>
+            </span>
+          </button>
+          <a class="admin-site-link" href={site.url || '/'} title="Abrir site">
+            <span class="admin-site-link-label">Abrir site</span> <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </aside>
+
+      <div class="admin-stage">
+        <header class="admin-topbar">
+          <a class="admin-mobile-brand" href={site.url || '/'} aria-label={`Abrir ${site.name}`}>
+            <img src={site.symbol.src} width={site.symbol.width} height={site.symbol.height} alt="" />
+          </a>
+          <p class="admin-context" aria-live="polite">
+            <span id="admin-context-section">Blog</span><span aria-hidden="true">/</span><strong id="admin-context-page">Publicações</strong>
+          </p>
+          <div class="admin-topbar-actions">
+            <a class="admin-top-site" href={site.url || '/'}>Ver site <span aria-hidden="true">↗</span></a>
+            <button id="topbar-profile" class="admin-top-profile" type="button" data-nav="profile" aria-label="Abrir meu perfil">
+              <span class="admin-avatar admin-avatar-small" aria-hidden="true">
+                <img data-user-avatar alt="" hidden />
+                <span data-user-initial>AR</span>
+              </span>
+              <span data-user-name>Minha conta</span>
+            </button>
+            <button id="logout" class="admin-logout" type="button">Sair</button>
+          </div>
+        </header>
+
+        <main id="admin-content" class="admin-main" tabindex="-1">
+          <section id="view-list" hidden aria-labelledby="posts-title">
+            <div class="admin-list-head">
+              <div>
+                <p class="admin-kicker">Blog</p>
+                <h1 id="posts-title">Publicações</h1>
+                <p>Todos os textos da igreja, em um só lugar.</p>
+              </div>
+              <button id="new-post" class="button button-gold" type="button">Nova publicação <span aria-hidden="true">→</span></button>
+            </div>
+            <p class="admin-hint" id="admin-hint" hidden>
+              Sua conta ainda não está liberada como administradora do blog. Ela consegue entrar, mas não
+              consegue escrever: peça para alguém rodar o insert da tabela <code>admins</code> (supabase/schema.sql)
+              com o seu usuário.
+            </p>
+            <ul class="admin-posts" id="post-list"></ul>
+          </section>
+
+          <section id="view-profile" class="admin-profile" hidden aria-labelledby="profile-title">
+            <div class="admin-profile-head">
+              <div>
+                <p class="admin-kicker">Minha conta</p>
+                <h1 id="profile-title">Seu perfil</h1>
+                <p>Estas informações identificam você no painel. A alteração de e-mail pode exigir confirmação na sua caixa de entrada.</p>
+              </div>
+              <span class="admin-account-label">Conta da equipe</span>
+            </div>
+
+            <div class="admin-profile-grid">
+              <form id="profile-form" class="admin-profile-card">
+                <div class="admin-profile-card-head">
+                  <span class="admin-profile-avatar" aria-hidden="true">
+                    <img id="profile-avatar-preview" data-user-avatar alt="" hidden />
+                    <span data-user-initial>AR</span>
+                  </span>
+                  <div>
+                    <h2>Identidade</h2>
+                    <p>Escolha como você aparece dentro do painel.</p>
+                  </div>
+                </div>
+                <label class="admin-avatar-upload" for="profile-avatar-input">
+                  <span>Alterar foto</span>
+                  <small>JPG, PNG ou WebP</small>
+                </label>
+                <input id="profile-avatar-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+                <label class="admin-field">Nome
+                  <input id="profile-name" type="text" autocomplete="name" maxlength="90" placeholder="Como devemos chamar você?" />
+                </label>
+                <label class="admin-field">E-mail de acesso
+                  <input id="profile-email" type="email" autocomplete="email" inputmode="email" required />
+                </label>
+                <p id="profile-message" class="admin-form-message" role="status" aria-live="polite"></p>
+                <button class="button button-dark" type="submit">Salvar dados</button>
+              </form>
+
+              <form id="profile-password-form" class="admin-profile-card admin-password-card">
+                <div class="admin-profile-card-head">
+                  <span class="admin-profile-card-icon" aria-hidden="true">⌁</span>
+                  <div>
+                    <h2>Segurança</h2>
+                    <p>Defina uma senha nova para seu próximo acesso.</p>
+                  </div>
+                </div>
+                <label class="admin-field">Nova senha
+                  <input id="profile-password" type="password" autocomplete="new-password" minlength="6" required />
+                </label>
+                <label class="admin-field">Confirmar nova senha
+                  <input id="profile-password-confirmation" type="password" autocomplete="new-password" minlength="6" required />
+                </label>
+                <p id="profile-password-message" class="admin-form-message" role="status" aria-live="polite"></p>
+                <button class="button button-outline" type="submit">Atualizar senha</button>
+              </form>
+            </div>
+          </section>
+
+          <section id="view-editor" hidden aria-labelledby="editor-title">
         <div class="admin-editor-head">
+          <div class="admin-editor-titlebar">
+            <div class="admin-editor-copy">
+              <p class="admin-kicker">Blog <span aria-hidden="true">/</span> Editor</p>
+              <div class="admin-editor-title-row">
+                <h1 id="editor-title">Escreva uma publicação.</h1>
+                <button id="btn-back" class="button button-outline admin-editor-back" type="button">← Publicações</button>
+              </div>
+              <p>Comece pelo texto original; as versões em outros idiomas são preparadas ao publicar.</p>
+            </div>
+          </div>
           <div class="admin-editor-row">
             <label class="admin-field">Idioma do texto original
               <select id="source-lang">
@@ -942,28 +3186,132 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
                 <option value="en">English</option>
               </select>
             </label>
-            <label class="admin-field">Endereço do post (slug, igual nos três idiomas)
-              <input id="slug" type="text" spellcheck="false" placeholder="ex.: culto-de-pascoa" />
+            <label class="admin-field">Endereço da publicação
+              <span id="slug-help" class="admin-field-hint">Gerado automaticamente a partir do título original.</span>
+              <input id="slug" type="text" spellcheck="false" placeholder="Será gerado ao escrever o título" readonly aria-describedby="slug-help" tabindex="-1" />
             </label>
-            <p class="admin-field" style="margin-bottom: 4px">
+            <p class="admin-field" style="margin-bottom: 4px; flex: 0 1 180px">
               Situação
               <span><span class="admin-badge" id="post-status" data-status="draft">Rascunho</span> <span id="published-at"></span></span>
             </p>
-          </div>
-          <div class="admin-editor-actions">
-            <button id="btn-back" class="button button-light" type="button">Voltar</button>
-            <button id="btn-save-draft" class="button button-outline" type="button">Salvar rascunho</button>
-            <button id="btn-publish" class="button button-dark" type="button">Publicar e traduzir</button>
-            <button id="btn-unpublish" class="button button-light" type="button" hidden>Despublicar</button>
-            <button id="btn-retranslate" class="button button-outline" type="button" hidden>Atualizar traduções</button>
+            <div class="admin-editor-details">
+              <div class="admin-field" id="category-combo">
+                <span id="category-label">Categoria</span>
+                <button id="category-button" class="admin-combo-button" type="button" aria-expanded="false" aria-controls="category-menu" aria-labelledby="category-label category-current">
+                  <span id="category-current">Sem categoria</span>
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9" /></svg>
+                </button>
+                <div id="category-menu" class="admin-combo-menu" hidden>
+                  <ul id="category-options" class="admin-combo-list"></ul>
+                  <button id="category-add" class="admin-combo-add" type="button">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                    Nova categoria
+                  </button>
+                </div>
+              </div>
+              <label class="admin-field">Autor (opcional)
+                <input id="author" type="text" maxlength="90" autocomplete="off" placeholder="Quem assina o texto" />
+              </label>
+              <div class="admin-field admin-feature-field">
+                <span id="featured-label">Destaque</span>
+                <button id="featured-toggle" class="admin-feature-toggle" type="button" aria-pressed="false" aria-labelledby="featured-label featured-title">
+                  <span class="admin-feature-switch" aria-hidden="true"><span></span></span>
+                  <span>
+                    <strong id="featured-title">Mostrar na página inicial</strong>
+                    <small id="featured-description">A home exibe até três destaques, pelos mais recentes.</small>
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="admin-cover">
-          <img id="cover-preview" alt="" hidden />
-          <div class="admin-cover-buttons">
-            <label class="button button-light">Enviar capa<input id="cover-input" type="file" accept="image/*" hidden /></label>
-            <button id="cover-remove" class="button button-outline" type="button" hidden>Remover capa</button>
+          <div class="admin-cover-header">
+            <div class="admin-cover-title-wrap">
+              <span class="admin-cover-badge-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </span>
+              <div>
+                <h3 class="admin-cover-heading">Imagem da capa</h3>
+                <p class="admin-cover-desc">Destaque visual nos cards, redes sociais e topo do artigo</p>
+              </div>
+            </div>
+            <div class="admin-cover-tools">
+              <label class="button button-light admin-cover-btn" id="cover-btn-select" title="Escolher capa">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+                <span id="cover-select-label">Selecionar capa</span>
+                <input id="cover-input" type="file" accept="image/*" hidden />
+              </label>
+              <button id="cover-remove" class="button button-outline admin-cover-remove-btn" type="button" hidden title="Remover imagem da capa">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Remover capa
+              </button>
+            </div>
+          </div>
+
+          <div class="admin-cover-stage" id="cover-stage" data-empty="true" role="button" tabindex="0" aria-label="Área da imagem da capa">
+            <img id="cover-preview" alt="Prévia da imagem da capa" hidden />
+
+            <!-- Hover Overlay moderno quando há imagem -->
+            <div class="admin-cover-overlay" id="cover-overlay">
+              <div class="admin-cover-overlay-top">
+                <span class="admin-cover-tag">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"></path></svg>
+                  Capa ativa
+                </span>
+              </div>
+              <div class="admin-cover-overlay-actions">
+                <label class="admin-overlay-action-btn admin-overlay-change" title="Substituir por outra imagem">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Substituir foto
+                  <input id="cover-overlay-input" type="file" accept="image/*" hidden />
+                </label>
+                <button id="cover-overlay-remove" class="admin-overlay-action-btn admin-overlay-delete" type="button" title="Excluir capa">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  Remover
+                </button>
+              </div>
+              <span class="admin-cover-overlay-foot">Arraste uma nova imagem para substituir instantaneamente</span>
+            </div>
+
+            <!-- Prompt de estado vazio com ícone e dicas -->
+            <div class="admin-cover-empty" id="cover-empty-prompt">
+              <div class="admin-cover-empty-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+              </div>
+              <div class="admin-cover-empty-text">
+                <span class="admin-cover-empty-primary">Arraste uma foto aqui ou <strong>clique para escolher</strong></span>
+                <span class="admin-cover-empty-secondary">Recomendado: 1200×630 (16:9) • JPG, PNG ou WebP</span>
+              </div>
+            </div>
+
+            <!-- Card de carregamento com porcentagem e barra -->
+            <div class="admin-cover-loading" id="cover-loading" hidden aria-live="polite">
+              <div class="admin-upload-card">
+                <div class="admin-upload-card-top">
+                  <div class="admin-upload-spinner" id="cover-loading-icon">
+                    <svg class="admin-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+                  </div>
+                  <div class="admin-upload-info">
+                    <span class="admin-upload-title" id="cover-loading-title">Enviando capa...</span>
+                    <span class="admin-upload-sub" id="cover-loading-sub">Preparando arquivo</span>
+                  </div>
+                  <div class="admin-upload-percent" id="cover-loading-percent">0%</div>
+                </div>
+                <div class="admin-upload-progress-track">
+                  <div class="admin-upload-progress-bar" id="cover-progress-bar" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -978,16 +3326,88 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
             <label class="admin-field">Título
               <input data-field="title" type="text" />
             </label>
-            <label class="admin-field">Resumo (aparece na listagem e nas redes)
+            <label class="admin-field">Descrição da postagem (aparece na listagem, abaixo do título e nas redes)
               <textarea data-field="excerpt" rows="2"></textarea>
             </label>
-            <div class="admin-field">
-              <div class="admin-md-tools">
-                <label class="button button-light">Inserir imagem<input data-image-input type="file" accept="image/*" hidden /></label>
-                <button class="button button-light" type="button" data-preview-toggle>Prévia</button>
+            <label class="admin-field">Passagem bíblica base (opcional)
+              <input data-field="bible_reference" type="text" maxlength="120" placeholder="Ex.: João 3:16" />
+            </label>
+            <div class="admin-cover admin-composer-card">
+              <div class="admin-cover-header">
+                <div class="admin-cover-title-wrap">
+                  <span class="admin-cover-badge-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                      <line x1="12" y1="8" x2="16" y2="8"></line>
+                      <line x1="14" y1="6" x2="14" y2="10"></line>
+                    </svg>
+                  </span>
+                  <div>
+                    <h3 class="admin-cover-heading">Inserir imagem e texto da publicação</h3>
+                    <p class="admin-cover-desc">Adicione fotos ilustrativas e escreva o conteúdo do artigo</p>
+                  </div>
+                </div>
+                <div class="admin-cover-tools">
+                  <label class="button button-light admin-cover-btn" title="Inserir fotos no artigo">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <span>Inserir imagem</span>
+                    <input data-image-input type="file" accept="image/*" multiple hidden />
+                  </label>
+                </div>
               </div>
-              <textarea data-field="body" rows="16" placeholder="Escreva em Markdown: ## títulos, **negrito**, ![imagem](endereço), [link](endereço)…"></textarea>
-              <div class="admin-md-preview" data-preview hidden></div>
+
+              <!-- Dropzone para inserir fotos com mesmo visual moderno da capa -->
+              <div class="admin-insert-dropzone" data-insert-dropzone role="button" tabindex="0" aria-label="Inserir imagens no artigo">
+                <div class="admin-cover-empty" style="position: static; padding: 18px;">
+                  <div class="admin-cover-empty-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                  </div>
+                  <div class="admin-cover-empty-text">
+                    <span class="admin-cover-empty-primary">Arraste fotos aqui ou <strong>clique para inserir</strong></span>
+                    <span class="admin-cover-empty-secondary">JPG, PNG ou WebP • As imagens serão adicionadas na posição do cursor</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="admin-composer-intro">
+                <strong>Texto da publicação</strong>
+                <p>Este é o corpo do artigo, o texto que aparece na página da publicação. Escreva aqui; as fotos que você inserir entram neste mesmo espaço.</p>
+              </div>
+
+              <div class="admin-composer-stage" data-composer-stage>
+                <div class="admin-md-bar" role="toolbar" aria-label="Formatação do texto">
+                  <button type="button" data-md="h2">H2</button>
+                  <button type="button" data-md="h3">H3</button>
+                  <button type="button" data-md="bold">B</button>
+                  <button type="button" data-md="list">Lista</button>
+                  <button type="button" data-md="link">Link</button>
+                </div>
+                <div class="admin-composer-surface" data-composer-surface contenteditable="true" role="textbox" aria-multiline="true" aria-label="Texto da publicação" spellcheck="true"></div>
+                <div class="admin-composer-loading" data-composer-loading hidden aria-live="polite">
+                  <div class="admin-upload-card">
+                    <div class="admin-upload-card-top">
+                      <div class="admin-upload-spinner" data-composer-loading-spinner>
+                        <svg class="admin-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="32" stroke-linecap="round"></circle></svg>
+                      </div>
+                      <div class="admin-upload-info">
+                        <span class="admin-upload-title" data-composer-loading-title>Inserindo imagem no texto...</span>
+                        <span class="admin-upload-sub" data-composer-loading-sub>Preparando arquivo</span>
+                      </div>
+                      <div class="admin-upload-percent" data-composer-loading-percent>0%</div>
+                    </div>
+                    <div class="admin-upload-progress-track">
+                      <div class="admin-upload-progress-bar" data-composer-progress-bar style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <textarea data-field="body" hidden></textarea>
             </div>
             <label class="admin-field">Título para buscadores (opcional)
               <input data-field="seo_title" type="text" />
@@ -1001,17 +3421,52 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
             </div>
           </div>
         ))}
-      </section>
-    </main>
+
+        <div class="admin-editor-actions">
+          <button id="btn-save-draft" class="button button-light" type="button">Salvar rascunho</button>
+          <button id="btn-publish" class="button button-dark" type="button">Publicar e traduzir</button>
+          <button id="btn-unpublish" class="button button-outline" type="button" hidden>Despublicar</button>
+          <button id="btn-retranslate" class="button button-outline" type="button" hidden>Atualizar traduções</button>
+        </div>
+          </section>
+        </main>
+      </div>
+
+      <nav class="admin-mobile-nav" aria-label="Navegação principal">
+        <button type="button" data-nav="list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 10h14M5 16h9M5 22h14" /></svg><span>Posts</span></button>
+        <button class="admin-mobile-create" type="button" data-new-post aria-label="Nova publicação"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><span>Novo</span></button>
+        <button type="button" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 21c.8-4 3.3-6 7.5-6s6.7 2 7.5 6" /></svg><span>Perfil</span></button>
+      </nav>
+    </div>
+
+    <dialog id="category-dialog" class="admin-dialog" aria-labelledby="category-dialog-title">
+      <form id="category-form" novalidate>
+        <h2 id="category-dialog-title">Nova categoria</h2>
+        <p class="admin-dialog-lead">O nome aparece no site em cada idioma. Se deixar espanhol ou inglês em branco, usamos o nome em português.</p>
+        <label class="admin-field">Nome em português
+          <input id="category-name-pt" type="text" maxlength="40" autocomplete="off" />
+        </label>
+        <label class="admin-field">Nome em espanhol (opcional)
+          <input id="category-name-es" type="text" maxlength="40" autocomplete="off" />
+        </label>
+        <label class="admin-field">Nome em inglês (opcional)
+          <input id="category-name-en" type="text" maxlength="40" autocomplete="off" />
+        </label>
+        <p id="category-dialog-message" class="admin-form-message" role="alert"></p>
+        <div class="admin-dialog-actions">
+          <button id="category-cancel" class="button button-outline" type="button">Cancelar</button>
+          <button id="category-save" class="button button-dark" type="submit">Salvar categoria</button>
+        </div>
+      </form>
+    </dialog>
 
     <p class="admin-status" id="status" role="status" aria-live="polite"></p>
 
     <script>
       import { createClient } from '@supabase/supabase-js';
-      import { marked } from 'marked';
 
       const $ = (selector) => document.querySelector(selector);
-      const FIELDS = ['title', 'excerpt', 'body', 'seo_title', 'seo_description'];
+      const FIELDS = ['title', 'excerpt', 'bible_reference', 'body', 'seo_title', 'seo_description'];
       const LANGS = ['pt', 'es', 'en'];
 
       const supabaseUrl = document.body.dataset.supabaseUrl;
@@ -1019,8 +3474,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       const configured = Boolean(supabaseUrl && supabaseAnon);
       const supabase = configured ? createClient(supabaseUrl, supabaseAnon) : null;
 
-      let editing = null; // { id, slug, slugDirty, sourceLang, status, publishedAt, coverImage, translations: {pt,es,en} }
+      let editing = null; // { id, slug, sourceLang, status, publishedAt, coverImage, translations: {pt,es,en} }
       let statusTimer = null;
+      let currentUser = null;
+
+      const VIEW_DETAILS = {
+        list: ['Blog', 'Publicações'],
+        editor: ['Blog', 'Editor'],
+        profile: ['Conta', 'Meu perfil'],
+      };
 
       const slugify = (text) =>
         text
@@ -1031,6 +3493,24 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           .replace(/^-+|-+$/g, '')
           .slice(0, 80);
 
+      function setGeneratedSlug(title) {
+        const slug = slugify(title);
+        editing.slug = slug;
+        $('#slug').value = slug;
+      }
+
+      async function resolveAvailableSlug(base) {
+        if (!base || editing?.id) return base;
+        const { data, error } = await supabase.from('posts').select('slug').like('slug', `${base}%`);
+        if (error) return base;
+
+        const used = new Set((data ?? []).map((post) => post.slug));
+        if (!used.has(base)) return base;
+        let suffix = 2;
+        while (used.has(`${base}-${suffix}`)) suffix += 1;
+        return `${base}-${suffix}`;
+      }
+
       function status(message) {
         const element = $('#status');
         element.textContent = message;
@@ -1040,10 +3520,84 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       }
 
       function showView(name) {
-        for (const view of ['login', 'list', 'editor']) $(`#view-${view}`).hidden = view !== name;
-        $('#logout').hidden = name === 'login';
+        const isLogin = name === 'login';
+        for (const view of ['login', 'list', 'editor', 'profile']) {
+          const element = $(`#view-${view}`);
+          if (element) element.hidden = view !== name;
+        }
+        $('#admin-app').hidden = isLogin;
+        if (!isLogin) {
+          const [section, page] = VIEW_DETAILS[name] ?? VIEW_DETAILS.list;
+          $('#admin-context-section').textContent = section;
+          $('#admin-context-page').textContent = page;
+          const activeNav = name === 'editor' ? 'list' : name;
+          for (const navButton of document.querySelectorAll('[data-nav]')) {
+            if (navButton.dataset.nav === activeNav) navButton.setAttribute('aria-current', 'page');
+            else navButton.removeAttribute('aria-current');
+          }
+        }
         document.body.dataset.view = name;
         window.scrollTo({ top: 0 });
+      }
+
+      function accountName(user = currentUser) {
+        const metadata = user?.user_metadata ?? {};
+        return metadata.full_name?.trim() || metadata.name?.trim() || user?.email?.split('@')[0] || 'Equipe';
+      }
+
+      function accountInitials(name) {
+        return name
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part[0])
+          .join('')
+          .toUpperCase() || 'AR';
+      }
+
+      function updateUserPresentation(user = currentUser) {
+        if (!user) return;
+        const name = accountName(user);
+        const firstName = name.split(/\s+/)[0] || 'equipe';
+        const initials = accountInitials(name);
+        const avatarUrl = user.user_metadata?.avatar_url;
+
+        document.querySelectorAll('[data-user-name]').forEach((element) => {
+          element.textContent = name;
+        });
+        document.querySelectorAll('[data-user-first-name]').forEach((element) => {
+          element.textContent = firstName;
+        });
+        document.querySelectorAll('[data-user-initial]').forEach((element) => {
+          element.textContent = initials;
+          element.hidden = Boolean(avatarUrl);
+        });
+        document.querySelectorAll('[data-user-avatar]').forEach((image) => {
+          if (avatarUrl) {
+            image.src = avatarUrl;
+            image.hidden = false;
+          } else {
+            image.removeAttribute('src');
+            image.hidden = true;
+          }
+        });
+      }
+
+      async function hydrateUser() {
+        if (!supabase) return null;
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data?.user) return null;
+        currentUser = data.user;
+        $('#profile-name').value = accountName(currentUser);
+        $('#profile-email').value = currentUser.email ?? '';
+        updateUserPresentation();
+        return currentUser;
+      }
+
+      function setProfileMessage(selector, message, error = false) {
+        const element = $(selector);
+        element.textContent = message;
+        element.toggleAttribute('data-error', error);
       }
 
       function activeLang() {
@@ -1150,6 +3704,18 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         setLoginMode();
       });
 
+      const sidebarCollapse = $('#sidebar-collapse');
+      const setSidebarCollapsed = (collapsed) => {
+        $('#admin-app').toggleAttribute('data-collapsed', collapsed);
+        sidebarCollapse.setAttribute('aria-expanded', String(!collapsed));
+        sidebarCollapse.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Minimizar menu');
+        localStorage.setItem('admin-sidebar-collapsed', collapsed ? '1' : '0');
+      };
+      setSidebarCollapsed(localStorage.getItem('admin-sidebar-collapsed') === '1');
+      sidebarCollapse.addEventListener('click', () => {
+        setSidebarCollapsed(!$('#admin-app').hasAttribute('data-collapsed'));
+      });
+
       $('#login-form').addEventListener('submit', async (event) => {
         event.preventDefault();
         if (!configured) return;
@@ -1173,13 +3739,331 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       $('#logout').addEventListener('click', async () => {
         await supabase?.auth.signOut();
         editing = null;
+        currentUser = null;
         showView('login');
+      });
+
+      // --------------------------------------------------- Navegação e perfil
+
+      async function openProfile() {
+        await hydrateUser();
+        setProfileMessage('#profile-message', '');
+        setProfileMessage('#profile-password-message', '');
+        showView('profile');
+      }
+
+      for (const button of document.querySelectorAll('[data-nav]')) {
+        button.addEventListener('click', async () => {
+          const destination = button.dataset.nav;
+          if (destination === 'list') await enterList();
+          if (destination === 'profile') await openProfile();
+        });
+      }
+
+      $('#profile-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!currentUser || !supabase) return;
+
+        const name = $('#profile-name').value.trim();
+        const email = $('#profile-email').value.trim();
+        if (!name) {
+          setProfileMessage('#profile-message', 'Informe o nome que deve aparecer no painel.', true);
+          $('#profile-name').focus();
+          return;
+        }
+        if (!email || !$('#profile-email').checkValidity()) {
+          setProfileMessage('#profile-message', 'Informe um e-mail válido.', true);
+          $('#profile-email').focus();
+          return;
+        }
+
+        const button = event.target.querySelector('button[type="submit"]');
+        const emailChanged = email !== currentUser.email;
+        button.disabled = true;
+        setProfileMessage('#profile-message', 'Salvando seus dados…');
+        const { data, error } = await supabase.auth.updateUser({
+          ...(emailChanged ? { email } : {}),
+          data: { ...(currentUser.user_metadata ?? {}), full_name: name },
+        });
+        button.disabled = false;
+        if (error) {
+          setProfileMessage('#profile-message', 'Não foi possível salvar os dados. Tente novamente.', true);
+          return;
+        }
+        currentUser = data.user ?? currentUser;
+        updateUserPresentation();
+        setProfileMessage(
+          '#profile-message',
+          emailChanged
+            ? 'Dados salvos. Confirme o novo e-mail pelo link enviado para sua caixa de entrada.'
+            : 'Dados atualizados com sucesso.',
+        );
+      });
+
+      $('#profile-password-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!supabase) return;
+        const password = $('#profile-password').value;
+        const confirmation = $('#profile-password-confirmation').value;
+        if (password !== confirmation) {
+          setProfileMessage('#profile-password-message', 'As senhas precisam ser iguais.', true);
+          $('#profile-password-confirmation').focus();
+          return;
+        }
+
+        const button = event.target.querySelector('button[type="submit"]');
+        button.disabled = true;
+        setProfileMessage('#profile-password-message', 'Atualizando senha…');
+        const { error } = await supabase.auth.updateUser({ password });
+        button.disabled = false;
+        if (error) {
+          setProfileMessage('#profile-password-message', 'Não foi possível atualizar a senha. Tente novamente.', true);
+          return;
+        }
+        event.target.reset();
+        setProfileMessage('#profile-password-message', 'Senha atualizada. Use-a no seu próximo acesso.');
+      });
+
+      $('#profile-avatar-input').addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file || !currentUser || !supabase) return;
+        if (!file.type.startsWith('image/')) {
+          setProfileMessage('#profile-message', 'Escolha uma imagem em JPG, PNG ou WebP.', true);
+          return;
+        }
+
+        const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+        const path = `avatars/${currentUser.id}/${Date.now()}.${extension}`;
+        setProfileMessage('#profile-message', 'Enviando sua nova foto…');
+        const { error: uploadError } = await supabase.storage.from('blog').upload(path, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+        if (uploadError) {
+          setProfileMessage('#profile-message', 'Não foi possível enviar a foto. Tente novamente.', true);
+          return;
+        }
+
+        const { data: publicUrl } = supabase.storage.from('blog').getPublicUrl(path);
+        const { data, error } = await supabase.auth.updateUser({
+          data: { ...(currentUser.user_metadata ?? {}), avatar_url: publicUrl.publicUrl },
+        });
+        if (error) {
+          setProfileMessage('#profile-message', 'A imagem foi enviada, mas não pôde ser vinculada ao seu perfil.', true);
+          return;
+        }
+        currentUser = data.user ?? currentUser;
+        updateUserPresentation();
+        setProfileMessage('#profile-message', 'Foto de perfil atualizada.');
+      });
+
+      // ----------------------------------------------------------- Categorias
+
+      // { slug, name_pt, name_es, name_en }. O slug nunca muda e é o que fica em posts.category;
+      // renomear só troca os nomes mostrados. Apagar solta os posts da categoria (FK set null).
+      let categories = [];
+      let dialogCategory = null; // categoria aberta no diálogo; null quando é uma nova
+
+      const ICON_EDIT =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+      const ICON_TRASH =
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+
+      const categoryDialog = $('#category-dialog');
+
+      const sortCategories = () => categories.sort((a, b) => a.name_pt.localeCompare(b.name_pt, 'pt-BR'));
+      const categoryDisplayName = (slug) => categories.find((category) => category.slug === slug)?.name_pt ?? slug;
+
+      function setCategoryMenu(open) {
+        $('#category-menu').hidden = !open;
+        $('#category-button').setAttribute('aria-expanded', String(open));
+      }
+
+      function categoryIconButton(icon, label, handler, danger = false) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'admin-combo-icon';
+        if (danger) button.dataset.danger = '';
+        button.setAttribute('aria-label', label);
+        button.title = label;
+        button.innerHTML = icon;
+        button.addEventListener('click', handler);
+        return button;
+      }
+
+      function categoryRow(label, slug, actions = []) {
+        const pick = document.createElement('button');
+        pick.type = 'button';
+        pick.className = 'admin-combo-pick';
+        pick.textContent = label;
+        if ((editing?.category ?? '') === slug) pick.setAttribute('aria-current', 'true');
+        pick.addEventListener('click', () => {
+          editing.category = slug;
+          updateCategoryButton();
+          setCategoryMenu(false);
+          $('#category-button').focus();
+        });
+        const row = document.createElement('li');
+        row.className = 'admin-combo-row';
+        row.append(pick, ...actions);
+        return row;
+      }
+
+      // Atualiza o rótulo do botão e a lista aberta com a categoria do post em edição.
+      function updateCategoryButton() {
+        $('#category-current').textContent = editing?.category ? categoryDisplayName(editing.category) : 'Sem categoria';
+        const rows = [categoryRow('Sem categoria', '')];
+        for (const category of categories) {
+          rows.push(
+            categoryRow(category.name_pt, category.slug, [
+              categoryIconButton(ICON_EDIT, `Editar a categoria ${category.name_pt}`, () => openCategoryDialog(category)),
+              categoryIconButton(ICON_TRASH, `Excluir a categoria ${category.name_pt}`, () => deleteCategory(category), true),
+            ]),
+          );
+        }
+        $('#category-options').replaceChildren(...rows);
+      }
+
+      function updateFeaturedToggle() {
+        const enabled = Boolean(editing?.isFeatured);
+        $('#featured-toggle').setAttribute('aria-pressed', String(enabled));
+        $('#featured-title').textContent = enabled ? 'Exibir entre os destaques da home' : 'Mostrar na página inicial';
+      }
+
+      async function loadCategories() {
+        const { data, error } = await supabase.from('categories').select('slug,name_pt,name_es,name_en');
+        if (error) {
+          status(`Não foi possível carregar as categorias: ${error.message}`);
+          return;
+        }
+        categories = data ?? [];
+        sortCategories();
+        updateCategoryButton();
+      }
+
+      function categorySlugFor(name) {
+        const base = slugify(name) || 'categoria';
+        const used = new Set(categories.map((category) => category.slug));
+        let slug = base;
+        let suffix = 2;
+        while (used.has(slug)) slug = `${base}-${suffix++}`;
+        return slug;
+      }
+
+      function openCategoryDialog(category = null) {
+        dialogCategory = category;
+        $('#category-dialog-title').textContent = category ? 'Editar categoria' : 'Nova categoria';
+        $('#category-name-pt').value = category?.name_pt ?? '';
+        // Nome igual ao português é só o padrão de "em branco"; mostra vazio para ficar claro.
+        $('#category-name-es').value = category && category.name_es !== category.name_pt ? category.name_es : '';
+        $('#category-name-en').value = category && category.name_en !== category.name_pt ? category.name_en : '';
+        $('#category-dialog-message').textContent = '';
+        setCategoryMenu(false);
+        categoryDialog.showModal();
+        $('#category-name-pt').focus();
+      }
+
+      async function deleteCategory(category) {
+        setCategoryMenu(false);
+        const { count } = await supabase
+          .from('posts')
+          .select('id', { count: 'exact', head: true })
+          .eq('category', category.slug);
+        const effect = !count
+          ? ''
+          : count === 1
+            ? ' A publicação que usa essa categoria fica sem categoria.'
+            : ` As ${count} publicações que usam essa categoria ficam sem categoria.`;
+        if (!confirm(`Excluir a categoria “${category.name_pt}”?${effect}`)) return;
+
+        const { data, error } = await supabase.from('categories').delete().eq('slug', category.slug).select('slug');
+        if (error || !data?.length) {
+          status(`Não foi possível excluir a categoria${error ? `: ${error.message}` : '.'}`);
+          return;
+        }
+        categories = categories.filter((item) => item.slug !== category.slug);
+        if (editing?.category === category.slug) editing.category = '';
+        updateCategoryButton();
+        status('Categoria excluída.');
+      }
+
+      $('#category-button').addEventListener('click', () => setCategoryMenu($('#category-menu').hidden));
+      $('#category-add').addEventListener('click', () => openCategoryDialog());
+      $('#category-cancel').addEventListener('click', () => categoryDialog.close());
+      $('#featured-toggle').addEventListener('click', () => {
+        editing.isFeatured = !editing.isFeatured;
+        updateFeaturedToggle();
+        status(editing.isFeatured ? 'Esta publicação aparecerá entre os destaques ao ser publicada.' : 'Esta publicação saiu dos destaques da página inicial.');
+      });
+      // Clique no fundo escurecido fecha o diálogo (o formulário ocupa o resto da caixa).
+      categoryDialog.addEventListener('click', (event) => {
+        if (event.target === categoryDialog) categoryDialog.close();
+      });
+      document.addEventListener('click', (event) => {
+        if (!event.composedPath().includes($('#category-combo'))) setCategoryMenu(false);
+      });
+      $('#category-combo').addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !$('#category-menu').hidden) {
+          event.stopPropagation();
+          setCategoryMenu(false);
+          $('#category-button').focus();
+        }
+      });
+
+      $('#category-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const message = $('#category-dialog-message');
+        const namePt = $('#category-name-pt').value.trim();
+        if (!namePt) {
+          message.textContent = 'Informe o nome em português.';
+          $('#category-name-pt').focus();
+          return;
+        }
+        const duplicate = categories.some(
+          (category) => category.slug !== dialogCategory?.slug && category.name_pt.toLowerCase() === namePt.toLowerCase(),
+        );
+        if (duplicate) {
+          message.textContent = 'Já existe uma categoria com esse nome.';
+          return;
+        }
+
+        const names = {
+          name_pt: namePt,
+          name_es: $('#category-name-es').value.trim() || namePt,
+          name_en: $('#category-name-en').value.trim() || namePt,
+        };
+        const isEdit = Boolean(dialogCategory);
+        const saveButton = $('#category-save');
+        saveButton.disabled = true;
+        message.textContent = '';
+        const { data, error } = await (isEdit
+          ? supabase.from('categories').update(names).eq('slug', dialogCategory.slug).select().single()
+          : supabase.from('categories').insert({ slug: categorySlugFor(namePt), ...names }).select().single());
+        saveButton.disabled = false;
+        if (error) {
+          message.textContent = `Não foi possível salvar: ${error.message}`;
+          return;
+        }
+
+        if (isEdit) {
+          categories = categories.map((category) => (category.slug === data.slug ? data : category));
+        } else {
+          categories.push(data);
+          if (editing) editing.category = data.slug;
+        }
+        sortCategories();
+        updateCategoryButton();
+        categoryDialog.close();
+        status(isEdit ? 'Categoria atualizada.' : 'Categoria criada e escolhida para este post.');
       });
 
       // ------------------------------------------------------------- Listagem
 
       async function enterList() {
+        await hydrateUser();
         await checkAdminHint();
+        await loadCategories();
         await renderList();
         showView('list');
       }
@@ -1195,7 +4079,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         list.replaceChildren();
         const { data, error } = await supabase
           .from('posts')
-          .select('id,slug,status,source_lang,published_at,post_translations(lang,title,manually_edited)')
+          .select('id,slug,status,is_featured,source_lang,published_at,post_translations(lang,title,manually_edited)')
           .order('updated_at', { ascending: false });
         if (error) {
           status(`Não foi possível carregar os posts: ${error.message}`);
@@ -1224,6 +4108,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           const meta = document.createElement('p');
           meta.className = 'admin-post-meta';
           meta.append(badge);
+          if (post.is_featured) {
+            const featuredBadge = document.createElement('span');
+            featuredBadge.className = 'admin-badge admin-featured-badge';
+            featuredBadge.textContent = 'Destaque';
+            meta.append(featuredBadge);
+          }
           meta.append(document.createTextNode(`/${post.slug}`));
           if (post.published_at) meta.append(document.createTextNode(new Date(post.published_at).toLocaleDateString('pt-BR')));
 
@@ -1262,15 +4152,19 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       // --------------------------------------------------------------- Editor
 
-      $('#new-post').addEventListener('click', () => {
-        editing = { id: null, slug: '', slugDirty: false, sourceLang: 'pt', status: 'draft', publishedAt: null, coverImage: null, translations: { pt: null, es: null, en: null } };
+      function startNewPost() {
+        editing = { id: null, slug: '', sourceLang: 'pt', status: 'draft', publishedAt: null, coverImage: null, category: '', author: '', isFeatured: false, translations: { pt: null, es: null, en: null } };
         fillEditor();
         showView('editor');
-      });
+      }
+
+      $('#new-post').addEventListener('click', startNewPost);
+      for (const button of document.querySelectorAll('[data-new-post]')) {
+        button.addEventListener('click', startNewPost);
+      }
 
       $('#btn-back').addEventListener('click', async () => {
-        await renderList();
-        showView('list');
+        await enterList();
       });
 
       async function openEditor(id) {
@@ -1282,11 +4176,13 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         editing = {
           id: data.id,
           slug: data.slug,
-          slugDirty: true,
           sourceLang: data.source_lang,
           status: data.status,
           publishedAt: data.published_at,
           coverImage: data.cover_image,
+          category: data.category ?? '',
+          author: data.author ?? '',
+          isFeatured: Boolean(data.is_featured),
           translations: { pt: null, es: null, en: null },
         };
         for (const translation of data.post_translations ?? []) editing.translations[translation.lang] = translation;
@@ -1295,24 +4191,20 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       }
 
       function fillEditor() {
+        $('#editor-title').textContent = editing.id ? 'Ajuste sua publicação.' : 'Escreva uma publicação.';
         $('#source-lang').value = editing.sourceLang;
         $('#slug').value = editing.slug;
+        setCategoryMenu(false);
+        updateCategoryButton();
+        $('#author').value = editing.author;
+        updateFeaturedToggle();
         $('#post-status').textContent = editing.status === 'published' ? 'Publicado' : 'Rascunho';
         $('#post-status').dataset.status = editing.status;
         $('#published-at').textContent = editing.publishedAt
           ? `· ${new Date(editing.publishedAt).toLocaleDateString('pt-BR')}`
           : '';
 
-        const cover = $('#cover-preview');
-        if (editing.coverImage) {
-          cover.src = editing.coverImage;
-          cover.hidden = false;
-          $('#cover-remove').hidden = false;
-        } else {
-          cover.removeAttribute('src');
-          cover.hidden = true;
-          $('#cover-remove').hidden = true;
-        }
+        setCoverPreview(editing.coverImage);
 
         $('#btn-publish').hidden = editing.status === 'published';
         $('#btn-unpublish').hidden = editing.status !== 'published';
@@ -1347,11 +4239,290 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         }
       }
 
+      function dragHasFiles(event) {
+        return [...(event.dataTransfer?.types ?? [])].includes('Files');
+      }
+
+      function splitComposerMarkdown(markdown) {
+        const parts = [];
+        const source = markdown ?? '';
+        const pattern = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
+        let last = 0;
+        let match = pattern.exec(source);
+        while (match) {
+          if (match.index > last) parts.push({ type: 'text', text: source.slice(last, match.index) });
+          parts.push({ type: 'image', alt: match[1] || 'imagem', url: match[2] });
+          last = match.index + match[0].length;
+          match = pattern.exec(source);
+        }
+        if (last < source.length) parts.push({ type: 'text', text: source.slice(last) });
+        return parts;
+      }
+
+      function composerImage(url, alt = 'imagem') {
+        const image = document.createElement('img');
+        image.src = url;
+        image.alt = alt || 'imagem';
+        image.dataset.composerImage = 'true';
+        image.dataset.src = url;
+        image.draggable = false;
+        return image;
+      }
+
+      function composerParagraph(text) {
+        const paragraph = document.createElement('p');
+        const lines = text.split('\n');
+        lines.forEach((line, index) => {
+          if (index) paragraph.append(document.createElement('br'));
+          paragraph.append(document.createTextNode(line));
+        });
+        if (!paragraph.childNodes.length) paragraph.append(document.createElement('br'));
+        return paragraph;
+      }
+
+      function appendComposerText(surface, text) {
+        const trimmed = text.replace(/^\n+/, '').replace(/\n+$/, '');
+        if (!trimmed) return;
+        for (const paragraph of trimmed.split(/\n{2,}/)) surface.append(composerParagraph(paragraph));
+      }
+
+      function renderComposer(panel) {
+        const surface = panel.querySelector('[data-composer-surface]');
+        const source = panel.querySelector('[data-field="body"]');
+        if (!surface || !source) return;
+        surface.replaceChildren();
+        const parts = splitComposerMarkdown(source.value);
+        if (!parts.length) {
+          surface.append(composerParagraph(''));
+        } else {
+          for (const part of parts) {
+            if (part.type === 'image') surface.append(composerImage(part.url, part.alt));
+            else appendComposerText(surface, part.text);
+          }
+          if (!surface.childNodes.length) surface.append(composerParagraph(''));
+        }
+        updateComposerEmpty(panel);
+      }
+
+      function serializeComposer(surface) {
+        const chunks = [];
+        let buffer = [];
+        const flush = () => {
+          const text = buffer.join('').replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+          buffer = [];
+          if (text) chunks.push(text);
+        };
+        const walk = (node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            buffer.push(node.textContent);
+            return;
+          }
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          if (node.dataset?.composerImage) {
+            flush();
+            const url = node.dataset.src || node.getAttribute('src');
+            if (url) chunks.push(`![${node.alt || 'imagem'}](${url})`);
+            return;
+          }
+          if (node.nodeName === 'BR') {
+            buffer.push('\n');
+            return;
+          }
+          const block = /^(P|DIV|H1|H2|H3|LI|BLOCKQUOTE)$/.test(node.nodeName);
+          if (block && buffer.length && !buffer.at(-1).endsWith('\n')) buffer.push('\n');
+          for (const child of node.childNodes) walk(child);
+          if (block) buffer.push('\n');
+        };
+        for (const child of surface.childNodes) walk(child);
+        flush();
+        return chunks.join('\n\n').trim();
+      }
+
+      function syncComposer(panel) {
+        const surface = panel.querySelector('[data-composer-surface]');
+        const source = panel.querySelector('[data-field="body"]');
+        if (!surface || !source) return;
+        source.value = serializeComposer(surface);
+      }
+
+      function updateComposerEmpty(panel) {
+        const stage = panel.querySelector('[data-composer-stage]');
+        const surface = panel.querySelector('[data-composer-surface]');
+        if (!stage || !surface) return;
+        const empty = !serializeComposer(surface);
+        if (empty) stage.dataset.empty = 'true';
+        else delete stage.dataset.empty;
+      }
+
+      function insertComposerMarkup(panel, kind) {
+        const surface = panel.querySelector('[data-composer-surface]');
+        surface.focus();
+        const selection = document.getSelection();
+        if (!selection.rangeCount || !surface.contains(selection.anchorNode)) {
+          const end = document.createRange();
+          end.selectNodeContents(surface);
+          end.collapse(false);
+          selection.removeAllRanges();
+          selection.addRange(end);
+        }
+        const range = selection.getRangeAt(0);
+        const selected = range.toString();
+        let text = '';
+        if (kind === 'h2') text = `\n## ${selected || 'Título'}\n`;
+        else if (kind === 'h3') text = `\n### ${selected || 'Subtítulo'}\n`;
+        else if (kind === 'bold') text = `**${selected || 'negrito'}**`;
+        else if (kind === 'list') text = `\n- ${selected || 'item da lista'}\n`;
+        else if (kind === 'link') {
+          const url = window.prompt('Endereço do link', 'https://');
+          if (!url) return;
+          text = `[${selected || 'texto do link'}](${url.trim()})`;
+        }
+        range.deleteContents();
+        const node = document.createTextNode(text);
+        range.insertNode(node);
+        const caret = document.createRange();
+        caret.setStartAfter(node);
+        caret.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(caret);
+        syncComposer(panel);
+        updateComposerEmpty(panel);
+      }
+
+      function insertComposerImage(panel, url) {
+        const surface = panel.querySelector('[data-composer-surface]');
+        const image = composerImage(url);
+        const after = composerParagraph('');
+        const selection = document.getSelection();
+        const inside = selection?.rangeCount && surface.contains(selection.anchorNode);
+        if (inside) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          const fragment = document.createDocumentFragment();
+          fragment.append(image, after);
+          range.insertNode(fragment);
+          const caret = document.createRange();
+          caret.setStart(after, 0);
+          caret.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(caret);
+        } else {
+          if (!serializeComposer(surface)) surface.replaceChildren();
+          surface.append(image, after);
+        }
+        syncComposer(panel);
+        updateComposerEmpty(panel);
+      }
+
+      function trackUploadProgress(file, onProgress) {
+        let current = 0;
+        let finished = false;
+        const sizeKb = Math.max(50, file?.size ? file.size / 1024 : 100);
+        const duration = Math.min(2600, Math.max(750, sizeKb * 1.6));
+        const startTime = Date.now();
+
+        const timer = setInterval(() => {
+          if (finished) return;
+          const elapsed = Date.now() - startTime;
+          const factor = 1 - Math.exp(-elapsed / (duration * 0.42));
+          const target = Math.min(92, Math.round(factor * 92));
+          if (target > current) {
+            current = target;
+            onProgress(current);
+          }
+        }, 32);
+
+        return {
+          finish: async () => {
+            finished = true;
+            clearInterval(timer);
+            const startPct = Math.max(current, 93);
+            for (let p = startPct; p <= 100; p += 2) {
+              onProgress(p);
+              await new Promise((r) => setTimeout(r, 16));
+            }
+            onProgress(100);
+            await new Promise((r) => setTimeout(r, 220));
+          },
+          cancel: () => {
+            finished = true;
+            clearInterval(timer);
+          },
+        };
+      }
+
+      async function addComposerImages(panel, fileList) {
+        const files = [...fileList].filter((file) => file.type.startsWith('image/'));
+        if (!files.length) {
+          status('Solte uma foto para inserir no texto.');
+          return;
+        }
+        if (!editing?.id && !editing?.slug) {
+          status('Escreva o título antes de enviar imagens; ele gera o endereço da publicação.');
+          return;
+        }
+        const stage = panel.querySelector('[data-composer-stage]');
+        const loading = panel.querySelector('[data-composer-loading]');
+        const percentEl = loading.querySelector('[data-composer-loading-percent]');
+        const barEl = loading.querySelector('[data-composer-progress-bar]');
+        const titleEl = loading.querySelector('[data-composer-loading-title]');
+        const subEl = loading.querySelector('[data-composer-loading-sub]');
+        const iconEl = loading.querySelector('[data-composer-loading-spinner]');
+
+        stage.dataset.loading = 'true';
+        stage.setAttribute('aria-busy', 'true');
+        loading.hidden = false;
+        let inserted = 0;
+        try {
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const prefix = files.length > 1 ? `(${i + 1}/${files.length}) ` : '';
+            percentEl.textContent = '0%';
+            barEl.style.width = '0%';
+            titleEl.textContent = `${prefix}Inserindo imagem no texto...`;
+            subEl.textContent = file.name || 'Preparando imagem...';
+            iconEl.innerHTML = '<svg class="admin-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="32" stroke-linecap="round"></circle></svg>';
+
+            const tracker = trackUploadProgress(file, (pct) => {
+              percentEl.textContent = `${pct}%`;
+              barEl.style.width = `${pct}%`;
+              if (pct < 50) {
+                subEl.textContent = `${file.name || 'Imagem'} (${pct}%)`;
+              } else if (pct < 90) {
+                subEl.textContent = `Enviando... ${pct}%`;
+              } else {
+                subEl.textContent = 'Inserindo no artigo...';
+              }
+            });
+
+            const url = await uploadImage(file);
+            if (!url) {
+              tracker.cancel();
+              continue;
+            }
+            await tracker.finish();
+            insertComposerImage(panel, url);
+            inserted += 1;
+          }
+          if (inserted) {
+            iconEl.innerHTML = '<svg class="admin-success-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>';
+            titleEl.textContent = inserted === 1 ? 'Imagem inserida!' : 'Imagens inseridas!';
+            subEl.textContent = '100% concluído';
+            await new Promise((r) => setTimeout(r, 260));
+          }
+        } finally {
+          delete stage.dataset.loading;
+          stage.removeAttribute('aria-busy');
+          loading.hidden = true;
+        }
+        if (inserted) status(inserted === 1 ? 'Imagem inserida no texto. Salve para guardar.' : `${inserted} imagens inseridas no texto. Salve para guardar.`);
+      }
+
       function fillPanel(lang) {
         const panel = $(`#panel-${lang}`);
         const translation = editing.translations[lang] ?? {};
         for (const field of FIELDS) panel.querySelector(`[data-field="${field}"]`).value = translation[field] ?? '';
-        panel.querySelector('[data-preview]').hidden = true;
+        renderComposer(panel);
         panel.querySelector('.admin-panel-hint').textContent =
           lang === editing.sourceLang
             ? 'Este é o texto original. Ao publicar, as outras duas línguas são traduzidas na hora.'
@@ -1375,76 +4546,243 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         status('Idioma original alterado. Publique de novo para retraduzir as outras línguas.');
       });
 
-      $('#slug').addEventListener('input', () => {
-        editing.slugDirty = true;
-      });
-
-      // Título no painel do original sugere o slug enquanto ninguém o editar à mão.
+      // Em um post novo, o endereço acompanha o título do texto original. Em um
+      // post existente ele permanece estável, para preservar os links já divulgados.
       for (const panel of document.querySelectorAll('.admin-panel')) {
         panel.querySelector('[data-field="title"]').addEventListener('input', (event) => {
-          if (panel.dataset.panel === editing.sourceLang && !editing.slugDirty) {
-            $('#slug').value = slugify(event.target.value);
+          if (!editing.id && panel.dataset.panel === editing.sourceLang) {
+            setGeneratedSlug(event.target.value);
           }
         });
 
-        panel.querySelector('[data-preview-toggle]').addEventListener('click', () => {
-          const preview = panel.querySelector('[data-preview]');
-          preview.hidden = !preview.hidden;
-          if (!preview.hidden) {
-            preview.innerHTML = marked.parse(panel.querySelector('[data-field="body"]').value.replace(/</g, '&lt;'), {
-              async: false,
-            });
-          }
+        const stage = panel.querySelector('[data-composer-stage]');
+        const surface = panel.querySelector('[data-composer-surface]');
+        const source = panel.querySelector('[data-field="body"]');
+        const formatBar = panel.querySelector('.admin-md-bar');
+        formatBar.addEventListener('mousedown', (event) => {
+          if (event.target.closest('[data-md]')) event.preventDefault();
         });
+        formatBar.addEventListener('click', (event) => {
+          const button = event.target.closest('[data-md]');
+          if (!button) return;
+          insertComposerMarkup(panel, button.dataset.md);
+        });
+        surface.addEventListener('input', () => {
+          syncComposer(panel);
+          updateComposerEmpty(panel);
+        });
+        source.addEventListener('input', () => renderComposer(panel));
+        surface.addEventListener('paste', (event) => {
+          const files = [...(event.clipboardData?.files ?? [])].filter((file) => file.type.startsWith('image/'));
+          if (!files.length) return;
+          event.preventDefault();
+          addComposerImages(panel, files);
+        });
+        stage.addEventListener('dragenter', (event) => {
+          if (!dragHasFiles(event)) return;
+          event.preventDefault();
+          stage.dataset.drag = 'true';
+        });
+        stage.addEventListener('dragover', (event) => {
+          if (!dragHasFiles(event)) return;
+          event.preventDefault();
+        }, true);
+        stage.addEventListener('dragleave', (event) => {
+          if (stage.contains(event.relatedTarget)) return;
+          delete stage.dataset.drag;
+        });
+        stage.addEventListener('drop', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          delete stage.dataset.drag;
+          addComposerImages(panel, event.dataTransfer?.files ?? []);
+        }, true);
 
-        panel.querySelector('[data-image-input]').addEventListener('change', async (event) => {
-          const file = event.target.files?.[0];
+        const dropzone = panel.querySelector('[data-insert-dropzone]');
+        if (dropzone) {
+          dropzone.addEventListener('click', (event) => {
+            if (!event.target.closest('button, input, label')) {
+              panel.querySelector('[data-image-input]')?.click();
+            }
+          });
+          dropzone.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              panel.querySelector('[data-image-input]')?.click();
+            }
+          });
+          dropzone.addEventListener('dragenter', (event) => {
+            if (!dragHasFiles(event)) return;
+            event.preventDefault();
+            dropzone.dataset.drag = 'true';
+          });
+          dropzone.addEventListener('dragover', (event) => {
+            if (!dragHasFiles(event)) return;
+            event.preventDefault();
+          }, true);
+          dropzone.addEventListener('dragleave', (event) => {
+            if (dropzone.contains(event.relatedTarget)) return;
+            delete dropzone.dataset.drag;
+          });
+          dropzone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            delete dropzone.dataset.drag;
+            addComposerImages(panel, event.dataTransfer?.files ?? []);
+          }, true);
+        }
+
+        panel.querySelector('[data-image-input]').addEventListener('change', (event) => {
+          const files = [...(event.target.files ?? [])];
           event.target.value = '';
-          if (!file) return;
-          status('Enviando imagem…');
-          const url = await uploadImage(file);
-          if (!url) return;
-          const textarea = panel.querySelector('[data-field="body"]');
-          const markdown = `![imagem](${url})`;
-          const start = textarea.selectionStart ?? textarea.value.length;
-          const end = textarea.selectionEnd ?? start;
-          textarea.setRangeText(markdown, start, end, 'end');
-          textarea.focus();
-          status('Imagem inserida no texto. Salve para guardar.');
+          if (files.length) addComposerImages(panel, files);
         });
+        renderComposer(panel);
 
         panel.querySelector('[data-save-lang]').addEventListener('click', () => saveLang(panel.dataset.panel));
       }
 
       // ---------------------------------------------------------------- Capa
 
-      $('#cover-input').addEventListener('change', async (event) => {
+      function setCoverPreview(url) {
+        const cover = $('#cover-preview');
+        const stage = $('#cover-stage');
+        const selectLabel = $('#cover-select-label');
+        if (url) {
+          cover.src = url;
+          cover.hidden = false;
+          $('#cover-remove').hidden = false;
+          if (selectLabel) selectLabel.textContent = 'Alterar capa';
+          delete stage.dataset.empty;
+        } else {
+          cover.removeAttribute('src');
+          cover.hidden = true;
+          $('#cover-remove').hidden = true;
+          if (selectLabel) selectLabel.textContent = 'Selecionar capa';
+          stage.dataset.empty = 'true';
+        }
+      }
+
+      async function handleCoverFile(file) {
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          status('Escolha um arquivo de imagem (JPG, PNG, WebP).');
+          return;
+        }
+        if (!editing?.id && !editing?.slug) {
+          status('Escreva o título antes de enviar imagens; ele gera o endereço da publicação.');
+          return;
+        }
+
+        const loading = $('#cover-loading');
+        const percentEl = $('#cover-loading-percent');
+        const barEl = $('#cover-progress-bar');
+        const titleEl = $('#cover-loading-title');
+        const subEl = $('#cover-loading-sub');
+        const iconEl = $('#cover-loading-icon');
+
+        loading.hidden = false;
+        percentEl.textContent = '0%';
+        barEl.style.width = '0%';
+        titleEl.textContent = 'Enviando imagem da capa...';
+        subEl.textContent = file.name || 'Otimizando imagem...';
+        iconEl.innerHTML = '<svg class="admin-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="32" stroke-linecap="round"></circle></svg>';
+
+        const tracker = trackUploadProgress(file, (pct) => {
+          percentEl.textContent = `${pct}%`;
+          barEl.style.width = `${pct}%`;
+          if (pct < 45) {
+            subEl.textContent = 'Carregando arquivo...';
+          } else if (pct < 90) {
+            subEl.textContent = 'Transmitindo para o servidor...';
+          } else {
+            subEl.textContent = 'Finalizando upload...';
+          }
+        });
+
+        try {
+          const url = await uploadImage(file);
+          if (!url) {
+            tracker.cancel();
+            return;
+          }
+          await tracker.finish();
+          titleEl.textContent = 'Capa enviada com sucesso!';
+          subEl.textContent = '100% concluído';
+          iconEl.innerHTML = '<svg class="admin-success-icon" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>';
+          await new Promise((r) => setTimeout(r, 260));
+
+          editing.coverImage = url;
+          setCoverPreview(url);
+          status('Capa enviada. Salve o post para guardar.');
+        } catch (err) {
+          tracker.cancel();
+          status('Não foi possível enviar a imagem da capa.');
+        } finally {
+          loading.hidden = true;
+        }
+      }
+
+      const coverStage = $('#cover-stage');
+      coverStage?.addEventListener('click', (event) => {
+        if (coverStage.dataset.empty && !event.target.closest('button, input, label')) {
+          $('#cover-input').click();
+        }
+      });
+      coverStage?.addEventListener('keydown', (event) => {
+        if (coverStage.dataset.empty && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          $('#cover-input').click();
+        }
+      });
+      coverStage?.addEventListener('dragenter', (event) => {
+        if (!dragHasFiles(event)) return;
+        event.preventDefault();
+        coverStage.dataset.drag = 'true';
+      });
+      coverStage?.addEventListener('dragover', (event) => {
+        if (!dragHasFiles(event)) return;
+        event.preventDefault();
+      }, true);
+      coverStage?.addEventListener('dragleave', (event) => {
+        if (coverStage.contains(event.relatedTarget)) return;
+        delete coverStage.dataset.drag;
+      });
+      coverStage?.addEventListener('drop', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        delete coverStage.dataset.drag;
+        const files = [...(event.dataTransfer?.files ?? [])].filter((f) => f.type.startsWith('image/'));
+        if (files.length) handleCoverFile(files[0]);
+      }, true);
+
+      $('#cover-input')?.addEventListener('change', (event) => {
         const file = event.target.files?.[0];
         event.target.value = '';
-        if (!file) return;
-        status('Enviando capa…');
-        const url = await uploadImage(file);
-        if (!url) return;
-        editing.coverImage = url;
-        const cover = $('#cover-preview');
-        cover.src = url;
-        cover.hidden = false;
-        $('#cover-remove').hidden = false;
-        status('Capa enviada. Salve o post para guardar.');
+        if (file) handleCoverFile(file);
       });
 
-      $('#cover-remove').addEventListener('click', () => {
+      $('#cover-overlay-input')?.addEventListener('change', (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (file) handleCoverFile(file);
+      });
+
+      $('#cover-remove')?.addEventListener('click', () => {
         editing.coverImage = null;
-        $('#cover-preview').removeAttribute('src');
-        $('#cover-preview').hidden = true;
-        $('#cover-remove').hidden = true;
+        setCoverPreview(null);
+      });
+
+      $('#cover-overlay-remove')?.addEventListener('click', () => {
+        editing.coverImage = null;
+        setCoverPreview(null);
       });
 
       // -------------------------------------------------------------- Imagens
 
       async function uploadImage(file) {
-        if (!editing?.id && !$('#slug').value.trim()) {
-          status('Preencha o título (e o slug) antes de enviar imagens.');
+        if (!editing?.id && !editing?.slug) {
+          status('Escreva o título antes de enviar imagens; ele gera o endereço da publicação.');
           return null;
         }
         const extension = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -1462,21 +4800,27 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       function readPanel(lang) {
         const panel = $(`#panel-${lang}`);
+        syncComposer(panel);
         const values = {};
         for (const field of FIELDS) values[field] = panel.querySelector(`[data-field="${field}"]`).value.trim();
         return values;
       }
 
       async function savePost({ publish = false, unpublish = false } = {}) {
-        const slug = $('#slug').value.trim();
         const original = readPanel(editing.sourceLang);
         if (!original.title) {
           status('O título no idioma original é obrigatório.');
           showPanel(editing.sourceLang);
           return null;
         }
+        let slug = editing.slug || slugify(original.title);
+        if (!editing.id) {
+          slug = await resolveAvailableSlug(slug);
+          editing.slug = slug;
+          $('#slug').value = slug;
+        }
         if (!slug) {
-          status('O endereço do post (slug) é obrigatório.');
+          status('Use um título com letras ou números para gerar o endereço da publicação.');
           return null;
         }
 
@@ -1488,6 +4832,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           slug,
           source_lang: editing.sourceLang,
           cover_image: editing.coverImage || null,
+          category: editing.category || null,
+          author: $('#author').value.trim() || null,
+          is_featured: editing.isFeatured,
           status: editing.status,
           published_at: editing.publishedAt || null,
         };
@@ -1503,6 +4850,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         editing.slug = data.slug;
         editing.status = data.status;
         editing.publishedAt = data.published_at;
+        editing.category = data.category ?? '';
+        editing.author = data.author ?? '';
+        editing.isFeatured = Boolean(data.is_featured);
 
         const translationRow = {
           post_id: editing.id,
@@ -1579,6 +4929,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         editing.status = data.status;
         editing.publishedAt = data.published_at;
         editing.coverImage = data.cover_image;
+        editing.category = data.category ?? '';
+        editing.author = data.author ?? '';
+        editing.isFeatured = Boolean(data.is_featured);
         editing.translations = { pt: null, es: null, en: null };
         for (const translation of data.post_translations ?? []) editing.translations[translation.lang] = translation;
         fillEditor();
@@ -1647,6 +5000,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
             setLoginMode('recovery');
           }
           if (event === 'SIGNED_OUT') {
+            currentUser = null;
             setLoginMode();
             showView('login');
           }

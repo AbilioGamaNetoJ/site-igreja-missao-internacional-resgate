@@ -21,6 +21,30 @@ create table if not exists public.admins (
   created_at timestamptz not null default now()
 );
 
+-- Categorias dos posts, cadastradas pelo painel. O slug é a chave estável (o nome
+-- pode mudar sem soltar os posts) e cada idioma tem o seu nome.
+create table if not exists public.categories (
+  slug text primary key,
+  name_pt text not null,
+  name_es text not null,
+  name_en text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Sugestões iniciais, só quando a tabela está vazia: quem apagar uma categoria
+-- não a vê voltar ao rodar este arquivo de novo.
+insert into public.categories (slug, name_pt, name_es, name_en)
+select * from (values
+  ('devocional', 'Devocional', 'Devocional', 'Devotional'),
+  ('ensino', 'Ensino', 'Enseñanza', 'Teaching'),
+  ('avisos', 'Avisos', 'Avisos', 'Announcements'),
+  ('eventos', 'Eventos', 'Eventos', 'Events'),
+  ('testemunhos', 'Testemunhos', 'Testimonios', 'Testimonies'),
+  ('acoes', 'Ações sociais', 'Acciones solidarias', 'Outreach')
+) as seed (slug, name_pt, name_es, name_en)
+where not exists (select 1 from public.categories);
+
 -- Um post por assunto. O slug é único e igual nos três idiomas
 -- (o endereço do post não muda quando a tradução muda).
 create table if not exists public.posts (
@@ -31,6 +55,13 @@ create table if not exists public.posts (
   source_lang text not null check (source_lang in ('pt', 'es', 'en')),
   -- URL pública da capa no bucket blog (vazia quando não há capa).
   cover_image text,
+  -- Categoria do post: o slug de public.categories (vazia quando não há). A chave
+  -- estrangeira é criada mais abaixo, junto das colunas acrescentadas depois.
+  category text,
+  -- Quem assina o texto: nome livre, igual nos três idiomas.
+  author text,
+  -- Marca as publicações escolhidas para a vitrine da página inicial.
+  is_featured boolean not null default false,
   published_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -45,6 +76,8 @@ create table if not exists public.post_translations (
   lang text not null check (lang in ('pt', 'es', 'en')),
   title text not null,
   excerpt text,
+  -- Passagem bíblica base (ex.: João 3:16), escrita e traduzida em cada idioma.
+  bible_reference text,
   body text,
   seo_title text,
   seo_description text,
@@ -55,7 +88,28 @@ create table if not exists public.post_translations (
   unique (post_id, lang)
 );
 
+-- Colunas acrescentadas depois da primeira versão. Para quem já tinha as tabelas,
+-- basta rodar este arquivo de novo: o `if not exists` deixa o que já existe como está.
+alter table public.posts add column if not exists category text;
+alter table public.posts add column if not exists author text;
+alter table public.posts add column if not exists is_featured boolean not null default false;
+alter table public.post_translations add column if not exists bible_reference text;
+
+-- Apagar uma categoria solta os posts dela (ficam sem categoria); renomear o slug acompanha.
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'posts_category_fkey') then
+    alter table public.posts
+      add constraint posts_category_fkey foreign key (category)
+      references public.categories (slug) on update cascade on delete set null;
+  end if;
+end
+$$;
+
 create index if not exists posts_status_published_at_idx on public.posts (status, published_at desc);
+create index if not exists posts_featured_published_at_idx
+  on public.posts (published_at desc)
+  where status = 'published' and is_featured = true;
 create index if not exists post_translations_post_id_idx on public.post_translations (post_id);
 
 -- updated_at se atualiza sozinho em qualquer UPDATE.
@@ -68,6 +122,10 @@ begin
   return new;
 end;
 $$;
+
+drop trigger if exists categories_touch_updated_at on public.categories;
+create trigger categories_touch_updated_at before update on public.categories
+  for each row execute function public.touch_updated_at();
 
 drop trigger if exists posts_touch_updated_at on public.posts;
 create trigger posts_touch_updated_at before update on public.posts
@@ -82,6 +140,7 @@ create trigger post_translations_touch_updated_at before update on public.post_t
 -- ---------------------------------------------------------------------------
 
 alter table public.admins enable row level security;
+alter table public.categories enable row level security;
 alter table public.posts enable row level security;
 alter table public.post_translations enable row level security;
 
@@ -104,6 +163,31 @@ create policy "admins leem a propria linha"
   on public.admins for select
   to authenticated
   using (auth.uid() = user_id);
+
+-- categories: qualquer pessoa lê (o site mostra o nome); só admin cria, edita e apaga.
+drop policy if exists "categorias leitura publica" on public.categories;
+create policy "categorias leitura publica"
+  on public.categories for select
+  using (true);
+
+drop policy if exists "admins escrevem categorias" on public.categories;
+create policy "admins escrevem categorias"
+  on public.categories for insert
+  to authenticated
+  with check (public.is_admin());
+
+drop policy if exists "admins atualizam categorias" on public.categories;
+create policy "admins atualizam categorias"
+  on public.categories for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "admins apagam categorias" on public.categories;
+create policy "admins apagam categorias"
+  on public.categories for delete
+  to authenticated
+  using (public.is_admin());
 
 -- posts: anônimo (o site) lê só o publicado; admin lê e escreve tudo.
 drop policy if exists "posts leitura publica" on public.posts;

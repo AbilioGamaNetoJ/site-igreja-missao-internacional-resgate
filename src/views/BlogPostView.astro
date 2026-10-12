@@ -7,7 +7,7 @@ import { content } from '../i18n/content.js';
 import { defaultLang, languages, blogPath, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { site } from '../data/site.js';
-import { translationsByLang } from '../lib/supabase.js';
+import { translationsByLang, categoryName } from '../lib/supabase.js';
 import { renderMarkdown } from '../lib/markdown.js';
 
 const { lang, post } = Astro.props;
@@ -18,6 +18,7 @@ const cover = hasCover ? post.cover_image : photos.worship;
 const coverAlt = hasCover ? translation.title : t.photos.worship;
 const base = Astro.site;
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
+const categoryLabel = categoryName(post, lang);
 
 // Mesma lógica de canonical e hreflang do BaseLayout, mas com os endereços do post:
 // o slug é único e igual nos três idiomas, então só o prefixo muda.
@@ -34,7 +35,10 @@ const jsonLd = JSON.stringify({
   inLanguage: languages[lang].htmlLang,
   datePublished: post.published_at,
   dateModified: translation.updated_at || post.published_at,
-  author: { '@type': 'Organization', name: site.name, url: base ? new URL(pathFor('home', lang), base).href : undefined },
+  articleSection: categoryLabel,
+  author: post.author
+    ? { '@type': 'Person', name: post.author }
+    : { '@type': 'Organization', name: site.name, url: base ? new URL(pathFor('home', lang), base).href : undefined },
   publisher: {
     '@type': 'Organization',
     name: site.name,
@@ -63,7 +67,9 @@ const jsonLd = JSON.stringify({
     <img class="post-hero-image" src={cover} alt={coverAlt} fetchpriority="high" />
     <div class="post-hero-content frame">
       <p class="post-date">
+        {categoryLabel && <span class="tag">{categoryLabel}</span>}
         <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
+        {post.author && <span class="author">{t.blog.by} {post.author}</span>}
       </p>
       <h1>{translation.title}</h1>
     </div>
@@ -71,6 +77,9 @@ const jsonLd = JSON.stringify({
 
   <article class="section">
     <div class="post frame" data-reveal>
+      {translation.bible_reference && (
+        <p class="scripture"><span>{t.blog.passage}</span>{translation.bible_reference}</p>
+      )}
       {translation.excerpt && <p class="lead">{translation.excerpt}</p>}
       <div class="article-body" set:html={renderMarkdown(translation.body)} />
       <a class="arrow-link back" href={blogPath(lang)}><Icon name="arrow-right" size={16} />{t.blog.back}</a>
@@ -120,6 +129,11 @@ const jsonLd = JSON.stringify({
   }
 
   .post-date {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px 14px;
     color: var(--gold);
     font-family: var(--display);
     font-size: 0.85rem;
@@ -128,8 +142,44 @@ const jsonLd = JSON.stringify({
     text-transform: uppercase;
   }
 
+  .tag {
+    padding: 4px 12px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.78rem;
+  }
+
+  .author {
+    color: rgba(255, 255, 255, 0.88);
+    letter-spacing: 0.05em;
+    text-transform: none;
+  }
+
   .post {
     max-width: 760px;
+  }
+
+  .scripture {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    margin-bottom: 28px;
+    padding: 14px 20px;
+    border-left: 3px solid var(--gold);
+    border-radius: 0 14px 14px 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .scripture span {
+    color: var(--gold-ink);
+    font-size: 0.76rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .lead {

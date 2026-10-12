@@ -4,8 +4,9 @@ import PageHero from '../components/PageHero.astro';
 import IntroStatement from '../components/IntroStatement.astro';
 import FeatureBlock from '../components/FeatureBlock.astro';
 import Story from '../components/Story.astro';
-import QuickLinks from '../components/QuickLinks.astro';
+import NextStep from '../components/NextStep.astro';
 import { content } from '../i18n/content.js';
+import { pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 
 const { lang } = Astro.props;
@@ -37,7 +38,9 @@ const galleryPhotos = ['hall', 'praise', 'hallTables', 'congregation'];
     </div>
   </section>
 
-  <QuickLinks lang={lang} current="church" title={t.ui.readyTitle} />
+  <NextStep title={church.next.title} text={church.next.text}>
+    <a class="button button-dark" href={pathFor('gatherings', lang)}>{t.ui.seeTimes}</a>
+  </NextStep>
 </BaseLayout>
 
 <style>

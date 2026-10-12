@@ -26,11 +26,15 @@ export const content = {
       readMore: 'Ler mais',
       back: 'Voltar ao blog',
       empty: 'Ainda não há publicações no blog. Volte em breve!',
+      by: 'Por',
+      passage: 'Passagem bíblica',
+      filterLabel: 'Filtrar por categoria',
+      allCategories: 'Todas',
     },
     ui: {
       skip: 'Pular para o conteúdo', menu: 'Abrir menu', closeMenu: 'Fechar menu', language: 'Escolher idioma', mainNav: 'Navegação principal',
       talk: 'Fale com a gente', whatsapp: 'Chamar no WhatsApp', call: 'Ligar agora', planVisit: 'Planeje sua visita', seeTimes: 'Ver horários',
-      openMap: 'Abrir no Google Maps', readyTitle: 'Quer conhecer a gente um pouco mais?', mapTitle: 'Mapa com a localização da Missão Internacional Resgate',
+      openMap: 'Abrir no Google Maps', mapTitle: 'Mapa com a localização da Missão Internacional Resgate',
       // Mensagem que já aparece escrita ao abrir a conversa no WhatsApp por qualquer botão do site.
       whatsappMessage: 'Olá! Vi o site da Missão Internacional Resgate e gostaria de mais informações sobre a igreja.',
     },
@@ -69,6 +73,12 @@ export const content = {
       ],
       // PROVISÓRIO: frase de missão baseada nos textos atuais do site.
       mission: { label: 'Nossa missão:', statement: 'Ser uma casa para quem veio de longe, onde cada história tem lugar.', link: 'Quem somos' },
+      featured: {
+        eyebrow: 'Do nosso blog',
+        title: 'Histórias para caminhar junto.',
+        intro: 'Mensagens, reflexões e novidades da nossa comunidade para levar com você durante a semana.',
+        link: 'Ver todo o blog',
+      },
     },
     church: {
       hero: { a: 'Nossa', b: 'casa' },
@@ -81,6 +91,8 @@ export const content = {
         { title: 'Nossa história', script: 'Como tudo começou', text: 'Em breve vamos contar aqui a nossa história: como tudo começou, quem cuida da igreja e por que abrimos as portas para todas as nações.' },
       ],
       gallery: { title: 'Um lugar para chamar de seu.', text: 'Um pouco do nosso cantinho, cheio de bandeiras e de gente de muitos lugares.' },
+      // Fecho da página: o próximo passo de quem acabou de conhecer a igreja.
+      next: { title: 'Venha nos conhecer', text: 'Nos reunimos <strong>às sextas, sábados e domingos</strong>, sempre em espanhol. A porta está aberta: é só chegar.' },
     },
     gatherings: {
       hero: { a: 'Nossos', b: 'encontros' },
@@ -143,11 +155,15 @@ export const content = {
       readMore: 'Leer más',
       back: 'Volver al blog',
       empty: 'Todavía no hay publicaciones en el blog. ¡Vuelve pronto!',
+      by: 'Por',
+      passage: 'Pasaje bíblico',
+      filterLabel: 'Filtrar por categoría',
+      allCategories: 'Todas',
     },
     ui: {
       skip: 'Saltar al contenido', menu: 'Abrir menú', closeMenu: 'Cerrar menú', language: 'Elegir idioma', mainNav: 'Navegación principal',
       talk: 'Escríbenos', whatsapp: 'Escribir por WhatsApp', call: 'Llamar ahora', planVisit: 'Planea tu visita', seeTimes: 'Ver horarios',
-      openMap: 'Abrir en Google Maps', readyTitle: '¿Quieres conocernos un poco más?', mapTitle: 'Mapa con la ubicación de Missão Internacional Resgate',
+      openMap: 'Abrir en Google Maps', mapTitle: 'Mapa con la ubicación de Missão Internacional Resgate',
       whatsappMessage: '¡Hola! Vi el sitio de Missão Internacional Resgate y me gustaría recibir más información sobre la iglesia.',
     },
     times: [
@@ -185,6 +201,12 @@ export const content = {
       ],
       // PROVISÓRIO
       mission: { label: 'Nuestra misión:', statement: 'Ser un hogar para quien vino de lejos, donde cada historia tiene lugar.', link: 'Quiénes somos' },
+      featured: {
+        eyebrow: 'De nuestro blog',
+        title: 'Historias para caminar juntos.',
+        intro: 'Mensajes, reflexiones y novedades de nuestra comunidad para acompañarte durante la semana.',
+        link: 'Ver todo el blog',
+      },
     },
     church: {
       hero: { a: 'Nuestro', b: 'hogar' },
@@ -197,6 +219,7 @@ export const content = {
         { title: 'Nuestra historia', script: 'Cómo empezó todo', text: 'Muy pronto contaremos aquí nuestra historia: cómo empezó todo, quién cuida de la iglesia y por qué abrimos las puertas a todas las naciones.' },
       ],
       gallery: { title: 'Un lugar para sentirte en casa.', text: 'Un poco de nuestro rinconcito, lleno de banderas y de gente de muchos lugares.' },
+      next: { title: 'Ven a conocernos', text: 'Nos reunimos <strong>los viernes, sábados y domingos</strong>, siempre en español. La puerta está abierta: solo tienes que llegar.' },
     },
     gatherings: {
       hero: { a: 'Nuestros', b: 'encuentros' },
@@ -259,11 +282,15 @@ export const content = {
       readMore: 'Read more',
       back: 'Back to blog',
       empty: 'There are no blog posts yet. Come back soon!',
+      by: 'By',
+      passage: 'Scripture',
+      filterLabel: 'Filter by category',
+      allCategories: 'All',
     },
     ui: {
       skip: 'Skip to content', menu: 'Open menu', closeMenu: 'Close menu', language: 'Choose language', mainNav: 'Main navigation',
       talk: 'Talk to us', whatsapp: 'Message on WhatsApp', call: 'Call now', planVisit: 'Plan your visit', seeTimes: 'See gathering times',
-      openMap: 'Open in Google Maps', readyTitle: 'Want to get to know us a little more?', mapTitle: 'Map showing the location of Missão Internacional Resgate',
+      openMap: 'Open in Google Maps', mapTitle: 'Map showing the location of Missão Internacional Resgate',
       whatsappMessage: 'Hi! I saw the Missão Internacional Resgate website and would like more information about the church.',
     },
     times: [
@@ -301,6 +328,12 @@ export const content = {
       ],
       // PROVISÓRIO
       mission: { label: 'Our mission:', statement: 'To be a home for those who came from far away, where every story belongs.', link: 'Who we are' },
+      featured: {
+        eyebrow: 'From our blog',
+        title: 'Stories to walk with you.',
+        intro: 'Messages, reflections, and news from our community to carry with you throughout the week.',
+        link: 'See the full blog',
+      },
     },
     church: {
       hero: { a: 'Our', b: 'home' },
@@ -313,6 +346,7 @@ export const content = {
         { title: 'Our story', script: 'How it all began', text: 'Soon we will share our story here: how it all began, who looks after the church, and why we open our doors to every nation.' },
       ],
       gallery: { title: 'A place to call your own.', text: 'A glimpse of our little corner, full of flags and people from many places.' },
+      next: { title: 'Come and meet us', text: 'We gather <strong>on Fridays, Saturdays and Sundays</strong>, always in Spanish. The door is open: just come.' },
     },
     gatherings: {
       hero: { a: 'Our', b: 'gatherings' },

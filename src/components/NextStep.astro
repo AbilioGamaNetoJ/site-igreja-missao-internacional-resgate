@@ -1,0 +1,61 @@
+---
+// Fecho de página: um aviso curto, próprio da página, com o próximo passo natural.
+// Os atalhos para todas as páginas (QuickLinks) ficam só na home.
+const { title, text } = Astro.props;
+---
+
+<section class="next-step section">
+  <div class="frame" data-reveal>
+    <h2>{title}</h2>
+    {text && <p class="text rich" set:html={text} />}
+    <div class="actions"><slot /></div>
+  </div>
+</section>
+
+<style>
+  .next-step {
+    background: var(--paper);
+  }
+
+  .frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 780px;
+    text-align: center;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(2rem, 4.2vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .text {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 1.125rem;
+    text-wrap: balance;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+  }
+
+  @media (max-width: 600px) {
+    .actions {
+      width: 100%;
+    }
+
+    .actions :global(.button) {
+      flex: 1 1 100%;
+    }
+  }
+</style>

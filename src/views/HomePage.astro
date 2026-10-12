@@ -5,13 +5,16 @@ import QuickLinks from '../components/QuickLinks.astro';
 import Story from '../components/Story.astro';
 import DarkBand from '../components/DarkBand.astro';
 import { content } from '../i18n/content.js';
-import { pathFor } from '../i18n/routes.js';
+import { blogPath, languages, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
+import { categoryName, fetchFeaturedPosts, translationsByLang } from '../lib/supabase.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
 const home = t.home;
 const pillarPages = ['church', 'gatherings', 'outreach'];
+const featuredPosts = await fetchFeaturedPosts();
+const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'short', year: 'numeric' });
 ---
 
 <BaseLayout lang={lang} page="home">
@@ -57,6 +60,53 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
       </figure>
     </div>
   </Story>
+
+  {featuredPosts.length > 0 && (
+    <section class="featured-posts section-dark" aria-labelledby="featured-posts-title">
+      <div class="frame">
+        <div class="featured-posts-heading" data-reveal>
+          <div>
+            <p class="eyebrow">{home.featured.eyebrow}</p>
+            <h2 id="featured-posts-title">{home.featured.title}</h2>
+          </div>
+          <div>
+            <p>{home.featured.intro}</p>
+            <a class="arrow-link featured-posts-link" href={blogPath(lang)}>{home.featured.link}<Icon name="arrow-right" size={18} /></a>
+          </div>
+        </div>
+
+        <ul class="featured-posts-grid">
+          {featuredPosts.map((post, index) => {
+            const translation = translationsByLang(post)[lang];
+            const hasCover = Boolean(post.cover_image);
+            const category = categoryName(post, lang);
+            return (
+              <li class={`featured-post featured-post-${index + 1}`}>
+                <a href={blogPath(lang, post.slug)} data-reveal>
+                  <figure>
+                    <img
+                      src={hasCover ? post.cover_image : photos.praise}
+                      alt={hasCover ? translation.title : t.photos.praise}
+                      loading="lazy"
+                    />
+                  </figure>
+                  <div class="featured-post-body">
+                    <p class="featured-post-meta">
+                      {category && <span>{category}</span>}
+                      <time datetime={post.published_at}>{featuredDateFormatter.format(new Date(post.published_at))}</time>
+                    </p>
+                    <h3>{translation.title}</h3>
+                    {translation.excerpt && <p class="featured-post-excerpt">{translation.excerpt}</p>}
+                    <span class="featured-post-read">{t.blog.readMore}<Icon name="arrow-right" size={16} /></span>
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  )}
 
   <DarkBand label={home.mission.label} title={home.mission.statement}>
     <a class="dark-band-link" href={pathFor('church', lang)}>{home.mission.link} <span aria-hidden="true">&gt;&gt;</span></a>
@@ -231,6 +281,167 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
     object-fit: cover;
   }
 
+  .featured-posts {
+    overflow: hidden;
+    padding-block: clamp(4.5rem, 8vw, 7rem);
+    background:
+      radial-gradient(circle at 0 0, rgba(221, 186, 103, 0.2), transparent 28%),
+      linear-gradient(122deg, #090909, #17120f);
+  }
+
+  .featured-posts-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.62fr);
+    gap: clamp(2rem, 6vw, 7rem);
+    align-items: end;
+    margin-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .featured-posts .eyebrow {
+    color: var(--gold);
+  }
+
+  .featured-posts h2 {
+    max-width: 12ch;
+    margin-top: 12px;
+    font-family: var(--display);
+    font-size: clamp(2.45rem, 5vw, 4.4rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.94;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .featured-posts-heading > div:last-child > p {
+    max-width: 38ch;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.96rem;
+    line-height: 1.6;
+  }
+
+  .featured-posts-link {
+    margin-top: 20px;
+    color: var(--gold);
+  }
+
+  .featured-posts-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 0.8fr));
+    gap: clamp(14px, 2vw, 24px);
+  }
+
+  .featured-post a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: clamp(20px, 2.5vw, 30px);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--white);
+    text-decoration: none;
+    transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  }
+
+  .featured-post a:hover {
+    border-color: rgba(221, 186, 103, 0.8);
+    background: rgba(255, 255, 255, 0.09);
+    transform: translateY(-5px);
+  }
+
+  .featured-post figure {
+    aspect-ratio: 1 / 0.78;
+    overflow: hidden;
+  }
+
+  .featured-post-1 figure {
+    aspect-ratio: 1 / 0.72;
+  }
+
+  .featured-post img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.2, 0.75, 0.2, 1);
+  }
+
+  .featured-post a:hover img {
+    transform: scale(1.05);
+  }
+
+  .featured-post-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding: clamp(18px, 2.5vw, 28px);
+  }
+
+  .featured-post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px 12px;
+    align-items: center;
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .featured-post-meta span {
+    padding-right: 12px;
+    border-right: 1px solid rgba(221, 186, 103, 0.45);
+  }
+
+  .featured-post h3 {
+    margin-top: 13px;
+    font-family: var(--display);
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  .featured-post-1 h3 {
+    font-size: clamp(1.8rem, 3.1vw, 2.75rem);
+  }
+
+  .featured-post-excerpt {
+    display: -webkit-box;
+    margin-top: 12px;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 0.88rem;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .featured-post-read {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 22px;
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .featured-post-read :global(svg) {
+    transition: transform 0.25s ease;
+  }
+
+  .featured-post a:hover .featured-post-read :global(svg) {
+    transform: translateX(4px);
+  }
+
   @media (max-width: 860px) {
     .pillars-grid {
       grid-template-columns: 1fr;
@@ -241,6 +452,20 @@ const pillarPages = ['church', 'gatherings', 'outreach'];
       order: -1;
       aspect-ratio: 4 / 3;
       max-height: none;
+    }
+
+    .featured-posts-heading,
+    .featured-posts-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .featured-posts-heading {
+      gap: 18px;
+    }
+
+    .featured-post-1 figure,
+    .featured-post figure {
+      aspect-ratio: 16 / 9;
     }
   }
 

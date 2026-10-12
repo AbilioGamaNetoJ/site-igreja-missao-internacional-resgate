@@ -12,7 +12,7 @@ export const supabaseReady = Boolean(supabaseUrl && supabaseAnonKey);
 export const POST_LANGS = ['pt', 'es', 'en'];
 
 const POST_FIELDS =
-  'id,slug,cover_image,published_at,source_lang,post_translations(lang,title,excerpt,seo_title,seo_description,is_original,manually_edited,updated_at)';
+  'id,slug,cover_image,category,category_info:categories(name_pt,name_es,name_en),author,is_featured,published_at,source_lang,post_translations(lang,title,excerpt,bible_reference,seo_title,seo_description,is_original,manually_edited,updated_at)';
 
 async function rest(path) {
   const response = await fetch(`${supabaseUrl}/rest/v1${path}`, {
@@ -26,6 +26,9 @@ async function rest(path) {
 export const translationsByLang = (post) =>
   Object.fromEntries((post?.post_translations ?? []).map((translation) => [translation.lang, translation]));
 
+// Nome da categoria do post no idioma da página; sem o nome naquele idioma, cai no português.
+export const categoryName = (post, lang) => post?.category_info?.[`name_${lang}`] || post?.category_info?.name_pt || '';
+
 // Um post só aparece no site quando está publicado e já tem as três traduções:
 // assim o artigo nunca entra no ar em um idioma e fica vazio nos outros.
 export const isPostReady = (post) => Boolean(post) && POST_LANGS.every((lang) => translationsByLang(post)[lang]?.title);
@@ -37,6 +40,17 @@ export async function fetchPublishedPosts() {
   if (!supabaseReady) return [];
   const rows = await rest(
     `/posts?select=${POST_FIELDS},post_translations(order=lang.asc)&status=eq.published&order=published_at.desc`,
+  );
+  if (!Array.isArray(rows)) return [];
+  return rows.filter(isPostReady);
+}
+
+// Até três publicações que a equipe escolheu para a vitrine da página inicial.
+// A ordem é a da publicação mais recente; rascunhos nunca entram na vitrine.
+export async function fetchFeaturedPosts(limit = 3) {
+  if (!supabaseReady) return [];
+  const rows = await rest(
+    `/posts?select=${POST_FIELDS},post_translations(order=lang.asc)&status=eq.published&is_featured=eq.true&order=published_at.desc&limit=${Math.min(Math.max(Number(limit) || 3, 1), 3)}`,
   );
   if (!Array.isArray(rows)) return [];
   return rows.filter(isPostReady);

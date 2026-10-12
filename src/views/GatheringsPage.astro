@@ -4,9 +4,10 @@ import PageHero from '../components/PageHero.astro';
 import IntroStatement from '../components/IntroStatement.astro';
 import FeatureBlock from '../components/FeatureBlock.astro';
 import Story from '../components/Story.astro';
-import QuickLinks from '../components/QuickLinks.astro';
+import NextStep from '../components/NextStep.astro';
 import Icon from '../components/Icon.astro';
 import { content } from '../i18n/content.js';
+import { pathFor } from '../i18n/routes.js';
 import { site, whatsappLink } from '../data/site.js';
 import { photos } from '../data/photos.js';
 
@@ -14,6 +15,8 @@ const { lang } = Astro.props;
 const t = content[lang];
 const gatherings = t.gatherings;
 const [expect, firstTime] = gatherings.blocks;
+// Quem já escolheu o dia precisa saber como chegar: reaproveita o texto da página Visite.
+const { location } = t.visit;
 ---
 
 <BaseLayout lang={lang} page="gatherings">
@@ -42,7 +45,10 @@ const [expect, firstTime] = gatherings.blocks;
     </FeatureBlock>
   </Story>
 
-  <QuickLinks lang={lang} current="gatherings" title={t.ui.readyTitle} />
+  <NextStep title={location.title} text={location.text}>
+    <a class="button button-dark" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
+    <a class="button button-outline" href={site.map.link} target="_blank" rel="noopener noreferrer">{t.ui.openMap}</a>
+  </NextStep>
 </BaseLayout>
 
 <style>

@@ -15,7 +15,7 @@ import { env } from 'cloudflare:workers';
 export const prerender = false;
 
 const LANGS = ['pt', 'es', 'en'];
-const TRANSLATABLE_FIELDS = ['title', 'excerpt', 'body', 'seo_title', 'seo_description'];
+const TRANSLATABLE_FIELDS = ['title', 'excerpt', 'bible_reference', 'body', 'seo_title', 'seo_description'];
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;

@@ -4,16 +4,24 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
 import IntroStatement from '../components/IntroStatement.astro';
-import QuickLinks from '../components/QuickLinks.astro';
 import Icon from '../components/Icon.astro';
 import { content } from '../i18n/content.js';
 import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
-import { fetchPublishedPosts, translationsByLang } from '../lib/supabase.js';
+import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
-const posts = await fetchPublishedPosts();
+const allPosts = await fetchPublishedPosts();
+
+// O filtro só oferece categorias que têm post publicado; um ?category= desconhecido
+// cai na listagem completa.
+const categoryOptions = [...new Map(allPosts.filter((post) => post.category_info).map((post) => [post.category, categoryName(post, lang)]))]
+  .map(([slug, name]) => ({ slug, name }))
+  .sort((a, b) => a.name.localeCompare(b.name, languages[lang].htmlLang));
+const requested = Astro.url.searchParams.get('category');
+const selected = categoryOptions.some((option) => option.slug === requested) ? requested : null;
+const posts = selected ? allPosts.filter((post) => post.category === selected) : allPosts;
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 
@@ -23,6 +31,16 @@ const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: '
 
   <section class="section blog-list">
     <div class="frame">
+      {categoryOptions.length > 1 && (
+        <nav class="filters" aria-label={t.blog.filterLabel}>
+          <a href={blogPath(lang)} aria-current={selected ? undefined : 'page'}>{t.blog.allCategories}</a>
+          {categoryOptions.map(({ slug, name }) => (
+            <a href={`${blogPath(lang)}?category=${encodeURIComponent(slug)}`} aria-current={selected === slug ? 'page' : undefined}>
+              {name}
+            </a>
+          ))}
+        </nav>
+      )}
       {posts.length === 0 ? (
         <p class="empty">{t.blog.empty}</p>
       ) : (
@@ -42,7 +60,9 @@ const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: '
                   </figure>
                   <div class="card-body">
                     <p class="post-date">
+                      {categoryName(post, lang) && <span class="tag">{categoryName(post, lang)}</span>}
                       <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
+                      {post.author && <span class="author">{t.blog.by} {post.author}</span>}
                     </p>
                     <h2>{translation.title}</h2>
                     {translation.excerpt && <p class="excerpt">{translation.excerpt}</p>}
@@ -56,8 +76,6 @@ const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: '
       )}
     </div>
   </section>
-
-  <QuickLinks lang={lang} current="blog" title={t.ui.readyTitle} />
 </BaseLayout>
 
 <style>
@@ -130,13 +148,61 @@ const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: '
     padding: 24px clamp(20px, 3vw, 30px) 28px;
   }
 
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .filters a {
+    padding: 8px 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .filters a:hover {
+    border-color: var(--gold);
+  }
+
+  .filters a[aria-current='page'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--white);
+  }
+
   .post-date {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
     color: var(--gold-script);
     font-family: var(--display);
     font-size: 0.82rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  .tag {
+    padding: 3px 10px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.74rem;
+  }
+
+  .author {
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: none;
   }
 
   h2 {
