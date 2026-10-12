@@ -39,7 +39,7 @@ export const isPostReady = (post) => Boolean(post) && POST_LANGS.every((lang) =>
 export async function fetchPublishedPosts() {
   if (!supabaseReady) return [];
   const rows = await rest(
-    `/posts?select=${POST_FIELDS},post_translations(order=lang.asc)&status=eq.published&order=published_at.desc`,
+    `/posts?select=${POST_FIELDS}&status=eq.published&order=published_at.desc`,
   );
   if (!Array.isArray(rows)) return [];
   return rows.filter(isPostReady);
@@ -50,7 +50,7 @@ export async function fetchPublishedPosts() {
 export async function fetchFeaturedPosts(limit = 3) {
   if (!supabaseReady) return [];
   const rows = await rest(
-    `/posts?select=${POST_FIELDS},post_translations(order=lang.asc)&status=eq.published&is_featured=eq.true&order=published_at.desc&limit=${Math.min(Math.max(Number(limit) || 3, 1), 3)}`,
+    `/posts?select=${POST_FIELDS}&status=eq.published&is_featured=eq.true&order=published_at.desc&limit=${Math.min(Math.max(Number(limit) || 3, 1), 3)}`,
   );
   if (!Array.isArray(rows)) return [];
   return rows.filter(isPostReady);
@@ -59,7 +59,7 @@ export async function fetchFeaturedPosts(limit = 3) {
 export async function fetchPostBySlug(slug) {
   if (!supabaseReady || !slug) return null;
   const rows = await rest(
-    `/posts?select=${POST_FIELDS},post_translations(order=lang.asc)&slug=eq.${encodeURIComponent(slug)}&status=eq.published&limit=1`,
+    `/posts?select=${POST_FIELDS}&slug=eq.${encodeURIComponent(slug)}&status=eq.published&limit=1`,
   );
   const post = Array.isArray(rows) ? rows[0] : null;
   return isPostReady(post) ? post : null;
