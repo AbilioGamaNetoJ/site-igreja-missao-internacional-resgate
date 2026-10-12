@@ -1,0 +1,12 @@
+---
+// Artigo do blog em português (/blog/[slug]).
+import BlogPostView from '../../views/BlogPostView.astro';
+import { fetchPostBySlug } from '../../lib/supabase.js';
+
+export const prerender = false;
+
+const post = await fetchPostBySlug(Astro.params.slug);
+if (!post) return new Response(null, { status: 404 });
+---
+
+<BlogPostView lang="pt" post={post} />

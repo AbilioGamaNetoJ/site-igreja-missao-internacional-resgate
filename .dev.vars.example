@@ -1,0 +1,8 @@
+# Vars e secrets do Worker em `astro dev` e `wrangler dev` (platformProxy lê este arquivo).
+# Copie para .dev.vars (que fica fora do Git) e preencha.
+
+# Chave da DeepL (https://www.deepl.com/pro-api, plano API Free). O plano gratuito
+# usa chave terminada em :fx. É o único valor que precisa estar aqui: as chaves
+# públicas do Supabase ficam no .env (entram no build) e a DeepL não pode.
+# Em produção vai como secret do Worker (DEEPL_API_KEY), publicado pelo GitHub Actions.
+DEEPL_API_KEY=

@@ -1,0 +1,1657 @@
+---
+// Painel do blog em português: entrar, listar, escrever em Markdown, enviar imagens,
+// salvar rascunho, publicar (traduzindo as outras duas línguas na hora) e corrigir
+// cada língua. Fora do menu e dos buscadores (noindex).
+//
+// O navegador fala direto com o Supabase usando a sessão do admin; quem protege a
+// escrita é a RLS do banco (supabase/schema.sql). Só a tradução passa pelo Worker
+// (/api/translate), onde fica a chave da DeepL.
+import { site } from '../data/site.js';
+
+export const prerender = false;
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? '';
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel do blog | Missão Internacional Resgate</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300..900&family=League+Spartan:wght@600..800&display=swap" />
+    <style is:global>
+      /* Reutiliza os estilos do site (tokens, botões). */
+      @import '../styles/global.css';
+
+      .admin-body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: var(--sand);
+      }
+
+      .admin-bar {
+        position: relative;
+        z-index: 2;
+        background: var(--black);
+        color: var(--white);
+        border-bottom: 1px solid rgba(221, 186, 103, 0.3);
+      }
+
+      .admin-bar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-block: 14px;
+      }
+
+      .admin-bar a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--gold);
+        font-family: var(--display);
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        text-transform: uppercase;
+      }
+
+      .admin-bar-title {
+        font-family: var(--display);
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .admin-main {
+        width: min(980px, calc(100% - 40px));
+        margin-inline: auto;
+        padding-block: 40px 64px;
+        flex: 1;
+      }
+
+      .admin-body[data-view='login'] {
+        background: var(--black);
+      }
+
+      .admin-body[data-view='login'] .admin-main {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .admin-login {
+        display: grid;
+        grid-template-columns: minmax(0, 1.16fr) minmax(420px, 0.84fr);
+        min-height: calc(100dvh - 61px);
+        background: var(--black);
+        isolation: isolate;
+      }
+
+      .admin-login-intro {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100%;
+        overflow: hidden;
+        padding: clamp(28px, 4.5vw, 64px) clamp(40px, 6vw, 92px);
+        background:
+          linear-gradient(90deg, rgba(0, 0, 0, 0.93) 0%, rgba(0, 0, 0, 0.74) 48%, rgba(0, 0, 0, 0.42) 100%),
+          linear-gradient(0deg, rgba(0, 0, 0, 0.68), transparent 55%),
+          url('/capa.webp') center / cover;
+        color: var(--white);
+      }
+
+      .admin-login-intro::before {
+        position: absolute;
+        z-index: -1;
+        top: -15vw;
+        left: -12vw;
+        width: min(46vw, 640px);
+        aspect-ratio: 1;
+        border: 1px solid rgba(221, 186, 103, 0.48);
+        border-radius: 50%;
+        box-shadow: 0 0 0 min(3vw, 48px) rgba(221, 186, 103, 0.08), 0 0 100px rgba(221, 186, 103, 0.16);
+        content: '';
+      }
+
+      .admin-login-brand {
+        display: block;
+        width: min(198px, 46vw);
+        line-height: 0;
+      }
+
+      .admin-login-brand img {
+        width: 100%;
+        height: auto;
+      }
+
+      .admin-login-copy {
+        max-width: 520px;
+        padding-block: clamp(26px, 4vh, 54px);
+      }
+
+      .admin-login-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+        color: var(--gold);
+        font-family: var(--display);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      .admin-login-eyebrow::before {
+        width: 30px;
+        height: 1px;
+        background: currentColor;
+        content: '';
+      }
+
+      .admin-login-copy h1 {
+        max-width: 8ch;
+        font-family: var(--display);
+        font-size: clamp(2.7rem, 4.6vw, 4.5rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 0.94;
+        text-transform: uppercase;
+      }
+
+      .admin-login-copy h1 em {
+        display: block;
+        margin: 0.08em 0 0.02em 0.08em;
+        color: var(--gold);
+        font-family: var(--script);
+        font-size: 0.67em;
+        font-weight: 400;
+        letter-spacing: 0.03em;
+        line-height: 1;
+        text-transform: none;
+      }
+
+      .admin-login-copy p:last-child {
+        max-width: 38ch;
+        margin-top: 16px;
+        color: rgba(255, 255, 255, 0.78);
+        font-size: clamp(0.9rem, 1.15vw, 1rem);
+        line-height: 1.6;
+      }
+
+      .admin-login-location {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .admin-login-location::before {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--gold);
+        box-shadow: 0 0 0 6px rgba(221, 186, 103, 0.15);
+        content: '';
+      }
+
+      .admin-login-panel {
+        position: relative;
+        display: grid;
+        align-content: center;
+        padding: clamp(32px, 5.5vw, 76px);
+        background: var(--sand);
+      }
+
+      .admin-login-panel::before {
+        position: absolute;
+        top: clamp(26px, 5vw, 76px);
+        right: clamp(24px, 5vw, 76px);
+        width: clamp(44px, 6vw, 78px);
+        height: clamp(44px, 6vw, 78px);
+        border: 1px solid rgba(157, 116, 40, 0.42);
+        border-radius: 50%;
+        box-shadow: -16px 16px 0 -1px var(--sand), -16px 16px 0 0 rgba(157, 116, 40, 0.22);
+        content: '';
+      }
+
+      .admin-login-card {
+        width: min(100%, 430px);
+      }
+
+      .admin-login-card > p {
+        margin-bottom: 10px;
+        color: var(--gold-script);
+        font-family: var(--display);
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      .admin-login-card h1 {
+        margin-bottom: 10px;
+        font-family: var(--display);
+        font-size: clamp(2rem, 3vw, 2.8rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 0.98;
+        text-transform: uppercase;
+      }
+
+      .admin-login-card h1 span {
+        color: var(--gold-ink);
+      }
+
+      .admin-login-card .admin-login-description {
+        max-width: 34ch;
+        margin: 0 0 22px;
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 0.94rem;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 1.55;
+        text-transform: none;
+      }
+
+      .admin-field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 16px;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .admin-field input,
+      .admin-field select,
+      .admin-field textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--white);
+        color: var(--ink);
+        font: 500 1rem/1.5 var(--sans);
+      }
+
+      .admin-login-card .admin-field {
+        gap: 8px;
+        margin-bottom: 14px;
+        font-family: var(--display);
+        font-size: 0.82rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .admin-login-card .admin-field input {
+        min-height: 3.1rem;
+        border-color: rgba(17, 18, 20, 0.2);
+        background: rgba(255, 255, 255, 0.74);
+        letter-spacing: 0;
+        text-transform: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-login-card .admin-field input:hover {
+        border-color: rgba(157, 116, 40, 0.6);
+      }
+
+      .admin-login-card .admin-field input:focus {
+        border-color: var(--gold-script);
+        box-shadow: 0 0 0 4px rgba(221, 186, 103, 0.22);
+        outline: 0;
+      }
+
+      .admin-password-control {
+        position: relative;
+        display: block;
+      }
+
+      .admin-password-control input {
+        padding-right: 54px;
+      }
+
+      .admin-password-toggle {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        display: grid;
+        width: calc(3.1rem - 2px);
+        height: calc(3.1rem - 2px);
+        padding: 0;
+        border: 0;
+        border-radius: 0 9px 9px 0;
+        background: transparent;
+        color: var(--gold-script);
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .admin-password-toggle:hover,
+      .admin-password-toggle[aria-pressed='true'] {
+        background: rgba(221, 186, 103, 0.18);
+        color: var(--ink);
+      }
+
+      .admin-password-toggle:focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: -3px;
+      }
+
+      .admin-password-toggle svg {
+        width: 20px;
+        height: 20px;
+        margin: auto;
+      }
+
+      .admin-login-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin: -2px 0 18px;
+      }
+
+      .admin-forgot-link {
+        padding: 0;
+        border: 0;
+        border-bottom: 1px solid currentColor;
+        background: transparent;
+        color: var(--gold-ink);
+        font: 700 0.78rem/1.35 var(--sans);
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .admin-forgot-link:hover {
+        color: var(--ink);
+      }
+
+      .admin-forgot-link:focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: 4px;
+      }
+
+      .admin-field textarea {
+        resize: vertical;
+      }
+
+      .admin-field :focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: 1px;
+      }
+
+      .admin-error {
+        min-height: 1.4em;
+        margin-top: 14px;
+        color: #a3312d;
+        font-size: 0.9rem;
+        font-weight: 700;
+      }
+
+      .admin-login-message {
+        min-height: 1.4em;
+        margin-top: 10px;
+        color: var(--gold-ink);
+        font-size: 0.84rem;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .admin-login-submit {
+        width: 100%;
+        margin-top: 4px;
+      }
+
+      .admin-login-note {
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0;
+        line-height: 1.55;
+        text-transform: none;
+      }
+
+      .admin-login-note strong {
+        color: var(--graphite);
+      }
+
+      .admin-reset-back {
+        display: block;
+        width: fit-content;
+        margin-top: 18px;
+        padding: 0;
+        border: 0;
+        border-bottom: 1px solid currentColor;
+        background: transparent;
+        color: var(--muted);
+        font: 700 0.78rem/1.35 var(--sans);
+        cursor: pointer;
+      }
+
+      .admin-hint {
+        margin-top: 16px;
+        padding: 14px 16px;
+        border: 1px dashed var(--gold-script);
+        border-radius: 12px;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .admin-status {
+        position: fixed;
+        z-index: 60;
+        right: 16px;
+        bottom: 16px;
+        max-width: min(420px, calc(100vw - 32px));
+        padding: 12px 18px;
+        border-radius: 12px;
+        background: var(--ink);
+        color: var(--white);
+        font-size: 0.9rem;
+        font-weight: 700;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        pointer-events: none;
+      }
+
+      .admin-status[data-on] {
+        opacity: 1;
+        transform: none;
+      }
+
+      .admin-list-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .admin-list-head h1 {
+        font-family: var(--display);
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .admin-posts {
+        display: grid;
+        gap: 12px;
+      }
+
+      .admin-post {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px 16px;
+        align-items: center;
+        padding: 18px 22px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      .admin-post-title {
+        font-family: var(--display);
+        font-size: 1.1rem;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      .admin-post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .admin-post-actions {
+        display: flex;
+        gap: 8px;
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+
+      .admin-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--graphite);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .admin-badge[data-status='published'] {
+        background: var(--gold);
+        color: var(--black);
+      }
+
+      .admin-empty {
+        padding: 40px 24px;
+        border: 1px dashed var(--line);
+        border-radius: 16px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      /* Editor */
+
+      .admin-editor-head {
+        display: grid;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .admin-editor-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: end;
+        gap: 16px;
+      }
+
+      .admin-editor-row .admin-field {
+        flex: 1 1 220px;
+        margin-bottom: 0;
+      }
+
+      .admin-editor-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .admin-editor-actions .button {
+        min-height: 2.9rem;
+        padding: 0.5rem 1.3rem;
+        font-size: 0.82rem;
+      }
+
+      .admin-cover {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding: 16px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+      }
+
+      .admin-cover img {
+        width: 180px;
+        aspect-ratio: 3 / 2;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      .admin-cover-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .admin-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: -1px;
+      }
+
+      .admin-tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 18px;
+        border: 1px solid var(--line);
+        border-bottom-color: transparent;
+        border-radius: 14px 14px 0 0;
+        background: var(--paper);
+        color: var(--graphite);
+        font-family: var(--display);
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+      }
+
+      .admin-tab[aria-selected='true'] {
+        background: var(--white);
+        color: var(--ink);
+      }
+
+      .admin-tab .admin-tab-badge {
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: var(--sand);
+        color: var(--muted);
+        font-family: var(--sans);
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .admin-tab .admin-tab-badge[data-state='original'] {
+        background: var(--gold);
+        color: var(--black);
+      }
+
+      .admin-tab .admin-tab-badge[data-state='manual'] {
+        background: var(--ink);
+        color: var(--white);
+      }
+
+      .admin-panel {
+        padding: 24px clamp(18px, 3vw, 32px) 28px;
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 0 16px 16px 16px;
+      }
+
+      .admin-panel-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .admin-panel-hint {
+        color: var(--muted);
+        font-size: 0.85rem;
+        line-height: 1.5;
+      }
+
+      .admin-panel-actions .button {
+        min-height: 2.9rem;
+        padding: 0.5rem 1.3rem;
+        font-size: 0.82rem;
+      }
+
+      .admin-md-tools {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .admin-md-tools .button {
+        min-height: 2.4rem;
+        padding: 0.35rem 1rem;
+        font-size: 0.75rem;
+      }
+
+      .admin-md-preview {
+        margin-top: 12px;
+        padding: 18px 20px;
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        font-size: 1rem;
+        line-height: 1.7;
+      }
+
+      .admin-md-preview h1,
+      .admin-md-preview h2,
+      .admin-md-preview h3 {
+        font-family: var(--display);
+        line-height: 1.2;
+        margin: 1.2em 0 0.5em;
+      }
+
+      .admin-md-preview img {
+        border-radius: 10px;
+      }
+
+      .admin-md-preview ul,
+      .admin-md-preview ol {
+        padding-left: 1.4em;
+        list-style: revert;
+      }
+
+      @media (max-width: 900px) {
+        .admin-login {
+          grid-template-columns: 1fr;
+          grid-template-rows: minmax(360px, 0.8fr) auto;
+        }
+
+        .admin-login-intro {
+          min-height: 0;
+          padding: 36px clamp(28px, 7vw, 68px) 28px;
+          background:
+            linear-gradient(90deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.57) 100%),
+            linear-gradient(0deg, rgba(0, 0, 0, 0.68), transparent 72%),
+            url('/capa.webp') center 44% / cover;
+        }
+
+        .admin-login-intro::before {
+          top: -210px;
+          left: auto;
+          right: -125px;
+          width: 390px;
+        }
+
+        .admin-login-copy {
+          padding-block: 54px 42px;
+        }
+
+        .admin-login-copy h1 {
+          max-width: 13ch;
+          font-size: clamp(3.2rem, 8.2vw, 4.8rem);
+        }
+
+        .admin-login-panel {
+          padding: clamp(40px, 8vw, 68px);
+        }
+
+        .admin-login-card {
+          margin-inline: auto;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .admin-bar-inner {
+          padding-block: 12px;
+        }
+
+        .admin-bar-title {
+          font-size: 0.82rem;
+          letter-spacing: 0.04em;
+        }
+
+        .admin-bar a {
+          font-size: 0.72rem;
+        }
+
+        .admin-login {
+          grid-template-rows: auto auto;
+          min-height: calc(100dvh - 56px);
+        }
+
+        .admin-login-intro {
+          min-height: 350px;
+          padding: 28px 28px 24px;
+        }
+
+        .admin-login-brand {
+          width: 184px;
+        }
+
+        .admin-login-copy {
+          padding-block: 44px 32px;
+        }
+
+        .admin-login-eyebrow {
+          margin-bottom: 16px;
+          font-size: 0.67rem;
+        }
+
+        .admin-login-copy h1 {
+          font-size: clamp(2.75rem, 13vw, 4.2rem);
+        }
+
+        .admin-login-copy p:last-child {
+          margin-top: 18px;
+          font-size: 0.9rem;
+        }
+
+        .admin-login-location {
+          font-size: 0.66rem;
+        }
+
+        .admin-login-panel {
+          padding: 46px 28px 52px;
+        }
+
+        .admin-login-panel::before {
+          top: 22px;
+          right: 26px;
+        }
+
+        .admin-login-card h1 {
+          font-size: 2.45rem;
+        }
+
+        .admin-post {
+          grid-template-columns: 1fr;
+        }
+
+        .admin-post-actions {
+          grid-column: 1;
+          grid-row: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="admin-body" data-view="login" data-supabase-url={supabaseUrl} data-supabase-anon={supabaseAnonKey}>
+    <header class="admin-bar">
+      <div class="frame admin-bar-inner">
+        <a href={site.url || '/'}>← Site</a>
+        <span class="admin-bar-title">Painel do blog</span>
+        <button id="logout" class="button button-light" type="button" hidden>Sair</button>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <noscript>Este painel precisa de JavaScript para funcionar.</noscript>
+
+      <section id="view-login" class="admin-login" hidden aria-labelledby="login-title">
+        <div class="admin-login-intro">
+          <a class="admin-login-brand" href={site.url || '/'} aria-label={`Ir para ${site.name}`}>
+            <img src={site.logo.src} width={site.logo.width} height={site.logo.height} alt="" />
+          </a>
+
+          <div class="admin-login-copy">
+            <p class="admin-login-eyebrow">Comunicação que serve</p>
+            <h1>Palavras que <em>alcançam</em> vidas.</h1>
+            <p>Um espaço para cuidar das histórias, notícias e mensagens que a Missão Internacional Resgate compartilha com o mundo.</p>
+          </div>
+
+          <p class="admin-login-location">São José · Santa Catarina</p>
+        </div>
+
+        <div class="admin-login-panel">
+          <div class="admin-login-card">
+            <p>Área da equipe</p>
+            <h1 id="login-title">Acesse o <span>painel.</span></h1>
+            <p id="login-description" class="admin-login-description">Entre com suas credenciais para administrar as publicações do blog.</p>
+            <form id="login-form">
+              <label class="admin-field">E-mail
+                <input id="login-email" type="email" autocomplete="username" inputmode="email" required />
+              </label>
+              <label class="admin-field">Senha
+                <span class="admin-password-control">
+                  <input id="login-password" type="password" autocomplete="current-password" required />
+                  <button id="password-toggle" class="admin-password-toggle" type="button" aria-controls="login-password" aria-label="Mostrar senha" aria-pressed="false">
+                    <svg data-password-eye="show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.45-6 9.5-6 9.5 6 9.5 6-3.45 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.8" /></svg>
+                    <svg data-password-eye="hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M3 3 21 21" /><path d="M10.55 6.18A10.5 10.5 0 0 1 12 6c6.05 0 9.5 6 9.5 6a17.4 17.4 0 0 1-3.04 3.72M6.1 6.12A17.8 17.8 0 0 0 2.5 12S5.95 18 12 18c1.43 0 2.72-.33 3.83-.83" /><path d="M9.88 9.88a3 3 0 0 0 4.24 4.24" /></svg>
+                  </button>
+                </span>
+              </label>
+              <div class="admin-login-actions">
+                <button id="forgot-password" class="admin-forgot-link" type="button">Esqueceu a senha?</button>
+              </div>
+              <button class="button button-gold admin-login-submit" type="submit">Entrar no painel</button>
+              <p class="admin-error" id="login-error" role="alert"></p>
+              <p class="admin-login-message" id="login-message" role="status" aria-live="polite"></p>
+            </form>
+            <form id="reset-password-form" hidden>
+              <label class="admin-field">Nova senha
+                <input id="reset-password" type="password" autocomplete="new-password" minlength="6" required />
+              </label>
+              <label class="admin-field">Confirme a nova senha
+                <input id="reset-password-confirmation" type="password" autocomplete="new-password" minlength="6" required />
+              </label>
+              <button class="button button-gold admin-login-submit" type="submit">Salvar nova senha</button>
+              <p class="admin-error" id="reset-error" role="alert"></p>
+              <p class="admin-login-message" id="reset-message" role="status" aria-live="polite"></p>
+              <button id="reset-cancel" class="admin-reset-back" type="button">Voltar para o acesso</button>
+            </form>
+            <p class="admin-login-note"><strong>Acesso restrito.</strong> Use sua conta autorizada para gerenciar os conteúdos da igreja.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-list" hidden>
+        <div class="admin-list-head">
+          <h1>Publicações</h1>
+          <button id="new-post" class="button button-gold" type="button">Nova publicação</button>
+        </div>
+        <p class="admin-hint" id="admin-hint" hidden>
+          Sua conta ainda não está liberada como administradora do blog. Ela consegue entrar, mas não
+          consegue escrever: peça para alguém rodar o insert da tabela <code>admins</code> (supabase/schema.sql)
+          com o seu usuário.
+        </p>
+        <ul class="admin-posts" id="post-list"></ul>
+      </section>
+
+      <section id="view-editor" hidden>
+        <div class="admin-editor-head">
+          <div class="admin-editor-row">
+            <label class="admin-field">Idioma do texto original
+              <select id="source-lang">
+                <option value="pt">Português</option>
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <label class="admin-field">Endereço do post (slug, igual nos três idiomas)
+              <input id="slug" type="text" spellcheck="false" placeholder="ex.: culto-de-pascoa" />
+            </label>
+            <p class="admin-field" style="margin-bottom: 4px">
+              Situação
+              <span><span class="admin-badge" id="post-status" data-status="draft">Rascunho</span> <span id="published-at"></span></span>
+            </p>
+          </div>
+          <div class="admin-editor-actions">
+            <button id="btn-back" class="button button-light" type="button">Voltar</button>
+            <button id="btn-save-draft" class="button button-outline" type="button">Salvar rascunho</button>
+            <button id="btn-publish" class="button button-dark" type="button">Publicar e traduzir</button>
+            <button id="btn-unpublish" class="button button-light" type="button" hidden>Despublicar</button>
+            <button id="btn-retranslate" class="button button-outline" type="button" hidden>Atualizar traduções</button>
+          </div>
+        </div>
+
+        <div class="admin-cover">
+          <img id="cover-preview" alt="" hidden />
+          <div class="admin-cover-buttons">
+            <label class="button button-light">Enviar capa<input id="cover-input" type="file" accept="image/*" hidden /></label>
+            <button id="cover-remove" class="button button-outline" type="button" hidden>Remover capa</button>
+          </div>
+        </div>
+
+        <div class="admin-tabs" role="tablist" aria-label="Idiomas do post">
+          <button class="admin-tab" id="tab-pt" role="tab" data-lang="pt" aria-selected="true">Português <span class="admin-tab-badge">original</span></button>
+          <button class="admin-tab" id="tab-es" role="tab" data-lang="es" aria-selected="false">Español <span class="admin-tab-badge"></span></button>
+          <button class="admin-tab" id="tab-en" role="tab" data-lang="en" aria-selected="false">English <span class="admin-tab-badge"></span></button>
+        </div>
+
+        {['pt', 'es', 'en'].map((lang) => (
+          <div class="admin-panel" id={`panel-${lang}`} data-panel={lang} hidden={lang !== 'pt'}>
+            <label class="admin-field">Título
+              <input data-field="title" type="text" />
+            </label>
+            <label class="admin-field">Resumo (aparece na listagem e nas redes)
+              <textarea data-field="excerpt" rows="2"></textarea>
+            </label>
+            <div class="admin-field">
+              <div class="admin-md-tools">
+                <label class="button button-light">Inserir imagem<input data-image-input type="file" accept="image/*" hidden /></label>
+                <button class="button button-light" type="button" data-preview-toggle>Prévia</button>
+              </div>
+              <textarea data-field="body" rows="16" placeholder="Escreva em Markdown: ## títulos, **negrito**, ![imagem](endereço), [link](endereço)…"></textarea>
+              <div class="admin-md-preview" data-preview hidden></div>
+            </div>
+            <label class="admin-field">Título para buscadores (opcional)
+              <input data-field="seo_title" type="text" />
+            </label>
+            <label class="admin-field">Descrição para buscadores (opcional)
+              <textarea data-field="seo_description" rows="2"></textarea>
+            </label>
+            <div class="admin-panel-actions">
+              <button class="button button-outline" type="button" data-save-lang>Salvar nesta língua</button>
+              <span class="admin-panel-hint"></span>
+            </div>
+          </div>
+        ))}
+      </section>
+    </main>
+
+    <p class="admin-status" id="status" role="status" aria-live="polite"></p>
+
+    <script>
+      import { createClient } from '@supabase/supabase-js';
+      import { marked } from 'marked';
+
+      const $ = (selector) => document.querySelector(selector);
+      const FIELDS = ['title', 'excerpt', 'body', 'seo_title', 'seo_description'];
+      const LANGS = ['pt', 'es', 'en'];
+
+      const supabaseUrl = document.body.dataset.supabaseUrl;
+      const supabaseAnon = document.body.dataset.supabaseAnon;
+      const configured = Boolean(supabaseUrl && supabaseAnon);
+      const supabase = configured ? createClient(supabaseUrl, supabaseAnon) : null;
+
+      let editing = null; // { id, slug, slugDirty, sourceLang, status, publishedAt, coverImage, translations: {pt,es,en} }
+      let statusTimer = null;
+
+      const slugify = (text) =>
+        text
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 80);
+
+      function status(message) {
+        const element = $('#status');
+        element.textContent = message;
+        element.toggleAttribute('data-on', Boolean(message));
+        clearTimeout(statusTimer);
+        statusTimer = setTimeout(() => element.removeAttribute('data-on'), 6000);
+      }
+
+      function showView(name) {
+        for (const view of ['login', 'list', 'editor']) $(`#view-${view}`).hidden = view !== name;
+        $('#logout').hidden = name === 'login';
+        document.body.dataset.view = name;
+        window.scrollTo({ top: 0 });
+      }
+
+      function activeLang() {
+        return document.querySelector('.admin-tab[aria-selected="true"]')?.dataset.lang ?? 'pt';
+      }
+
+      function showPanel(lang) {
+        for (const other of LANGS) {
+          $(`#panel-${other}`).hidden = other !== lang;
+          $(`#tab-${other}`).setAttribute('aria-selected', String(other === lang));
+        }
+      }
+
+      // ---------------------------------------------------------------- Login
+
+      function setLoginMode(mode = 'login') {
+        const isRecovery = mode === 'recovery';
+        $('#login-form').hidden = isRecovery;
+        $('#reset-password-form').hidden = !isRecovery;
+        $('#login-title').innerHTML = isRecovery ? 'Defina uma <span>nova senha.</span>' : 'Acesse o <span>painel.</span>';
+        $('#login-description').textContent = isRecovery
+          ? 'Escolha uma senha nova para voltar a acessar o painel do blog.'
+          : 'Entre com suas credenciais para administrar as publicações do blog.';
+        if (isRecovery) {
+          $('#reset-password').focus();
+        }
+      }
+
+      $('#password-toggle').addEventListener('click', () => {
+        const input = $('#login-password');
+        const isVisible = input.type === 'text';
+        input.type = isVisible ? 'password' : 'text';
+        $('#password-toggle').setAttribute('aria-pressed', String(!isVisible));
+        $('#password-toggle').setAttribute('aria-label', isVisible ? 'Mostrar senha' : 'Ocultar senha');
+        $('[data-password-eye="show"]').hidden = !isVisible;
+        $('[data-password-eye="hide"]').hidden = isVisible;
+      });
+
+      $('#forgot-password').addEventListener('click', async () => {
+        const emailInput = $('#login-email');
+        const email = emailInput.value.trim();
+        const button = $('#forgot-password');
+        const message = $('#login-message');
+
+        $('#login-error').textContent = '';
+        message.textContent = '';
+        if (!email || !emailInput.checkValidity()) {
+          $('#login-error').textContent = 'Informe um e-mail válido para recuperar a senha.';
+          emailInput.focus();
+          emailInput.reportValidity();
+          return;
+        }
+        if (!configured) return;
+
+        const label = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Enviando…';
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: new URL('/admin', window.location.origin).href,
+        });
+        button.disabled = false;
+        button.textContent = label;
+
+        if (error) {
+          $('#login-error').textContent = 'Não foi possível enviar o e-mail de recuperação. Tente novamente.';
+          return;
+        }
+        message.textContent = 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir sua senha.';
+      });
+
+      $('#reset-password-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const password = $('#reset-password').value;
+        const confirmation = $('#reset-password-confirmation').value;
+        const errorMessage = $('#reset-error');
+        const message = $('#reset-message');
+        errorMessage.textContent = '';
+        message.textContent = '';
+
+        if (password !== confirmation) {
+          errorMessage.textContent = 'As senhas precisam ser iguais.';
+          $('#reset-password-confirmation').focus();
+          return;
+        }
+        if (!configured) return;
+
+        const button = event.target.querySelector('button[type="submit"]');
+        button.disabled = true;
+        const { error } = await supabase.auth.updateUser({ password });
+        button.disabled = false;
+        if (error) {
+          errorMessage.textContent = 'Não foi possível atualizar a senha. Peça um novo link e tente novamente.';
+          return;
+        }
+
+        event.target.reset();
+        await supabase.auth.signOut();
+        setLoginMode();
+        $('#login-message').textContent = 'Senha atualizada. Entre usando sua nova senha.';
+      });
+
+      $('#reset-cancel').addEventListener('click', async () => {
+        await supabase?.auth.signOut();
+        setLoginMode();
+      });
+
+      $('#login-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (!configured) return;
+        $('#login-error').textContent = '';
+        $('#login-message').textContent = '';
+        const button = event.target.querySelector('button[type="submit"]');
+        button.disabled = true;
+        const { error } = await supabase.auth.signInWithPassword({
+          email: $('#login-email').value.trim(),
+          password: $('#login-password').value,
+        });
+        button.disabled = false;
+        if (error) {
+          $('#login-error').textContent = 'Não foi possível entrar. Confira o e-mail e a senha.';
+          return;
+        }
+        $('#login-error').textContent = '';
+        await enterList();
+      });
+
+      $('#logout').addEventListener('click', async () => {
+        await supabase?.auth.signOut();
+        editing = null;
+        showView('login');
+      });
+
+      // ------------------------------------------------------------- Listagem
+
+      async function enterList() {
+        await checkAdminHint();
+        await renderList();
+        showView('list');
+      }
+
+      async function checkAdminHint() {
+        if (!supabase) return;
+        const { data } = await supabase.from('admins').select('email').limit(1);
+        $('#admin-hint').hidden = Boolean(data?.length);
+      }
+
+      async function renderList() {
+        const list = $('#post-list');
+        list.replaceChildren();
+        const { data, error } = await supabase
+          .from('posts')
+          .select('id,slug,status,source_lang,published_at,post_translations(lang,title,manually_edited)')
+          .order('updated_at', { ascending: false });
+        if (error) {
+          status(`Não foi possível carregar os posts: ${error.message}`);
+          return;
+        }
+        if (!data?.length) {
+          const empty = document.createElement('li');
+          empty.className = 'admin-empty';
+          empty.textContent = 'Nenhuma publicação ainda. Comece com “Nova publicação”.';
+          list.append(empty);
+          return;
+        }
+        for (const post of data) {
+          const translations = Object.fromEntries((post.post_translations ?? []).map((t) => [t.lang, t]));
+          const title = translations[post.source_lang]?.title ?? post.slug;
+
+          const titleElement = document.createElement('p');
+          titleElement.className = 'admin-post-title';
+          titleElement.textContent = title;
+
+          const badge = document.createElement('span');
+          badge.className = 'admin-badge';
+          badge.dataset.status = post.status;
+          badge.textContent = post.status === 'published' ? 'Publicado' : 'Rascunho';
+
+          const meta = document.createElement('p');
+          meta.className = 'admin-post-meta';
+          meta.append(badge);
+          meta.append(document.createTextNode(`/${post.slug}`));
+          if (post.published_at) meta.append(document.createTextNode(new Date(post.published_at).toLocaleDateString('pt-BR')));
+
+          const editButton = document.createElement('button');
+          editButton.className = 'button button-outline';
+          editButton.type = 'button';
+          editButton.textContent = 'Editar';
+          editButton.addEventListener('click', () => openEditor(post.id));
+
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'button button-light';
+          deleteButton.type = 'button';
+          deleteButton.textContent = 'Apagar';
+          deleteButton.addEventListener('click', () => deletePost(post.id, title));
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-post-actions';
+          actions.append(editButton, deleteButton);
+
+          const item = document.createElement('li');
+          item.className = 'admin-post';
+          item.append(titleElement, meta, actions);
+          list.append(item);
+        }
+      }
+
+      async function deletePost(id, title) {
+        if (!confirm(`Apagar “${title}”? As três versões e as imagens ligadas ao texto somem junto.`)) return;
+        const { error } = await supabase.from('posts').delete().eq('id', id);
+        if (error) {
+          status(`Não foi possível apagar: ${error.message}`);
+          return;
+        }
+        await renderList();
+      }
+
+      // --------------------------------------------------------------- Editor
+
+      $('#new-post').addEventListener('click', () => {
+        editing = { id: null, slug: '', slugDirty: false, sourceLang: 'pt', status: 'draft', publishedAt: null, coverImage: null, translations: { pt: null, es: null, en: null } };
+        fillEditor();
+        showView('editor');
+      });
+
+      $('#btn-back').addEventListener('click', async () => {
+        await renderList();
+        showView('list');
+      });
+
+      async function openEditor(id) {
+        const { data, error } = await supabase.from('posts').select('*,post_translations(*)').eq('id', id).single();
+        if (error || !data) {
+          status('Não foi possível abrir o post.');
+          return;
+        }
+        editing = {
+          id: data.id,
+          slug: data.slug,
+          slugDirty: true,
+          sourceLang: data.source_lang,
+          status: data.status,
+          publishedAt: data.published_at,
+          coverImage: data.cover_image,
+          translations: { pt: null, es: null, en: null },
+        };
+        for (const translation of data.post_translations ?? []) editing.translations[translation.lang] = translation;
+        fillEditor();
+        showView('editor');
+      }
+
+      function fillEditor() {
+        $('#source-lang').value = editing.sourceLang;
+        $('#slug').value = editing.slug;
+        $('#post-status').textContent = editing.status === 'published' ? 'Publicado' : 'Rascunho';
+        $('#post-status').dataset.status = editing.status;
+        $('#published-at').textContent = editing.publishedAt
+          ? `· ${new Date(editing.publishedAt).toLocaleDateString('pt-BR')}`
+          : '';
+
+        const cover = $('#cover-preview');
+        if (editing.coverImage) {
+          cover.src = editing.coverImage;
+          cover.hidden = false;
+          $('#cover-remove').hidden = false;
+        } else {
+          cover.removeAttribute('src');
+          cover.hidden = true;
+          $('#cover-remove').hidden = true;
+        }
+
+        $('#btn-publish').hidden = editing.status === 'published';
+        $('#btn-unpublish').hidden = editing.status !== 'published';
+        $('#btn-retranslate').hidden = editing.status !== 'published';
+        $('#btn-save-draft').textContent = editing.status === 'published' ? 'Salvar alterações' : 'Salvar rascunho';
+
+        renderTabs();
+        showPanel(editing.sourceLang);
+        fillPanel(editing.sourceLang);
+      }
+
+      function renderTabs() {
+        for (const lang of LANGS) {
+          const translation = editing.translations[lang];
+          const badge = $(`#tab-${lang} .admin-tab-badge`);
+          let label;
+          let state = '';
+          if (lang === editing.sourceLang) {
+            label = 'original';
+            state = 'original';
+          } else if (!translation) {
+            label = 'sem tradução';
+          } else if (translation.manually_edited) {
+            label = 'editada à mão';
+            state = 'manual';
+          } else {
+            label = 'automática';
+          }
+          badge.textContent = label;
+          if (state) badge.dataset.state = state;
+          else delete badge.dataset.state;
+        }
+      }
+
+      function fillPanel(lang) {
+        const panel = $(`#panel-${lang}`);
+        const translation = editing.translations[lang] ?? {};
+        for (const field of FIELDS) panel.querySelector(`[data-field="${field}"]`).value = translation[field] ?? '';
+        panel.querySelector('[data-preview]').hidden = true;
+        panel.querySelector('.admin-panel-hint').textContent =
+          lang === editing.sourceLang
+            ? 'Este é o texto original. Ao publicar, as outras duas línguas são traduzidas na hora.'
+            : editing.translations[lang]?.manually_edited
+              ? 'Editada à mão: “Atualizar traduções” não mexe nesta língua.'
+              : editing.translations[lang]
+                ? 'Tradução automática: pode corrigir à mão; o que for corrigido deixa de ser retraduzido.'
+                : 'Vai ser traduzida automaticamente ao publicar.';
+      }
+
+      for (const tab of document.querySelectorAll('.admin-tab')) {
+        tab.addEventListener('click', () => showPanel(tab.dataset.lang));
+      }
+
+      // Trocar o idioma original atualiza abas e painel; as traduções antigas continuam salvas.
+      $('#source-lang').addEventListener('change', (event) => {
+        editing.sourceLang = event.target.value;
+        renderTabs();
+        showPanel(editing.sourceLang);
+        fillPanel(editing.sourceLang);
+        status('Idioma original alterado. Publique de novo para retraduzir as outras línguas.');
+      });
+
+      $('#slug').addEventListener('input', () => {
+        editing.slugDirty = true;
+      });
+
+      // Título no painel do original sugere o slug enquanto ninguém o editar à mão.
+      for (const panel of document.querySelectorAll('.admin-panel')) {
+        panel.querySelector('[data-field="title"]').addEventListener('input', (event) => {
+          if (panel.dataset.panel === editing.sourceLang && !editing.slugDirty) {
+            $('#slug').value = slugify(event.target.value);
+          }
+        });
+
+        panel.querySelector('[data-preview-toggle]').addEventListener('click', () => {
+          const preview = panel.querySelector('[data-preview]');
+          preview.hidden = !preview.hidden;
+          if (!preview.hidden) {
+            preview.innerHTML = marked.parse(panel.querySelector('[data-field="body"]').value.replace(/</g, '&lt;'), {
+              async: false,
+            });
+          }
+        });
+
+        panel.querySelector('[data-image-input]').addEventListener('change', async (event) => {
+          const file = event.target.files?.[0];
+          event.target.value = '';
+          if (!file) return;
+          status('Enviando imagem…');
+          const url = await uploadImage(file);
+          if (!url) return;
+          const textarea = panel.querySelector('[data-field="body"]');
+          const markdown = `![imagem](${url})`;
+          const start = textarea.selectionStart ?? textarea.value.length;
+          const end = textarea.selectionEnd ?? start;
+          textarea.setRangeText(markdown, start, end, 'end');
+          textarea.focus();
+          status('Imagem inserida no texto. Salve para guardar.');
+        });
+
+        panel.querySelector('[data-save-lang]').addEventListener('click', () => saveLang(panel.dataset.panel));
+      }
+
+      // ---------------------------------------------------------------- Capa
+
+      $('#cover-input').addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        status('Enviando capa…');
+        const url = await uploadImage(file);
+        if (!url) return;
+        editing.coverImage = url;
+        const cover = $('#cover-preview');
+        cover.src = url;
+        cover.hidden = false;
+        $('#cover-remove').hidden = false;
+        status('Capa enviada. Salve o post para guardar.');
+      });
+
+      $('#cover-remove').addEventListener('click', () => {
+        editing.coverImage = null;
+        $('#cover-preview').removeAttribute('src');
+        $('#cover-preview').hidden = true;
+        $('#cover-remove').hidden = true;
+      });
+
+      // -------------------------------------------------------------- Imagens
+
+      async function uploadImage(file) {
+        if (!editing?.id && !$('#slug').value.trim()) {
+          status('Preencha o título (e o slug) antes de enviar imagens.');
+          return null;
+        }
+        const extension = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const month = new Date().toISOString().slice(0, 7);
+        const path = `uploads/${month}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+        const { error } = await supabase.storage.from('blog').upload(path, file, { contentType: file.type, upsert: false });
+        if (error) {
+          status(`Não foi possível enviar a imagem: ${error.message}`);
+          return null;
+        }
+        return `${supabaseUrl}/storage/v1/object/public/blog/${path}`;
+      }
+
+      // ---------------------------------------------------------- Salvar etc.
+
+      function readPanel(lang) {
+        const panel = $(`#panel-${lang}`);
+        const values = {};
+        for (const field of FIELDS) values[field] = panel.querySelector(`[data-field="${field}"]`).value.trim();
+        return values;
+      }
+
+      async function savePost({ publish = false, unpublish = false } = {}) {
+        const slug = $('#slug').value.trim();
+        const original = readPanel(editing.sourceLang);
+        if (!original.title) {
+          status('O título no idioma original é obrigatório.');
+          showPanel(editing.sourceLang);
+          return null;
+        }
+        if (!slug) {
+          status('O endereço do post (slug) é obrigatório.');
+          return null;
+        }
+
+        if (publish && editing.status !== 'published') editing.publishedAt = new Date().toISOString();
+        if (unpublish) editing.status = 'draft';
+        else if (publish) editing.status = 'published';
+
+        const row = {
+          slug,
+          source_lang: editing.sourceLang,
+          cover_image: editing.coverImage || null,
+          status: editing.status,
+          published_at: editing.publishedAt || null,
+        };
+        if (editing.id) row.id = editing.id;
+
+        status('Salvando…');
+        const { data, error } = await supabase.from('posts').upsert(row).select().single();
+        if (error) {
+          status(`Erro ao salvar o post: ${error.message}`);
+          return null;
+        }
+        editing.id = data.id;
+        editing.slug = data.slug;
+        editing.status = data.status;
+        editing.publishedAt = data.published_at;
+
+        const translationRow = {
+          post_id: editing.id,
+          lang: editing.sourceLang,
+          ...original,
+          is_original: true,
+          manually_edited: true,
+        };
+        const { error: translationError } = await supabase
+          .from('post_translations')
+          .upsert(translationRow, { onConflict: 'post_id,lang' });
+        if (translationError) {
+          status(`Erro ao salvar o texto: ${translationError.message}`);
+          return null;
+        }
+        editing.translations[editing.sourceLang] = { ...(editing.translations[editing.sourceLang] ?? {}), ...translationRow };
+        return data;
+      }
+
+      async function saveLang(lang) {
+        if (!editing.id) {
+          status('Salve o post primeiro (rascunho ou publicar).');
+          return;
+        }
+        const values = readPanel(lang);
+        if (!values.title) {
+          status(`O título em ${lang.toUpperCase()} é obrigatório para salvar a língua.`);
+          return;
+        }
+        const row = {
+          post_id: editing.id,
+          lang,
+          ...values,
+          is_original: lang === editing.sourceLang,
+          manually_edited: true,
+        };
+        const { error } = await supabase.from('post_translations').upsert(row, { onConflict: 'post_id,lang' });
+        if (error) {
+          status(`Erro ao salvar: ${error.message}`);
+          return;
+        }
+        editing.translations[lang] = { ...(editing.translations[lang] ?? {}), ...row };
+        renderTabs();
+        fillPanel(lang);
+        status('Salvo. Como foi correção à mão, a retradução automática não mexe mais nesta língua.');
+      }
+
+      async function callTranslate() {
+        const { data } = await supabase.auth.getSession();
+        const token = data?.session?.access_token;
+        if (!token) {
+          status('Sua sessão expirou. Entre de novo.');
+          showView('login');
+          return null;
+        }
+        status('Traduzindo com a DeepL…');
+        const response = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ postId: editing.id }),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          status(payload.error ?? 'Falha na tradução.');
+          return null;
+        }
+        return payload;
+      }
+
+      async function refreshEditor() {
+        if (!editing.id) return;
+        const { data } = await supabase.from('posts').select('*,post_translations(*)').eq('id', editing.id).single();
+        if (!data) return;
+        editing.status = data.status;
+        editing.publishedAt = data.published_at;
+        editing.coverImage = data.cover_image;
+        editing.translations = { pt: null, es: null, en: null };
+        for (const translation of data.post_translations ?? []) editing.translations[translation.lang] = translation;
+        fillEditor();
+      }
+
+      $('#btn-save-draft').addEventListener('click', async () => {
+        if (await savePost({})) {
+          renderTabs();
+          fillPanel(activeLang());
+          status('Rascunho salvo.');
+          await renderList();
+        }
+      });
+
+      $('#btn-publish').addEventListener('click', async () => {
+        if (!(await savePost({ publish: true }))) return;
+        fillEditor();
+        const result = await callTranslate();
+        await refreshEditor();
+        if (result) {
+          const parts = [];
+          if (result.translated.length) parts.push(`traduzido para ${result.translated.map((l) => l.toUpperCase()).join(' e ')}`);
+          if (result.skipped.length) parts.push(`${result.skipped.map((l) => l.toUpperCase()).join(' e ')} ficaram como estão (editadas à mão)`);
+          status(`Publicado! ${parts.join('; ')}.`);
+        }
+      });
+
+      $('#btn-unpublish').addEventListener('click', async () => {
+        if (!(await savePost({ unpublish: true }))) return;
+        fillEditor();
+        status('Post voltou a rascunho: some do site até publicar de novo.');
+      });
+
+      $('#btn-retranslate').addEventListener('click', async () => {
+        // Garante que o texto original salvo é o que está na tela.
+        if (!(await savePost({}))) return;
+        const result = await callTranslate();
+        await refreshEditor();
+        if (result) {
+          const parts = [];
+          if (result.translated.length) parts.push(`retraduzido: ${result.translated.map((l) => l.toUpperCase()).join(' e ')}`);
+          if (result.skipped.length) parts.push(`mantive ${result.skipped.map((l) => l.toUpperCase()).join(' e ')} (editadas à mão)`);
+          status(parts.length ? parts.join('; ') + '.' : 'Nada para retraduzir: as duas línguas foram editadas à mão.');
+        }
+      });
+
+      // ---------------------------------------------------------------- Início
+
+      (async () => {
+        if (!configured) {
+          $('#login-error').textContent =
+            'O Supabase ainda não está configurado neste ambiente (PUBLIC_SUPABASE_URL e PUBLIC_SUPABASE_ANON_KEY).';
+          showView('login');
+          return;
+        }
+        const { data } = await supabase.auth.getSession();
+        const isRecoveryLink = window.location.hash.includes('type=recovery') || new URLSearchParams(window.location.search).has('code');
+        if (data?.session && isRecoveryLink) {
+          showView('login');
+          setLoginMode('recovery');
+        } else if (data?.session) await enterList();
+        else showView('login');
+        supabase.auth.onAuthStateChange((event) => {
+          if (event === 'PASSWORD_RECOVERY') {
+            showView('login');
+            setLoginMode('recovery');
+          }
+          if (event === 'SIGNED_OUT') {
+            setLoginMode();
+            showView('login');
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

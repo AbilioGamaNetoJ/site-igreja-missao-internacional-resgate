@@ -7,24 +7,33 @@ import { defaultLang, languages, pathFor } from '../i18n/routes.js';
 import { site } from '../data/site.js';
 import { structuredData } from '../data/seo.js';
 
-const { lang, page } = Astro.props;
+// `page` busca título, descrição e endereços em src/i18n/content.js e src/i18n/routes.js.
+// `meta` sobrepõe tudo isso para páginas dinâmicas (artigos do blog):
+// { title, description, path, languagePaths: { pt, es, en }, image: { src, alt },
+//   type: 'article', publishedTime, modifiedTime, noindex, jsonLd }
+const { lang, page, meta } = Astro.props;
 const t = content[lang];
-const pageTitle = t.meta.titles[page];
-const title = page === 'home' ? `${site.name} | ${pageTitle}` : `${pageTitle} | ${site.name}`;
-const description = t.meta.descriptions[page];
+const pageTitle = meta?.title ?? t.meta.titles[page];
+const title = !meta && page === 'home' ? `${site.name} | ${pageTitle}` : `${pageTitle} | ${site.name}`;
+const description = meta?.description ?? t.meta.descriptions[page];
 const base = Astro.site;
+const pagePath = meta?.path ?? pathFor(page, lang);
+const languagePaths =
+  meta?.languagePaths ?? Object.fromEntries(Object.keys(languages).map((code) => [code, pathFor(page, code)]));
 
 // Canonical, hreflang e a imagem de compartilhamento precisam do domínio (site.url em src/data/site.js).
-const canonical = base && new URL(pathFor(page, lang), base).href;
-const shareImage = base && new URL(site.shareImage.src, base).href;
+const canonical = base && new URL(pagePath, base).href;
+const isArticle = meta?.type === 'article';
+const shareImage = meta?.image?.src ?? (base && new URL(site.shareImage.src, base).href);
+const shareImageAlt = meta?.image?.alt ?? t.meta.shareImageAlt;
 const alternates = base
   ? [
-      ...Object.entries(languages).map(([code, language]) => ({ hreflang: language.htmlLang, href: new URL(pathFor(page, code), base).href })),
-      { hreflang: 'x-default', href: new URL(pathFor(page, defaultLang), base).href },
+      ...Object.entries(languages).map(([code, language]) => ({ hreflang: language.htmlLang, href: new URL(languagePaths[code], base).href })),
+      { hreflang: 'x-default', href: new URL(languagePaths[defaultLang], base).href },
     ]
   : [];
 const otherLocales = Object.entries(languages).filter(([code]) => code !== lang).map(([, language]) => language.ogLocale);
-const jsonLd = structuredData({ lang, page, title, base });
+const jsonLd = meta?.jsonLd ?? structuredData({ lang, page, title, base });
 ---
 
 <!doctype html>
@@ -35,27 +44,37 @@ const jsonLd = structuredData({ lang, page, title, base });
     <meta name="theme-color" content="#000000" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    {meta?.noindex ? (
+      <meta name="robots" content="noindex, nofollow" />
+    ) : (
+      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    )}
     {canonical && <link rel="canonical" href={canonical} />}
     {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />)}
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
-    <link rel="icon" type="image/png" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="icon" type="image/png" sizes="720x720" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" type="image/png" sizes="720x720" href="/apple-touch-icon.png" />
 
     <!-- Prévia do link no WhatsApp, Facebook e outras redes -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={isArticle ? 'article' : 'website'} />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:locale" content={languages[lang].ogLocale} />
     {otherLocales.map((locale) => <meta property="og:locale:alternate" content={locale} />)}
     {canonical && <meta property="og:url" content={canonical} />}
+    {isArticle && meta.publishedTime && <meta property="article:published_time" content={meta.publishedTime} />}
+    {isArticle && meta.modifiedTime && <meta property="article:modified_time" content={meta.modifiedTime} />}
     {shareImage && (
       <Fragment>
         <meta property="og:image" content={shareImage} />
-        <meta property="og:image:width" content={String(site.shareImage.width)} />
-        <meta property="og:image:height" content={String(site.shareImage.height)} />
-        <meta property="og:image:alt" content={t.meta.shareImageAlt} />
+        {!meta?.image && (
+          <Fragment>
+            <meta property="og:image:width" content={String(site.shareImage.width)} />
+            <meta property="og:image:height" content={String(site.shareImage.height)} />
+          </Fragment>
+        )}
+        <meta property="og:image:alt" content={shareImageAlt} />
       </Fragment>
     )}
     <meta name="twitter:card" content={shareImage ? 'summary_large_image' : 'summary'} />
@@ -69,7 +88,7 @@ const jsonLd = structuredData({ lang, page, title, base });
   </head>
   <body>
     <a class="skip-link" href="#conteudo">{t.ui.skip}</a>
-    <Header lang={lang} page={page} />
+    <Header lang={lang} page={page} altPaths={meta?.languagePaths} />
     <main id="conteudo">
       <slot />
     </main>

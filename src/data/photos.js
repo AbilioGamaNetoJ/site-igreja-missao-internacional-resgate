@@ -3,12 +3,12 @@
 // PROVISÓRIO: várias páginas reutilizam as mesmas fotos até a igreja enviar fotos das ações e dos encontros.
 
 export const photos = {
-  facade: '/capa.jpeg',
-  hall: '/igreja-espaco.jpeg',
-  hallTables: '/igreja-espaco2.jpeg',
-  worship: '/image1.jpeg',
-  preaching: '/image2.jpeg',
-  congregation: '/image3.jpeg',
-  gathering: '/image4.jpeg',
-  praise: '/image5.jpeg',
+  facade: '/capa.webp',
+  hall: '/igreja-espaco.webp',
+  hallTables: '/igreja-espaco2.webp',
+  worship: '/image1.webp',
+  preaching: '/image2.webp',
+  congregation: '/image3.webp',
+  gathering: '/image4.webp',
+  praise: '/image5.webp',
 };

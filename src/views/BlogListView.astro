@@ -1,0 +1,192 @@
+---
+// Listagem do blog (/blog, /es/blog, /en/blog). Sob demanda: um post publicado
+// aparece aqui na hora, sem novo deploy.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import IntroStatement from '../components/IntroStatement.astro';
+import QuickLinks from '../components/QuickLinks.astro';
+import Icon from '../components/Icon.astro';
+import { content } from '../i18n/content.js';
+import { languages, blogPath } from '../i18n/routes.js';
+import { photos } from '../data/photos.js';
+import { fetchPublishedPosts, translationsByLang } from '../lib/supabase.js';
+
+const { lang } = Astro.props;
+const t = content[lang];
+const posts = await fetchPublishedPosts();
+const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<BaseLayout lang={lang} page="blog">
+  <PageHero image={photos.worship} titleA={t.blog.hero.a} titleB={t.blog.hero.b} />
+  <IntroStatement title={t.blog.intro} />
+
+  <section class="section blog-list">
+    <div class="frame">
+      {posts.length === 0 ? (
+        <p class="empty">{t.blog.empty}</p>
+      ) : (
+        <ul class="post-grid">
+          {posts.map((post) => {
+            const translation = translationsByLang(post)[lang];
+            const hasCover = Boolean(post.cover_image);
+            return (
+              <li>
+                <a class="card" href={blogPath(lang, post.slug)} data-reveal>
+                  <figure>
+                    <img
+                      src={hasCover ? post.cover_image : photos.praise}
+                      alt={hasCover ? translation.title : t.photos.praise}
+                      loading="lazy"
+                    />
+                  </figure>
+                  <div class="card-body">
+                    <p class="post-date">
+                      <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
+                    </p>
+                    <h2>{translation.title}</h2>
+                    {translation.excerpt && <p class="excerpt">{translation.excerpt}</p>}
+                    <span class="read">{t.blog.readMore}<Icon name="arrow-right" size={16} /></span>
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <QuickLinks lang={lang} current="blog" title={t.ui.readyTitle} />
+</BaseLayout>
+
+<style>
+  .blog-list {
+    padding-top: 0;
+  }
+
+  .empty {
+    padding: 32px 24px;
+    border: 1px dashed var(--line);
+    border-radius: 20px;
+    color: var(--muted);
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .post-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+
+  /* O post mais recente ocupa a linha inteira. */
+  .post-grid li:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .post-grid li:first-child figure {
+    aspect-ratio: 21 / 9;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-photo);
+    overflow: hidden;
+    background: var(--sand);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 34px rgba(30, 26, 19, 0.14);
+  }
+
+  figure {
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+  }
+
+  figure img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .card:hover figure img {
+    transform: scale(1.04);
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    padding: 24px clamp(20px, 3vw, 30px) 28px;
+  }
+
+  .post-date {
+    color: var(--gold-script);
+    font-family: var(--display);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(1.4rem, 2.6vw, 1.9rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .excerpt {
+    color: var(--muted);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .read {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 8px;
+    color: var(--gold-ink);
+    font-family: var(--display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .read svg {
+    transition: transform 0.25s ease;
+  }
+
+  .card:hover .read svg {
+    transform: translateX(4px);
+  }
+
+  @media (max-width: 760px) {
+    .post-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .post-grid li:first-child figure {
+      aspect-ratio: 3 / 2;
+    }
+  }
+</style>

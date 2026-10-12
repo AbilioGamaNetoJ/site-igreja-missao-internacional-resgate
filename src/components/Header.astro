@@ -4,8 +4,11 @@ import { content } from '../i18n/content.js';
 import { languages, navPages, pathFor } from '../i18n/routes.js';
 import { site, whatsappLink } from '../data/site.js';
 
-const { lang, page } = Astro.props;
+// altPaths sobrepõe o destino do seletor de idiomas em páginas dinâmicas
+// (artigo do blog: o mesmo slug existe nos três idiomas, cada um no seu prefixo).
+const { lang, page, altPaths } = Astro.props;
 const t = content[lang];
+const langHref = (code) => altPaths?.[code] ?? pathFor(page, code);
 ---
 
 <div class="header-space">
@@ -33,7 +36,7 @@ const t = content[lang];
         <ul class="language-switcher" aria-label={t.ui.language}>
           {Object.entries(languages).map(([code, language]) => (
             <li>
-              <a href={pathFor(page, code)} hreflang={language.htmlLang} lang={language.htmlLang} aria-current={code === lang ? 'true' : undefined}>
+              <a href={langHref(code)} hreflang={language.htmlLang} lang={language.htmlLang} aria-current={code === lang ? 'true' : undefined}>
                 <span aria-hidden="true">{language.flag} {language.label}</span>
                 <span class="sr-only">{language.name}</span>
               </a>
