@@ -4,10 +4,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import { content } from '../i18n/content.js';
-import { defaultLang, languages, blogPath, pathFor } from '../i18n/routes.js';
+import { languages, blogPath, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { site } from '../data/site.js';
-import { translationsByLang, categoryName } from '../lib/supabase.js';
+import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
 import { renderMarkdown } from '../lib/markdown.js';
 
 const { lang, post } = Astro.props;
@@ -19,6 +19,18 @@ const coverAlt = hasCover ? translation.title : t.photos.worship;
 const base = Astro.site;
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
 const categoryLabel = categoryName(post, lang);
+
+// Primeiro aparecem textos da mesma categoria; os demais completam as sugestões.
+const publishedPosts = await fetchPublishedPosts();
+const sameCategoryPosts = post.category
+  ? publishedPosts.filter((candidate) => candidate.id !== post.id && candidate.category === post.category)
+  : [];
+const otherPosts = publishedPosts.filter((candidate) => candidate.id !== post.id && (!post.category || candidate.category !== post.category));
+const relatedPosts = [...sameCategoryPosts, ...otherPosts].slice(0, 6);
+const sidebarPosts = relatedPosts.slice(0, 3);
+const bottomPosts = relatedPosts.slice(3, 6);
+const relatedCover = (relatedPost) => relatedPost.cover_image || photos.praise;
+const relatedAlt = (relatedPost, relatedTranslation) => relatedPost.cover_image ? relatedTranslation.title : t.photos.praise;
 
 // Mesma lógica de canonical e hreflang do BaseLayout, mas com os endereços do post:
 // o slug é único e igual nos três idiomas, então só o prefixo muda.
@@ -45,7 +57,7 @@ const jsonLd = JSON.stringify({
     logo: { '@type': 'ImageObject', url: base ? new URL(site.symbol.src, base).href : site.symbol.src },
   },
   mainEntityOfPage: base ? new URL(languagePaths[lang], base).href : languagePaths[lang],
-}).replace(/</g, '\\u003c');
+}).replace(/</g, '\u003c');
 ---
 
 <BaseLayout
@@ -63,243 +75,413 @@ const jsonLd = JSON.stringify({
     jsonLd,
   }}
 >
-  <section class="post-hero">
-    <img class="post-hero-image" src={cover} alt={coverAlt} fetchpriority="high" />
-    <div class="post-hero-content frame">
-      <p class="post-date">
-        {categoryLabel && <span class="tag">{categoryLabel}</span>}
-        <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
-        {post.author && <span class="author">{t.blog.by} {post.author}</span>}
-      </p>
-      <h1>{translation.title}</h1>
-    </div>
-  </section>
+  <section class="article-page">
+    <div class="frame article-layout">
+      <article class="post">
+        <header class="post-header">
+          <a class="back" href={blogPath(lang)}><Icon name="arrow-right" size={16} />{t.blog.back}</a>
+          <p class="post-meta">
+            {categoryLabel && <span>{categoryLabel}</span>}
+            <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
+            {post.author && <span>{t.blog.by} {post.author}</span>}
+          </p>
+          <h1>{translation.title}</h1>
+        </header>
 
-  <article class="section">
-    <div class="post frame" data-reveal>
-      {translation.bible_reference && (
-        <p class="scripture"><span>{t.blog.passage}</span>{translation.bible_reference}</p>
-      )}
-      {translation.excerpt && <p class="lead">{translation.excerpt}</p>}
-      <div class="article-body" set:html={renderMarkdown(translation.body)} />
-      <a class="arrow-link back" href={blogPath(lang)}><Icon name="arrow-right" size={16} />{t.blog.back}</a>
+        <figure class="article-cover">
+          <img src={cover} alt={coverAlt} fetchpriority="high" />
+        </figure>
+
+        {translation.bible_reference && (
+          <p class="scripture"><span>{t.blog.passage}</span>{translation.bible_reference}</p>
+        )}
+        {translation.excerpt && <p class="lead">{translation.excerpt}</p>}
+        <div class="article-body" set:html={renderMarkdown(translation.body)} />
+      </article>
+
+      <aside class="article-sidebar">
+        <form class="post-search" role="search" action={blogPath(lang)} method="get">
+          <label class="sr-only" for="article-search">{t.blog.search}</label>
+          <input id="article-search" name="search" type="search" placeholder={t.blog.searchPlaceholder} />
+          <button type="submit" aria-label={t.blog.searchSubmit} title={t.blog.searchSubmit}><Icon name="search" size={17} /></button>
+        </form>
+
+        {sidebarPosts.length > 0 && (
+          <section class="sidebar-related" aria-labelledby="sidebar-related-title">
+            <h2 id="sidebar-related-title">{t.blog.relatedPosts}</h2>
+            <ol>
+              {sidebarPosts.map((relatedPost) => {
+                const relatedTranslation = translationsByLang(relatedPost)[lang];
+                const relatedCategory = categoryName(relatedPost, lang);
+                return (
+                  <li>
+                    <a href={blogPath(lang, relatedPost.slug)}>
+                      <img src={relatedCover(relatedPost)} alt={relatedAlt(relatedPost, relatedTranslation)} loading="lazy" />
+                      <span>
+                        {relatedCategory && <small>{relatedCategory}</small>}
+                        <strong>{relatedTranslation.title}</strong>
+                        <time datetime={relatedPost.published_at}>{dateFormatter.format(new Date(relatedPost.published_at))}</time>
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
+      </aside>
     </div>
-  </article>
+
+    {bottomPosts.length > 0 && (
+      <section class="related-bottom" aria-labelledby="related-bottom-title">
+        <div class="frame">
+          <h2 id="related-bottom-title">{t.blog.moreRelatedPosts}</h2>
+          <ul>
+            {bottomPosts.map((relatedPost) => {
+              const relatedTranslation = translationsByLang(relatedPost)[lang];
+              const relatedCategory = categoryName(relatedPost, lang);
+              return (
+                <li>
+                  <a href={blogPath(lang, relatedPost.slug)}>
+                    <figure><img src={relatedCover(relatedPost)} alt={relatedAlt(relatedPost, relatedTranslation)} loading="lazy" /></figure>
+                    <p class="post-meta">
+                      {relatedCategory && <span>{relatedCategory}</span>}
+                      <time datetime={relatedPost.published_at}>{dateFormatter.format(new Date(relatedPost.published_at))}</time>
+                    </p>
+                    <h3>{relatedTranslation.title}</h3>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
+    )}
+  </section>
 </BaseLayout>
 
 <style>
-  .post-hero {
-    position: relative;
-    isolation: isolate;
+  .article-page {
+    padding-block: clamp(2.5rem, 5vw, 4.5rem) clamp(3.5rem, 6vw, 6rem);
+  }
+
+  .article-layout {
     display: grid;
-    place-items: center;
-    min-height: clamp(320px, 42vw, 520px);
-    overflow: hidden;
-    background: var(--black);
-    color: var(--white);
-    text-align: center;
+    grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
+    gap: clamp(32px, 5vw, 68px);
+    align-items: start;
   }
 
-  .post-hero-image {
-    position: absolute;
-    z-index: -1;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.45);
+  .post { max-width: 760px; }
+
+  .post-header {
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--ink);
   }
 
-  .post-hero-content {
-    display: flex;
-    flex-direction: column;
+  .back {
+    display: inline-flex;
     align-items: center;
-    gap: 20px;
-    max-width: 900px;
-    padding-block: 64px;
-  }
-
-  h1 {
+    gap: 7px;
+    margin-bottom: 22px;
+    color: var(--gold-ink);
     font-family: var(--display);
-    font-size: clamp(2.1rem, 5vw, 3.8rem);
-    font-weight: 800;
-    line-height: 1.15;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-  }
-
-  .post-date {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 8px 14px;
-    color: var(--gold);
-    font-family: var(--display);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.05em;
+    text-decoration: none;
     text-transform: uppercase;
   }
 
-  .tag {
-    padding: 4px 12px;
-    border: 1px solid currentColor;
-    border-radius: 999px;
-    font-size: 0.78rem;
+  .back :global(svg) { transform: scaleX(-1); }
+
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px 10px;
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1.35;
+    text-transform: uppercase;
   }
 
-  .author {
-    color: rgba(255, 255, 255, 0.88);
-    letter-spacing: 0.05em;
-    text-transform: none;
+  .post-meta > * + *::before {
+    margin-right: 10px;
+    color: var(--gold-ink);
+    content: '•';
   }
 
-  .post {
-    max-width: 760px;
+  h1 {
+    max-width: 16ch;
+    margin-top: 10px;
+    font-family: var(--display);
+    font-size: clamp(2.35rem, 4.8vw, 4.3rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+
+  .article-cover {
+    aspect-ratio: 16 / 9;
+    margin: 24px 0;
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--paper);
+  }
+
+  .article-cover img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .scripture {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 4px 14px;
-    margin-bottom: 28px;
-    padding: 14px 20px;
+    gap: 4px 12px;
+    margin-bottom: 20px;
+    padding-left: 14px;
     border-left: 3px solid var(--gold);
-    border-radius: 0 14px 14px 0;
-    background: var(--paper);
     color: var(--ink);
     font-family: var(--display);
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
   }
 
   .scripture span {
     color: var(--gold-ink);
-    font-size: 0.76rem;
-    letter-spacing: 0.14em;
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
   .lead {
-    margin-bottom: 40px;
+    margin-bottom: 24px;
     color: var(--muted);
-    font-size: clamp(1.15rem, 1.8vw, 1.35rem);
-    line-height: 1.65;
+    font-size: clamp(1.08rem, 1.6vw, 1.25rem);
+    line-height: 1.62;
     text-wrap: pretty;
     overflow-wrap: anywhere;
   }
 
-  .back {
-    display: inline-flex;
-    margin-top: 56px;
-  }
-
-  .back :global(svg) {
-    transform: scaleX(-1);
-  }
-
-  .back:hover :global(svg) {
-    transform: scaleX(-1) translateX(4px);
-  }
-
   /* Corpo do artigo: Markdown interpretado em src/lib/markdown.js, sem HTML cru. */
   .article-body {
-    font-size: 1.09rem;
+    font-size: 1.06rem;
     line-height: 1.75;
     text-wrap: pretty;
     overflow-wrap: anywhere;
   }
 
-  .article-body > * + * {
-    margin-top: 1.2em;
-  }
+  .article-body > * + * { margin-top: 1.2em; }
 
   .article-body h2 {
-    margin-top: 2em;
+    margin-top: 1.9em;
     font-family: var(--display);
     font-size: clamp(1.6rem, 3vw, 2.1rem);
     font-weight: 800;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
   .article-body h3 {
-    margin-top: 1.8em;
+    margin-top: 1.6em;
     font-family: var(--display);
     font-size: 1.35rem;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
   }
 
   .article-body h2 + *,
-  .article-body h3 + * {
-    margin-top: 0.7em;
-  }
+  .article-body h3 + * { margin-top: 0.7em; }
 
-  .article-body strong {
-    color: var(--gold-ink);
-    font-weight: 700;
-  }
-
-  .article-body a {
-    color: var(--gold-ink);
-    font-weight: 700;
-    text-underline-offset: 3px;
-  }
+  .article-body strong { color: var(--gold-ink); font-weight: 700; }
+  .article-body a { color: var(--gold-ink); font-weight: 700; text-underline-offset: 3px; }
 
   .article-body ul,
-  .article-body ol {
-    padding-left: 1.4em;
-    list-style: revert;
-  }
+  .article-body ol { padding-left: 1.4em; list-style: revert; }
 
-  .article-body li + li {
-    margin-top: 0.4em;
-  }
+  .article-body li + li { margin-top: 0.4em; }
 
   .article-body blockquote {
-    padding: 0.2em 0 0.2em 1.4em;
+    padding-left: 1.2em;
     border-left: 3px solid var(--gold);
     color: var(--muted);
     font-style: italic;
   }
 
-  .article-body blockquote p {
-    text-wrap: balance;
-  }
-
-  .article-body img {
-    width: 100%;
-    border-radius: 24px;
-    box-shadow: 0 16px 28px rgba(30, 26, 19, 0.12);
-  }
+  .article-body img { width: 100%; border-radius: 12px; }
 
   .article-body hr {
-    margin-block: 2.4em;
+    margin-block: 2.2em;
     border: 0;
     border-top: 1px solid var(--line);
   }
 
-  .article-body code {
-    padding: 0.15em 0.4em;
-    border-radius: 6px;
-    background: var(--paper);
-    font-size: 0.92em;
-  }
+  .article-body code { padding: 0.15em 0.4em; border-radius: 5px; background: var(--paper); font-size: 0.92em; }
 
   .article-body pre {
     padding: 18px 20px;
-    border-radius: 14px;
+    border-radius: 10px;
     background: var(--ink);
     color: var(--white);
     overflow-x: auto;
   }
 
-  .article-body pre code {
+  .article-body pre code { padding: 0; background: none; }
+
+  .article-sidebar {
+    padding-left: clamp(20px, 3vw, 32px);
+    border-left: 1px solid var(--line);
+  }
+
+  .post-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .post-search input {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: 500 0.86rem/1.3 var(--sans);
+  }
+
+  .post-search input:focus { outline: 2px solid var(--gold); outline-offset: -2px; }
+
+  .post-search button {
+    display: grid;
+    place-items: center;
     padding: 0;
-    background: none;
+    border: 0;
+    border-left: 1px solid var(--line);
+    border-radius: 0 7px 7px 0;
+    background: var(--ink);
+    color: var(--white);
+    cursor: pointer;
+  }
+
+  .post-search button:hover { background: var(--gold-ink); }
+
+  .sidebar-related { margin-top: 28px; border-top: 2px solid var(--ink); }
+
+  .sidebar-related h2,
+  .related-bottom h2 {
+    margin: 12px 0;
+    font-family: var(--display);
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+  }
+
+  .sidebar-related ol { margin: 0; padding: 0; list-style: none; }
+  .sidebar-related li { border-top: 1px solid var(--line); }
+
+  .sidebar-related a {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding-block: 11px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .sidebar-related img {
+    width: 68px;
+    aspect-ratio: 1;
+    border-radius: 7px;
+    object-fit: cover;
+  }
+
+  .sidebar-related a > span { display: grid; gap: 3px; min-width: 0; }
+
+  .sidebar-related small {
+    color: var(--gold-ink);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-related strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-family: var(--display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .sidebar-related time { color: var(--muted); font-size: 0.68rem; }
+  .sidebar-related a:hover strong { color: var(--gold-ink); }
+
+  .related-bottom { margin-top: clamp(2.75rem, 5vw, 4.5rem); }
+
+  .related-bottom > .frame {
+    padding-top: 12px;
+    border-top: 2px solid var(--ink);
+  }
+
+  .related-bottom ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(18px, 2.5vw, 30px);
+  }
+
+  .related-bottom a { color: var(--ink); text-decoration: none; }
+
+  .related-bottom figure {
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--paper);
+  }
+
+  .related-bottom img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .related-bottom .post-meta { margin-top: 10px; }
+
+  .related-bottom h3 {
+    margin-top: 6px;
+    font-family: var(--display);
+    font-size: clamp(1.2rem, 1.9vw, 1.45rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+  }
+
+  .related-bottom a:hover h3 { color: var(--gold-ink); }
+
+  @media (max-width: 840px) {
+    .article-layout { grid-template-columns: 1fr; }
+    .article-sidebar { max-width: 760px; padding: 0; border-left: 0; }
+    .sidebar-related ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
+    .sidebar-related a { grid-template-columns: 62px minmax(0, 1fr); }
+    .sidebar-related img { width: 62px; }
+  }
+
+  @media (max-width: 600px) {
+    .article-page { padding-block: 34px 52px; }
+    h1 { font-size: clamp(2.15rem, 12vw, 3rem); }
+    .article-cover { margin-block: 20px; border-radius: 9px; }
+    .sidebar-related ol,
+    .related-bottom ul { grid-template-columns: 1fr; }
+    .sidebar-related a { grid-template-columns: 76px minmax(0, 1fr); }
+    .sidebar-related img { width: 76px; }
+    .related-bottom a { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; }
+    .related-bottom figure { aspect-ratio: 1; }
+    .related-bottom .post-meta { margin-top: 0; }
   }
 </style>

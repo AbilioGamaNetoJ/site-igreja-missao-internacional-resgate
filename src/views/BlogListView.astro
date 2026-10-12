@@ -2,7 +2,6 @@
 // Listagem do blog (/blog, /es/blog, /en/blog). Sob demanda: um post publicado
 // aparece aqui na hora, sem novo deploy.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Icon from '../components/Icon.astro';
 import { content } from '../i18n/content.js';
 import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
@@ -19,7 +18,17 @@ const categoryOptions = [...new Map(allPosts.filter((post) => post.category_info
   .sort((a, b) => a.name.localeCompare(b.name, languages[lang].htmlLang));
 const requested = Astro.url.searchParams.get('category');
 const selected = categoryOptions.some((option) => option.slug === requested) ? requested : null;
-const posts = selected ? allPosts.filter((post) => post.category === selected) : allPosts;
+const search = Astro.url.searchParams.get('search')?.trim() ?? '';
+const normalise = (value = '') => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(languages[lang].htmlLang);
+const searchTerm = normalise(search);
+const matchesSearch = (post) => {
+  if (!searchTerm) return true;
+  const translation = translationsByLang(post)[lang];
+  return [translation?.title, translation?.excerpt, categoryName(post, lang), post.author]
+    .filter(Boolean)
+    .some((value) => normalise(value).includes(searchTerm));
+};
+const posts = allPosts.filter((post) => (!selected || post.category === selected) && matchesSearch(post));
 const primaryPost = posts.find((post) => post.is_primary) ?? posts[0] ?? null;
 const remainingPosts = primaryPost ? posts.filter((post) => post.id !== primaryPost.id) : [];
 const recentPosts = remainingPosts.slice(0, 4);
@@ -50,7 +59,7 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
       )}
 
       {!primaryPost ? (
-        <p class="empty">{t.blog.empty}</p>
+        <p class="empty">{search ? t.blog.noResults : t.blog.empty}</p>
       ) : (
         <Fragment>
           <div class="editorial-grid">
@@ -62,17 +71,14 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
                   <a href={blogPath(lang, primaryPost.slug)}>
                     <figure>
                       <img src={cover(primaryPost)} alt={coverAlt(primaryPost, translation)} fetchpriority="high" />
-                    </figure>
-                    <div class="primary-post-body">
-                      <p class="post-meta">
-                        <span class="post-label">{t.blog.primaryPost}</span>
+                      <figcaption>
+                        <p class="post-meta">
                         {category && <span>{category}</span>}
                         <time datetime={primaryPost.published_at}>{dateFormatter.format(new Date(primaryPost.published_at))}</time>
-                      </p>
-                      <h2>{translation.title}</h2>
-                      {translation.excerpt && <p class="excerpt">{translation.excerpt}</p>}
-                      <span class="read">{t.blog.readMore}<Icon name="arrow-right" size={16} /></span>
-                    </div>
+                        </p>
+                        <h2>{translation.title}</h2>
+                      </figcaption>
+                    </figure>
                   </a>
                 </article>
               );
@@ -211,10 +217,19 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
   .recent-posts a { color: var(--ink); text-decoration: none; }
 
   .primary-post figure {
+    position: relative;
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border-radius: 12px;
     background: var(--paper);
+  }
+
+  .primary-post figure::after {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.34) 46%, transparent 72%);
+    content: '';
+    pointer-events: none;
   }
 
   .primary-post img,
@@ -226,7 +241,13 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
     object-fit: cover;
   }
 
-  .primary-post-body { padding-top: 16px; }
+  .primary-post figcaption {
+    position: absolute;
+    z-index: 1;
+    right: clamp(16px, 3vw, 28px);
+    bottom: clamp(16px, 3vw, 24px);
+    left: clamp(16px, 3vw, 28px);
+  }
 
   .post-meta {
     display: flex;
@@ -241,7 +262,9 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
   }
 
   .post-meta > * + *::before { margin-right: 10px; color: var(--gold-ink); content: '•'; }
-  .post-label { color: var(--gold-ink); }
+
+  .primary-post .post-meta { color: rgba(255, 255, 255, 0.82); }
+  .primary-post .post-meta > * + *::before { color: var(--gold); }
 
   .primary-post h2 {
     max-width: 22ch;
@@ -252,23 +275,10 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
     letter-spacing: -0.035em;
     line-height: 1.02;
     text-wrap: balance;
+    color: var(--white);
   }
 
   .excerpt { color: var(--muted); font-size: 0.92rem; line-height: 1.55; }
-  .primary-post .excerpt { max-width: 58ch; margin-top: 10px; }
-
-  .read {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 14px;
-    color: var(--gold-ink);
-    font-family: var(--display);
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
 
   .recent-posts { border-top: 2px solid var(--ink); }
 
@@ -317,7 +327,6 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
 
   .recent-posts time { color: var(--muted); font-size: 0.7rem; line-height: 1.2; }
 
-  .primary-post > a:hover h2,
   .post-card:hover h3,
   .recent-posts a:hover strong { color: var(--gold-ink); }
 

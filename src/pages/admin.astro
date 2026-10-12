@@ -1943,8 +1943,45 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         box-shadow: inset 0 0 0 2px rgba(221, 186, 103, 0.45);
       }
 
-      .admin-composer-surface p {
+      .admin-composer-surface p,
+      .admin-composer-surface ul,
+      .admin-composer-surface ol {
         margin: 0 0 0.75em;
+      }
+
+      .admin-composer-surface h2,
+      .admin-composer-surface h3 {
+        margin: 0.9em 0 0.4em;
+        font-family: var(--display);
+        font-weight: 800;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+      }
+
+      .admin-composer-surface h2 {
+        font-size: 1.65rem;
+      }
+
+      .admin-composer-surface h3 {
+        font-size: 1.28rem;
+      }
+
+      .admin-composer-surface strong,
+      .admin-composer-surface b {
+        font-weight: 800;
+      }
+
+      .admin-composer-surface a {
+        color: var(--gold-ink);
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .admin-composer-surface ul,
+      .admin-composer-surface ol {
+        padding-left: 1.4em;
+        list-style: revert;
       }
 
       .admin-composer-surface img {
@@ -4468,10 +4505,68 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         return paragraph;
       }
 
+      function appendInline(parent, text) {
+        const pattern = /(\*\*([^*]+)\*\*|\[([^\]\n]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+)\))/g;
+        let last = 0;
+        let match = pattern.exec(text);
+        while (match) {
+          if (match.index > last) parent.append(document.createTextNode(text.slice(last, match.index)));
+          if (match[2] != null) {
+            const strong = document.createElement('strong');
+            appendInline(strong, match[2]);
+            parent.append(strong);
+          } else {
+            const link = document.createElement('a');
+            link.href = match[4];
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            appendInline(link, match[3]);
+            parent.append(link);
+          }
+          last = match.index + match[0].length;
+          match = pattern.exec(text);
+        }
+        if (last < text.length) parent.append(document.createTextNode(text.slice(last)));
+      }
+
       function appendComposerText(surface, text) {
-        const trimmed = text.replace(/^\n+/, '').replace(/\n+$/, '');
-        if (!trimmed) return;
-        for (const paragraph of trimmed.split(/\n{2,}/)) surface.append(composerParagraph(paragraph));
+        const lines = text.replace(/^\n+/, '').replace(/\n+$/, '').split('\n');
+        let index = 0;
+        while (index < lines.length) {
+          const line = lines[index];
+          if (!line.trim()) {
+            index += 1;
+            continue;
+          }
+          const heading = /^(#{2,3})\s+(.+)$/.exec(line);
+          if (heading) {
+            const element = document.createElement(heading[1].length === 2 ? 'h2' : 'h3');
+            appendInline(element, heading[2]);
+            surface.append(element);
+            index += 1;
+            continue;
+          }
+          if (/^[-*]\s+/.test(line)) {
+            const list = document.createElement('ul');
+            while (index < lines.length && /^[-*]\s+/.test(lines[index])) {
+              const item = document.createElement('li');
+              appendInline(item, lines[index].replace(/^[-*]\s+/, ''));
+              list.append(item);
+              index += 1;
+            }
+            surface.append(list);
+            continue;
+          }
+          const paragraph = document.createElement('p');
+          let first = true;
+          while (index < lines.length && lines[index].trim() && !/^(#{2,3})\s+/.test(lines[index]) && !/^[-*]\s+/.test(lines[index])) {
+            if (!first) paragraph.append(document.createElement('br'));
+            appendInline(paragraph, lines[index]);
+            first = false;
+            index += 1;
+          }
+          surface.append(paragraph);
+        }
       }
 
       function renderComposer(panel) {
@@ -4492,38 +4587,64 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         updateComposerEmpty(panel);
       }
 
+      function inlineMarkdown(node) {
+        let text = '';
+        for (const child of node.childNodes) {
+          if (child.nodeType === Node.TEXT_NODE) {
+            text += child.textContent.replace(/\u00a0/g, ' ');
+            continue;
+          }
+          if (child.nodeType !== Node.ELEMENT_NODE) continue;
+          if (child.nodeName === 'BR') {
+            text += '\n';
+            continue;
+          }
+          const inner = inlineMarkdown(child);
+          if (child.nodeName === 'STRONG' || child.nodeName === 'B') text += inner ? `**${inner}**` : '';
+          else if (child.nodeName === 'A') {
+            const href = child.getAttribute('href') || '';
+            text += href ? `[${inner || href}](${href})` : inner;
+          } else text += inner;
+        }
+        return text;
+      }
+
       function serializeComposer(surface) {
-        const chunks = [];
-        let buffer = [];
-        const flush = () => {
-          const text = buffer.join('').replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-          buffer = [];
-          if (text) chunks.push(text);
-        };
-        const walk = (node) => {
+        const blocks = [];
+        const addBlock = (node) => {
           if (node.nodeType === Node.TEXT_NODE) {
-            buffer.push(node.textContent);
+            const text = node.textContent.replace(/\u00a0/g, ' ').trim();
+            if (text) blocks.push(text);
             return;
           }
           if (node.nodeType !== Node.ELEMENT_NODE) return;
           if (node.dataset?.composerImage) {
-            flush();
             const url = node.dataset.src || node.getAttribute('src');
-            if (url) chunks.push(`![${node.alt || 'imagem'}](${url})`);
+            if (url) blocks.push(`![${node.alt || 'imagem'}](${url})`);
             return;
           }
-          if (node.nodeName === 'BR') {
-            buffer.push('\n');
+          const name = node.nodeName;
+          if (name === 'UL' || name === 'OL') {
+            const items = [...node.children]
+              .filter((item) => item.nodeName === 'LI')
+              .map((item) => inlineMarkdown(item).trim())
+              .filter(Boolean)
+              .map((item) => `- ${item}`);
+            if (items.length) blocks.push(items.join('\n'));
             return;
           }
-          const block = /^(P|DIV|H1|H2|H3|LI|BLOCKQUOTE)$/.test(node.nodeName);
-          if (block && buffer.length && !buffer.at(-1).endsWith('\n')) buffer.push('\n');
-          for (const child of node.childNodes) walk(child);
-          if (block) buffer.push('\n');
+          if (name === 'DIV' && [...node.children].some((child) => /^(P|H2|H3|UL|OL|DIV)$/.test(child.nodeName))) {
+            for (const child of node.childNodes) addBlock(child);
+            return;
+          }
+          const text = inlineMarkdown(node).trim();
+          if (!text) return;
+          if (name === 'H2') blocks.push(`## ${text}`);
+          else if (name === 'H3') blocks.push(`### ${text}`);
+          else blocks.push(text);
         };
-        for (const child of surface.childNodes) walk(child);
-        flush();
-        return chunks.join('\n\n').trim();
+        for (const child of surface.childNodes) addBlock(child);
+        return blocks.join('\n\n').trim();
       }
 
       function syncComposer(panel) {
@@ -4542,9 +4663,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         else delete stage.dataset.empty;
       }
 
-      function insertComposerMarkup(panel, kind) {
-        const surface = panel.querySelector('[data-composer-surface]');
-        surface.focus();
+      function composerSelection(surface) {
         const selection = document.getSelection();
         if (!selection.rangeCount || !surface.contains(selection.anchorNode)) {
           const end = document.createRange();
@@ -4553,26 +4672,165 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           selection.removeAllRanges();
           selection.addRange(end);
         }
-        const range = selection.getRangeAt(0);
-        const selected = range.toString();
-        let text = '';
-        if (kind === 'h2') text = `\n## ${selected || 'Título'}\n`;
-        else if (kind === 'h3') text = `\n### ${selected || 'Subtítulo'}\n`;
-        else if (kind === 'bold') text = `**${selected || 'negrito'}**`;
-        else if (kind === 'list') text = `\n- ${selected || 'item da lista'}\n`;
-        else if (kind === 'link') {
-          const url = window.prompt('Endereço do link', 'https://');
-          if (!url) return;
-          text = `[${selected || 'texto do link'}](${url.trim()})`;
+        return selection;
+      }
+
+      function composerBlock(node, surface) {
+        let current = node?.nodeType === Node.ELEMENT_NODE ? node : node?.parentElement;
+        while (current && current !== surface) {
+          if (current.nodeName === 'LI') return current;
+          if (current.parentElement === surface) return current;
+          current = current.parentElement;
         }
-        range.deleteContents();
-        const node = document.createTextNode(text);
-        range.insertNode(node);
-        const caret = document.createRange();
-        caret.setStartAfter(node);
-        caret.collapse(true);
+        return null;
+      }
+
+      function placeComposerCaret(element) {
+        const selection = document.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        range.collapse(false);
         selection.removeAllRanges();
-        selection.addRange(caret);
+        selection.addRange(range);
+      }
+
+      function moveChildren(from, to) {
+        while (from.firstChild) to.append(from.firstChild);
+        if (!to.childNodes.length) to.append(document.createElement('br'));
+      }
+
+      function safeLinkHref(value) {
+        const href = value.trim();
+        if (/^https?:\/\//i.test(href) || /^mailto:/i.test(href)) return href;
+        if (/^[\w.-]+\.[a-z]{2,}([/?#].*)?$/i.test(href)) return `https://${href}`;
+        return '';
+      }
+
+      function applyComposerBlock(surface, tagName) {
+        const selection = composerSelection(surface);
+        let block = composerBlock(selection.anchorNode, surface);
+        if (block?.nodeName === 'LI') {
+          const list = block.parentElement;
+          const heading = document.createElement(tagName);
+          moveChildren(block, heading);
+          if (list.children.length === 1) list.replaceWith(heading);
+          else {
+            block.remove();
+            list.after(heading);
+          }
+          placeComposerCaret(heading);
+          return;
+        }
+        if (!block || block === surface) {
+          const heading = document.createElement(tagName);
+          heading.append(document.createElement('br'));
+          surface.append(heading);
+          placeComposerCaret(heading);
+          return;
+        }
+        const nextTag = block.nodeName === tagName.toUpperCase() ? 'p' : tagName;
+        const replacement = document.createElement(nextTag);
+        moveChildren(block, replacement);
+        block.replaceWith(replacement);
+        placeComposerCaret(replacement);
+      }
+
+      function applyComposerBold(surface) {
+        const selection = composerSelection(surface);
+        const range = selection.getRangeAt(0);
+        const existing = (range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentElement)?.closest('strong, b');
+        if (existing && surface.contains(existing)) {
+          const parent = existing.parentNode;
+          while (existing.firstChild) parent.insertBefore(existing.firstChild, existing);
+          existing.remove();
+          return;
+        }
+        const strong = document.createElement('strong');
+        if (range.collapsed) {
+          strong.textContent = 'negrito';
+          range.insertNode(strong);
+        } else {
+          try {
+            range.surroundContents(strong);
+          } catch {
+            strong.append(range.extractContents());
+            range.insertNode(strong);
+          }
+        }
+        const marked = document.createRange();
+        marked.selectNodeContents(strong);
+        selection.removeAllRanges();
+        selection.addRange(marked);
+      }
+
+      function applyComposerList(surface) {
+        const selection = composerSelection(surface);
+        const block = composerBlock(selection.anchorNode, surface);
+        if (block?.nodeName === 'LI') {
+          const list = block.parentElement;
+          const paragraphs = [...list.children].map((item) => {
+            const paragraph = document.createElement('p');
+            moveChildren(item, paragraph);
+            return paragraph;
+          });
+          list.replaceWith(...paragraphs);
+          placeComposerCaret(paragraphs[0]);
+          return;
+        }
+        const item = document.createElement('li');
+        if (block && block !== surface && /^(P|H2|H3|DIV)$/.test(block.nodeName)) moveChildren(block, item);
+        else item.textContent = 'item da lista';
+        const list = document.createElement('ul');
+        list.append(item);
+        if (block && block !== surface && /^(P|H2|H3|DIV)$/.test(block.nodeName)) block.replaceWith(list);
+        else surface.append(list);
+        placeComposerCaret(item);
+      }
+
+      function applyComposerLink(surface) {
+        const typed = window.prompt('Endereço do link', 'https://');
+        if (!typed) return;
+        const href = safeLinkHref(typed);
+        if (!href) {
+          status('Use um endereço http, https ou e-mail.');
+          return;
+        }
+        const selection = composerSelection(surface);
+        const range = selection.getRangeAt(0);
+        const current = (range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentElement)?.closest('a');
+        if (current && surface.contains(current)) {
+          current.href = href;
+          return;
+        }
+        const link = document.createElement('a');
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        if (range.collapsed) {
+          link.textContent = 'texto do link';
+          range.insertNode(link);
+        } else {
+          try {
+            range.surroundContents(link);
+          } catch {
+            link.append(range.extractContents());
+            range.insertNode(link);
+          }
+        }
+        const marked = document.createRange();
+        marked.selectNodeContents(link);
+        selection.removeAllRanges();
+        selection.addRange(marked);
+      }
+
+      function insertComposerMarkup(panel, kind) {
+        const surface = panel.querySelector('[data-composer-surface]');
+        surface.focus();
+        if (kind === 'h2') applyComposerBlock(surface, 'h2');
+        else if (kind === 'h3') applyComposerBlock(surface, 'h3');
+        else if (kind === 'bold') applyComposerBold(surface);
+        else if (kind === 'list') applyComposerList(surface);
+        else if (kind === 'link') applyComposerLink(surface);
         syncComposer(panel);
         updateComposerEmpty(panel);
       }
@@ -4758,6 +5016,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         surface.addEventListener('input', () => {
           syncComposer(panel);
           updateComposerEmpty(panel);
+        });
+        surface.addEventListener('click', (event) => {
+          if (event.target.closest('a')) event.preventDefault();
         });
         source.addEventListener('input', () => renderComposer(panel));
         surface.addEventListener('paste', (event) => {
