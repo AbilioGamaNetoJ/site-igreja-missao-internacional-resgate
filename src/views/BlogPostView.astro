@@ -277,55 +277,65 @@ const jsonLd = JSON.stringify({
     overflow-wrap: anywhere;
   }
 
-  .article-body > * + * { margin-top: 1.2em; }
+  /* O HTML do Markdown entra por set:html, então o estilo precisa alcançar essas tags. */
+  .article-body > :global(* + *) { margin-top: 1.2em; }
 
-  .article-body h2 {
+  .article-body :global(h2) {
     margin-top: 1.9em;
     font-family: var(--display);
-    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-size: clamp(1.85rem, 3.4vw, 2.45rem);
     font-weight: 800;
     line-height: 1.15;
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
-  .article-body h3 {
+  .article-body :global(h3) {
     margin-top: 1.6em;
     font-family: var(--display);
-    font-size: 1.35rem;
+    font-size: clamp(1.35rem, 2.2vw, 1.6rem);
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.25;
   }
 
-  .article-body h2 + *,
-  .article-body h3 + * { margin-top: 0.7em; }
+  .article-body :global(h2 + *),
+  .article-body :global(h3 + *) { margin-top: 0.7em; }
 
-  .article-body strong { color: var(--gold-ink); font-weight: 700; }
-  .article-body a { color: var(--gold-ink); font-weight: 700; text-underline-offset: 3px; }
+  .article-body :global(strong) { color: var(--gold-ink); font-weight: 700; }
 
-  .article-body ul,
-  .article-body ol { padding-left: 1.4em; list-style: revert; }
+  .article-body :global(a) {
+    color: #1a56c4;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
 
-  .article-body li + li { margin-top: 0.4em; }
+  .article-body :global(a:hover) { color: #0f3d91; }
 
-  .article-body blockquote {
+  .article-body :global(ul),
+  .article-body :global(ol) { padding-left: 1.4em; list-style: revert; }
+
+  .article-body :global(li + li) { margin-top: 0.4em; }
+
+  .article-body :global(blockquote) {
     padding-left: 1.2em;
     border-left: 3px solid var(--gold);
     color: var(--muted);
     font-style: italic;
   }
 
-  .article-body img { width: 100%; border-radius: 12px; }
+  .article-body :global(img) { width: 100%; border-radius: 12px; }
 
-  .article-body hr {
+  .article-body :global(hr) {
     margin-block: 2.2em;
     border: 0;
     border-top: 1px solid var(--line);
   }
 
-  .article-body code { padding: 0.15em 0.4em; border-radius: 5px; background: var(--paper); font-size: 0.92em; }
+  .article-body :global(code) { padding: 0.15em 0.4em; border-radius: 5px; background: var(--paper); font-size: 0.92em; }
 
-  .article-body pre {
+  .article-body :global(pre) {
     padding: 18px 20px;
     border-radius: 10px;
     background: var(--ink);
@@ -333,7 +343,7 @@ const jsonLd = JSON.stringify({
     overflow-x: auto;
   }
 
-  .article-body pre code { padding: 0; background: none; }
+  .article-body :global(pre code) { padding: 0; background: none; }
 
   .article-sidebar {
     padding-left: clamp(20px, 3vw, 32px);
