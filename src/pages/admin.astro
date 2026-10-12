@@ -4669,10 +4669,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           status('Escolha um arquivo de imagem (JPG, PNG, WebP).');
           return;
         }
-        if (!editing?.id && !editing?.slug) {
-          status('Escreva o título antes de enviar imagens; ele gera o endereço da publicação.');
-          return;
-        }
 
         const loading = $('#cover-loading');
         const percentEl = $('#cover-loading-percent');
@@ -4781,10 +4777,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       // -------------------------------------------------------------- Imagens
 
       async function uploadImage(file) {
-        if (!editing?.id && !editing?.slug) {
-          status('Escreva o título antes de enviar imagens; ele gera o endereço da publicação.');
-          return null;
-        }
         const extension = (file.name.split('.').pop() ?? 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
         const month = new Date().toISOString().slice(0, 7);
         const path = `uploads/${month}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
