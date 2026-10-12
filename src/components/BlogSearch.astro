@@ -1,0 +1,325 @@
+---
+// Busca do blog com sugestões enquanto a pessoa digita. Os posts publicados entram
+// na página como um índice leve (título, endereço, capa e texto já normalizado) e o
+// filtro roda no navegador, sem nova consulta ao Supabase. Enviar o formulário leva
+// para a listagem com ?search=, que usa a mesma regra (src/lib/search.js).
+import Icon from './Icon.astro';
+import { content } from '../i18n/content.js';
+import { languages, blogPath } from '../i18n/routes.js';
+import { photos } from '../data/photos.js';
+import { translationsByLang, categoryName } from '../lib/supabase.js';
+import { postSearchText } from '../lib/search.js';
+
+const { lang, posts = [], value = '', id = 'blog-search' } = Astro.props;
+const t = content[lang];
+const locale = languages[lang].htmlLang;
+const dateFormatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' });
+
+const index = posts.map((post) => ({
+  title: translationsByLang(post)[lang].title,
+  url: blogPath(lang, post.slug),
+  cover: post.cover_image || photos.praise,
+  category: categoryName(post, lang),
+  date: dateFormatter.format(new Date(post.published_at)),
+  text: postSearchText(post, lang, locale),
+}));
+// Dentro de <script>, um "</script>" no título fecharia a tag antes da hora.
+const indexJson = JSON.stringify(index).replace(/</g, '\\u003c');
+---
+
+<form
+  class="blog-search"
+  role="search"
+  action={blogPath(lang)}
+  method="get"
+  data-blog-search
+  data-results-one={t.blog.resultsCount.one}
+  data-results-other={t.blog.resultsCount.other}
+  data-see-all={t.blog.seeAllResults}
+>
+  <label class="sr-only" for={id}>{t.blog.search}</label>
+  <input
+    id={id}
+    name="search"
+    type="search"
+    value={value}
+    placeholder={t.blog.searchPlaceholder}
+    autocomplete="off"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-expanded="false"
+    aria-controls={`${id}-results`}
+  />
+  <button type="submit" aria-label={t.blog.searchSubmit} title={t.blog.searchSubmit}><Icon name="search" size={17} /></button>
+
+  <div class="search-panel" data-search-panel hidden>
+    <ul id={`${id}-results`} role="listbox" aria-label={t.blog.suggestions}></ul>
+    <p class="search-empty" data-search-empty hidden>{t.blog.noResults}</p>
+    <a class="search-all" data-search-all hidden></a>
+  </div>
+  <p class="sr-only" role="status" data-search-status></p>
+  <script is:inline type="application/json" data-search-index set:html={indexJson} />
+</form>
+
+<style>
+  .blog-search {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+  }
+
+  .blog-search input {
+    min-width: 0;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 7px 0 0 7px;
+    background: transparent;
+    color: var(--ink);
+    font: 500 0.86rem/1.3 var(--sans);
+  }
+
+  .blog-search input:focus { outline: 2px solid var(--gold); outline-offset: -2px; }
+
+  .blog-search button {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-left: 1px solid var(--line);
+    border-radius: 0 7px 7px 0;
+    background: var(--ink);
+    color: var(--white);
+    cursor: pointer;
+  }
+
+  .blog-search button:hover { background: var(--gold-ink); }
+
+  .search-panel {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+  }
+
+  .search-panel[hidden] { display: none; }
+
+  .search-panel ul { margin: 0; padding: 4px 0; list-style: none; }
+  .search-panel ul:empty { display: none; }
+
+  .search-panel :global(li a) {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .search-panel :global(li[aria-selected='true'] a),
+  .search-panel :global(li a:hover) { background: var(--sand); }
+
+  .search-panel :global(li img) {
+    width: 48px;
+    aspect-ratio: 1;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  .search-panel :global(li span) { display: grid; gap: 2px; min-width: 0; }
+
+  .search-panel :global(li small) {
+    overflow: hidden;
+    color: var(--gold-ink);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .search-panel :global(li em) { color: var(--muted); font-size: 0.68rem; font-style: normal; }
+
+  .search-panel :global(li strong) {
+    display: -webkit-box;
+    overflow: hidden;
+    font-family: var(--display);
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .search-empty {
+    padding: 12px;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.4;
+  }
+
+  .search-all {
+    display: block;
+    padding: 10px 12px;
+    border-top: 1px solid var(--line);
+    color: var(--gold-ink);
+    font-family: var(--display);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .search-all:hover { background: var(--sand); }
+</style>
+
+<script>
+  import { searchTerms, matchesTerms } from '../lib/search.js';
+
+  // Mais que isso vira o link "ver todos", que abre a listagem com a busca.
+  const MAX_SUGGESTIONS = 5;
+  // Uma letra só casa com quase tudo; a lista aparece a partir da segunda.
+  const MIN_LENGTH = 2;
+
+  document.querySelectorAll('[data-blog-search]').forEach((form) => {
+    const input = form.querySelector('input[type="search"]');
+    const panel = form.querySelector('[data-search-panel]');
+    const list = panel.querySelector('ul');
+    const empty = form.querySelector('[data-search-empty]');
+    const seeAll = form.querySelector('[data-search-all]');
+    const status = form.querySelector('[data-search-status]');
+    const posts = JSON.parse(form.querySelector('[data-search-index]').textContent);
+    const locale = document.documentElement.lang;
+    let active = -1;
+
+    const options = () => [...list.children];
+
+    // -1 é o próprio campo: nenhuma sugestão marcada, e o Enter faz a busca completa.
+    const setActive = (next) => {
+      const items = options();
+      active = next >= 0 && next < items.length ? next : -1;
+      items.forEach((item, position) => item.setAttribute('aria-selected', String(position === active)));
+      if (active >= 0) {
+        input.setAttribute('aria-activedescendant', items[active].id);
+        items[active].scrollIntoView({ block: 'nearest' });
+      } else {
+        input.removeAttribute('aria-activedescendant');
+      }
+    };
+
+    const close = () => {
+      panel.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      setActive(-1);
+    };
+
+    const renderItem = (post, position) => {
+      const item = document.createElement('li');
+      item.id = `${list.id}-${position}`;
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', 'false');
+      const link = document.createElement('a');
+      link.href = post.url;
+      link.tabIndex = -1;
+      const image = document.createElement('img');
+      image.src = post.cover;
+      image.alt = '';
+      image.loading = 'lazy';
+      const text = document.createElement('span');
+      if (post.category) {
+        const category = document.createElement('small');
+        category.textContent = post.category;
+        text.append(category);
+      }
+      const title = document.createElement('strong');
+      title.textContent = post.title;
+      const date = document.createElement('em');
+      date.textContent = post.date;
+      text.append(title, date);
+      link.append(image, text);
+      item.append(link);
+      return item;
+    };
+
+    const update = () => {
+      const query = input.value.trim();
+      if (query.length < MIN_LENGTH) {
+        close();
+        status.textContent = '';
+        return;
+      }
+      const terms = searchTerms(query, locale);
+      const matches = posts.filter((post) => matchesTerms(post.text, terms));
+
+      list.replaceChildren(...matches.slice(0, MAX_SUGGESTIONS).map(renderItem));
+      empty.hidden = matches.length > 0;
+      seeAll.hidden = matches.length <= MAX_SUGGESTIONS;
+      if (!seeAll.hidden) {
+        seeAll.href = `${form.action}?search=${encodeURIComponent(query)}`;
+        seeAll.textContent = form.dataset.seeAll.replace('{count}', matches.length);
+      }
+      status.textContent = matches.length
+        ? (matches.length === 1 ? form.dataset.resultsOne : form.dataset.resultsOther).replace('{count}', matches.length)
+        : empty.textContent;
+
+      panel.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      setActive(-1);
+    };
+
+    input.addEventListener('input', update);
+    input.addEventListener('focus', () => {
+      if (input.value.trim().length >= MIN_LENGTH) update();
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (panel.hidden) {
+        if (event.key === 'ArrowDown' && input.value.trim().length >= MIN_LENGTH) {
+          event.preventDefault();
+          update();
+        }
+        return;
+      }
+      // As setas passam pelas sugestões e, depois da última (ou antes da primeira), voltam ao campo.
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setActive(active + 1);
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setActive(active === -1 ? options().length - 1 : active - 1);
+      } else if (event.key === 'Enter' && active >= 0) {
+        event.preventDefault();
+        window.location.assign(options()[active].querySelector('a').href);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        close();
+      }
+    });
+
+    // Sem isso, o clique numa sugestão tiraria o foco do campo e fecharia a lista
+    // antes de o link receber o clique.
+    panel.addEventListener('mousedown', (event) => event.preventDefault());
+    form.addEventListener('focusout', (event) => {
+      if (!form.contains(event.relatedTarget)) close();
+    });
+
+    // Busca vazia não sai da página: só devolve o foco ao campo.
+    form.addEventListener('submit', (event) => {
+      if (input.value.trim()) return;
+      event.preventDefault();
+      input.focus();
+    });
+  });
+</script>

@@ -3,6 +3,7 @@
 // O post chega já validado (publicado e com as três traduções) da rota.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
+import BlogSearch from '../components/BlogSearch.astro';
 import { content } from '../i18n/content.js';
 import { languages, blogPath, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
@@ -100,11 +101,7 @@ const jsonLd = JSON.stringify({
       </article>
 
       <aside class="article-sidebar">
-        <form class="post-search" role="search" action={blogPath(lang)} method="get">
-          <label class="sr-only" for="article-search">{t.blog.search}</label>
-          <input id="article-search" name="search" type="search" placeholder={t.blog.searchPlaceholder} />
-          <button type="submit" aria-label={t.blog.searchSubmit} title={t.blog.searchSubmit}><Icon name="search" size={17} /></button>
-        </form>
+        <BlogSearch lang={lang} posts={publishedPosts} id="article-search" />
 
         {sidebarPosts.length > 0 && (
           <section class="sidebar-related" aria-labelledby="sidebar-related-title">
@@ -349,38 +346,6 @@ const jsonLd = JSON.stringify({
     padding-left: clamp(20px, 3vw, 32px);
     border-left: 1px solid var(--line);
   }
-
-  .post-search {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 40px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-  }
-
-  .post-search input {
-    min-width: 0;
-    padding: 10px 12px;
-    border: 0;
-    background: transparent;
-    color: var(--ink);
-    font: 500 0.86rem/1.3 var(--sans);
-  }
-
-  .post-search input:focus { outline: 2px solid var(--gold); outline-offset: -2px; }
-
-  .post-search button {
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-left: 1px solid var(--line);
-    border-radius: 0 7px 7px 0;
-    background: var(--ink);
-    color: var(--white);
-    cursor: pointer;
-  }
-
-  .post-search button:hover { background: var(--gold-ink); }
 
   .sidebar-related { margin-top: 28px; border-top: 2px solid var(--ink); }
 

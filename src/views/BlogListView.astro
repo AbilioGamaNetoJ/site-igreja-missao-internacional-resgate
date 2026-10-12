@@ -2,10 +2,12 @@
 // Listagem do blog (/blog, /es/blog, /en/blog). Sob demanda: um post publicado
 // aparece aqui na hora, sem novo deploy.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogSearch from '../components/BlogSearch.astro';
 import { content } from '../i18n/content.js';
 import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
+import { searchTerms, matchesTerms, postSearchText } from '../lib/search.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
@@ -18,21 +20,17 @@ const categoryOptions = [...new Map(allPosts.filter((post) => post.category_info
   .sort((a, b) => a.name.localeCompare(b.name, languages[lang].htmlLang));
 const requested = Astro.url.searchParams.get('category');
 const selected = categoryOptions.some((option) => option.slug === requested) ? requested : null;
+// Com ?search=, a página vira resultado de busca: os posts encontrados aparecem
+// todos na grade, sem a postagem principal (que poderia nem ter relação com a busca).
 const search = Astro.url.searchParams.get('search')?.trim() ?? '';
-const normalise = (value = '') => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase(languages[lang].htmlLang);
-const searchTerm = normalise(search);
-const matchesSearch = (post) => {
-  if (!searchTerm) return true;
-  const translation = translationsByLang(post)[lang];
-  return [translation?.title, translation?.excerpt, categoryName(post, lang), post.author]
-    .filter(Boolean)
-    .some((value) => normalise(value).includes(searchTerm));
-};
+const terms = searchTerms(search, languages[lang].htmlLang);
+const matchesSearch = (post) => matchesTerms(postSearchText(post, lang, languages[lang].htmlLang), terms);
 const posts = allPosts.filter((post) => (!selected || post.category === selected) && matchesSearch(post));
-const primaryPost = posts.find((post) => post.is_primary) ?? posts[0] ?? null;
+const primaryPost = search ? null : posts.find((post) => post.is_primary) ?? posts[0] ?? null;
 const remainingPosts = primaryPost ? posts.filter((post) => post.id !== primaryPost.id) : [];
 const recentPosts = remainingPosts.slice(0, 4);
-const morePosts = remainingPosts.slice(4);
+const morePosts = search ? posts : remainingPosts.slice(4);
+const resultsCount = (posts.length === 1 ? t.blog.resultsCount.one : t.blog.resultsCount.other).replace('{count}', posts.length);
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
 const cover = (post) => post.cover_image || photos.praise;
 const coverAlt = (post, translation) => post.cover_image ? translation.title : t.photos.praise;
@@ -47,71 +45,88 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
         <p>{t.blog.intro}</p>
       </header>
 
-      {categoryOptions.length > 1 && (
-        <nav class="filters" aria-label={t.blog.filterLabel}>
-          <a href={blogPath(lang)} aria-current={selected ? undefined : 'page'}>{t.blog.allCategories}</a>
-          {categoryOptions.map(({ slug, name }) => (
-            <a href={`${blogPath(lang)}?category=${encodeURIComponent(slug)}`} aria-current={selected === slug ? 'page' : undefined}>
-              {name}
-            </a>
-          ))}
-        </nav>
+      {allPosts.length > 0 && (
+        <div class="toolbar">
+          {categoryOptions.length > 1 && (
+            <nav class="filters" aria-label={t.blog.filterLabel}>
+              <a href={blogPath(lang)} aria-current={selected || search ? undefined : 'page'}>{t.blog.allCategories}</a>
+              {categoryOptions.map(({ slug, name }) => (
+                <a href={`${blogPath(lang)}?category=${encodeURIComponent(slug)}`} aria-current={selected === slug ? 'page' : undefined}>
+                  {name}
+                </a>
+              ))}
+            </nav>
+          )}
+          <BlogSearch lang={lang} posts={allPosts} value={search} />
+        </div>
       )}
 
-      {!primaryPost ? (
+      {search && (
+        <header class="search-summary">
+          <h2 id="search-results-title">{t.blog.resultsFor} “{search}”</h2>
+          <p>{resultsCount}</p>
+          <a href={blogPath(lang)}>{t.blog.clearSearch}</a>
+        </header>
+      )}
+
+      {posts.length === 0 ? (
         <p class="empty">{search ? t.blog.noResults : t.blog.empty}</p>
       ) : (
         <Fragment>
-          <div class="editorial-grid">
-            {(() => {
-              const translation = translationsByLang(primaryPost)[lang];
-              const category = categoryName(primaryPost, lang);
-              return (
-                <article class="primary-post">
-                  <a href={blogPath(lang, primaryPost.slug)}>
-                    <figure>
-                      <img src={cover(primaryPost)} alt={coverAlt(primaryPost, translation)} fetchpriority="high" />
-                      <figcaption>
-                        <p class="post-meta">
-                        {category && <span>{category}</span>}
-                        <time datetime={primaryPost.published_at}>{dateFormatter.format(new Date(primaryPost.published_at))}</time>
-                        </p>
-                        <h2>{translation.title}</h2>
-                      </figcaption>
-                    </figure>
-                  </a>
-                </article>
-              );
-            })()}
+          {primaryPost && (
+            <div class="editorial-grid">
+              {(() => {
+                const translation = translationsByLang(primaryPost)[lang];
+                const category = categoryName(primaryPost, lang);
+                return (
+                  <article class="primary-post">
+                    <a href={blogPath(lang, primaryPost.slug)}>
+                      <figure>
+                        <img src={cover(primaryPost)} alt={coverAlt(primaryPost, translation)} fetchpriority="high" />
+                        <figcaption>
+                          <p class="post-meta">
+                          {category && <span>{category}</span>}
+                          <time datetime={primaryPost.published_at}>{dateFormatter.format(new Date(primaryPost.published_at))}</time>
+                          </p>
+                          <h2>{translation.title}</h2>
+                        </figcaption>
+                      </figure>
+                    </a>
+                  </article>
+                );
+              })()}
 
-            {recentPosts.length > 0 && (
-              <aside class="recent-posts" aria-labelledby="recent-posts-title">
-                <h2 id="recent-posts-title">{t.blog.recentPosts}</h2>
-                <ol>
-                  {recentPosts.map((post) => {
-                    const translation = translationsByLang(post)[lang];
-                    const category = categoryName(post, lang);
-                    return (
-                      <li>
-                        <a href={blogPath(lang, post.slug)}>
-                          <img src={cover(post)} alt={coverAlt(post, translation)} loading="lazy" />
-                          <span>
-                            {category && <small>{category}</small>}
-                            <strong>{translation.title}</strong>
-                            <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
-                          </span>
-                        </a>
-                      </li>
-                    );
-                  })}
-                </ol>
-              </aside>
-            )}
-          </div>
+              {recentPosts.length > 0 && (
+                <aside class="recent-posts" aria-labelledby="recent-posts-title">
+                  <h2 id="recent-posts-title">{t.blog.recentPosts}</h2>
+                  <ol>
+                    {recentPosts.map((post) => {
+                      const translation = translationsByLang(post)[lang];
+                      const category = categoryName(post, lang);
+                      return (
+                        <li>
+                          <a href={blogPath(lang, post.slug)}>
+                            <span class="recent-media">
+                              <img src={cover(post)} alt={coverAlt(post, translation)} loading="lazy" />
+                            </span>
+                            <span>
+                              {category && <small>{category}</small>}
+                              <strong>{translation.title}</strong>
+                              <time datetime={post.published_at}>{dateFormatter.format(new Date(post.published_at))}</time>
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </aside>
+              )}
+            </div>
+          )}
 
           {morePosts.length > 0 && (
-            <section class="more-posts" aria-labelledby="more-posts-title">
-              <h2 id="more-posts-title">{t.blog.morePosts}</h2>
+            <section class={search ? 'search-results' : 'more-posts'} aria-labelledby={search ? 'search-results-title' : 'more-posts-title'}>
+              {!search && <h2 id="more-posts-title">{t.blog.morePosts}</h2>}
               <ul class="post-grid">
                 {morePosts.map((post) => {
                   const translation = translationsByLang(post)[lang];
@@ -170,14 +185,58 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
     line-height: 1.6;
   }
 
-  .filters {
+  .toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 18px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 28px;
     margin-bottom: clamp(1.75rem, 3vw, 2.75rem);
     padding-block: 12px;
     border-block: 1px solid var(--line);
   }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+  }
+
+  .toolbar > :global(.blog-search) { flex: 0 1 320px; margin-left: auto; }
+
+  .search-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 16px;
+    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+    padding-top: 12px;
+    border-top: 2px solid var(--ink);
+  }
+
+  .search-summary h2 {
+    font-family: var(--display);
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  .search-summary p { color: var(--muted); font-size: 0.86rem; }
+
+  .search-summary a {
+    margin-left: auto;
+    color: var(--gold-ink);
+    font-family: var(--display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-underline-offset: 4px;
+  }
+
+  .search-summary + .empty { border-top: 0; }
 
   .filters a {
     color: var(--muted);
@@ -215,6 +274,31 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
   .primary-post > a,
   .post-card,
   .recent-posts a { color: var(--ink); text-decoration: none; }
+
+  .primary-post,
+  .post-grid li,
+  .recent-posts li {
+    position: relative;
+  }
+
+  .primary-post > a,
+  .post-card,
+  .recent-posts a {
+    display: block;
+    transition: transform 0.35s cubic-bezier(0.2, 0.75, 0.2, 1);
+  }
+
+  .primary-post:hover,
+  .post-grid li:hover,
+  .recent-posts li:hover {
+    z-index: 2;
+  }
+
+  .primary-post > a:hover,
+  .post-card:hover,
+  .recent-posts a:hover {
+    transform: scale(1.05);
+  }
 
   .primary-post figure {
     position: relative;
@@ -300,9 +384,15 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
     gap: 12px;
     align-items: center;
     padding-block: 12px;
+    transform-origin: left center;
   }
 
-  .recent-posts img { aspect-ratio: 1 / 1; border-radius: 8px; }
+  .recent-media {
+    overflow: hidden;
+    border-radius: 8px;
+  }
+
+  .recent-posts img { aspect-ratio: 1 / 1; }
   .recent-posts a > span { display: grid; gap: 3px; }
 
   .recent-posts small {
@@ -378,6 +468,7 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
 
   @media (max-width: 600px) {
     .blog-list { padding-block: 36px 56px; }
+    .toolbar > :global(.blog-search) { flex-basis: 100%; }
     .recent-posts ol,
     .post-grid { grid-template-columns: 1fr; }
     .recent-posts a { grid-template-columns: 82px minmax(0, 1fr); }
@@ -385,5 +476,19 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
     .post-card figure { aspect-ratio: 1 / 1; }
     .post-card > div { padding-top: 0; }
     .post-card .excerpt { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .primary-post > a,
+    .post-card,
+    .recent-posts a {
+      transition: none;
+    }
+
+    .primary-post > a:hover,
+    .post-card:hover,
+    .recent-posts a:hover {
+      transform: none;
+    }
   }
 </style>
