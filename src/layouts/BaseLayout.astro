@@ -17,23 +17,26 @@ const pageTitle = meta?.title ?? t.meta.titles[page];
 const title = !meta && page === 'home' ? `${site.name} | ${pageTitle}` : `${pageTitle} | ${site.name}`;
 const description = meta?.description ?? t.meta.descriptions[page];
 const base = Astro.site;
-const pagePath = meta?.path ?? pathFor(page, lang);
-const languagePaths =
-  meta?.languagePaths ?? Object.fromEntries(Object.keys(languages).map((code) => [code, pathFor(page, code)]));
+const pagePath = meta?.noCanonical ? null : meta?.path ?? pathFor(page, lang);
+// Páginas utilitárias, como a 404, não representam conteúdo equivalente nos
+// outros idiomas e não devem gerar hreflang nem dados estruturados.
+const languagePaths = meta?.noAlternates
+  ? null
+  : meta?.languagePaths ?? Object.fromEntries(Object.keys(languages).map((code) => [code, pathFor(page, code)]));
 
 // Canonical, hreflang e a imagem de compartilhamento precisam do domínio (site.url em src/data/site.js).
-const canonical = base && new URL(pagePath, base).href;
+const canonical = base && pagePath ? new URL(pagePath, base).href : null;
 const isArticle = meta?.type === 'article';
 const shareImage = meta?.image?.src ?? (base && new URL(site.shareImage.src, base).href);
 const shareImageAlt = meta?.image?.alt ?? t.meta.shareImageAlt;
-const alternates = base
+const alternates = base && languagePaths
   ? [
       ...Object.entries(languages).map(([code, language]) => ({ hreflang: language.htmlLang, href: new URL(languagePaths[code], base).href })),
       { hreflang: 'x-default', href: new URL(languagePaths[defaultLang], base).href },
     ]
   : [];
 const otherLocales = Object.entries(languages).filter(([code]) => code !== lang).map(([, language]) => language.ogLocale);
-const jsonLd = meta?.jsonLd ?? structuredData({ lang, page, title, base });
+const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ lang, page, title, base });
 ---
 
 <!doctype html>
@@ -80,7 +83,7 @@ const jsonLd = meta?.jsonLd ?? structuredData({ lang, page, title, base });
     <meta name="twitter:card" content={shareImage ? 'summary_large_image' : 'summary'} />
 
     <!-- Dados estruturados (schema.org) para buscadores e assistentes de IA -->
-    <script is:inline type="application/ld+json" set:html={jsonLd} />
+    {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300..900&family=League+Spartan:wght@600..800&display=swap" />

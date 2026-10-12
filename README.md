@@ -111,6 +111,7 @@ O blog roda em `/blog`, `/es/blog` e `/en/blog`, com painel de edição em [cms.
 - Corrigir uma tradução no painel marca aquela língua como **editada à mão**; o botão **Atualizar traduções** retraduz apenas as línguas que ninguém editou. O original nunca é sobrescrito.
 - O endereço de um post é um slug único, igual nos três idiomas (`/blog/culto-de-pascoa`, `/es/blog/culto-de-pascoa`, `/en/blog/culto-de-pascoa`), para o link nunca mudar.
 - Um post só aparece no site quando está publicado **e** tem as três traduções; rascunho fica invisível.
+- No editor, **Postagem principal do blog** escolhe a única matéria maior no topo da listagem. Se nenhuma for escolhida, a publicação mais recente ocupa esse espaço.
 - O corpo é Markdown sem HTML cru, com capa e imagens no Storage. Leitura pública usa a chave anônima; escrita exige sessão de admin (RLS).
 
 ### Painel em subdomínio próprio (cms)

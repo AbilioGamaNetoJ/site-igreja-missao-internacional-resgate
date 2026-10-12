@@ -2,13 +2,15 @@
 // Listagem do blog em espanhol e inglês (/es/blog, /en/blog).
 // O português fica em /blog, sem prefixo (src/pages/blog/index.astro).
 import BlogListView from '../../../views/BlogListView.astro';
+import NotFoundView from '../../../views/NotFoundView.astro';
 import { blogPath, languages } from '../../../i18n/routes.js';
 
 export const prerender = false;
 
 const { lang } = Astro.params;
 if (lang === 'pt') return Astro.redirect(blogPath('pt'), 302);
-if (!(lang in languages)) return new Response(null, { status: 404 });
+const validLanguage = lang in languages;
+if (!validLanguage) Astro.response.status = 404;
 ---
 
-<BlogListView lang={lang} />
+{validLanguage ? <BlogListView lang={lang} /> : <NotFoundView lang="pt" />}

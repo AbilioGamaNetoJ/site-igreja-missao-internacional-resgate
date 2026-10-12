@@ -12,7 +12,7 @@ export const supabaseReady = Boolean(supabaseUrl && supabaseAnonKey);
 export const POST_LANGS = ['pt', 'es', 'en'];
 
 const POST_FIELDS =
-  'id,slug,cover_image,category,category_info:categories(name_pt,name_es,name_en),author,is_featured,published_at,source_lang,post_translations(lang,title,excerpt,bible_reference,seo_title,seo_description,is_original,manually_edited,updated_at)';
+  'id,slug,cover_image,category,category_info:categories(name_pt,name_es,name_en),author,is_featured,is_primary,published_at,source_lang,post_translations(lang,title,excerpt,body,bible_reference,seo_title,seo_description,is_original,manually_edited,updated_at)';
 
 async function rest(path) {
   const response = await fetch(`${supabaseUrl}/rest/v1${path}`, {
@@ -62,5 +62,10 @@ export async function fetchPostBySlug(slug) {
     `/posts?select=${POST_FIELDS}&slug=eq.${encodeURIComponent(slug)}&status=eq.published&limit=1`,
   );
   const post = Array.isArray(rows) ? rows[0] : null;
-  return isPostReady(post) ? post : null;
+  const ready = isPostReady(post) ? post : null;
+  // #region agent log
+  const translations = ready?.post_translations ?? [];
+  fetch('http://127.0.0.1:7869/ingest/67c70e97-e7d0-437b-af9e-a01638eec5aa',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'67da8c'},body:JSON.stringify({sessionId:'67da8c',runId:'post-fix',hypothesisId:'A',location:'supabase.js:fetchPostBySlug',message:'post body fields',data:{slug,rowCount:Array.isArray(rows)?rows.length:0,ready:Boolean(ready),langs:translations.map((item)=>({lang:item.lang,bodyLen:typeof item.body==='string'?item.body.length:0,excerptLen:typeof item.excerpt==='string'?item.excerpt.length:0,hasImage:typeof item.body==='string'&&item.body.includes('!['),newlines:typeof item.body==='string'?item.body.split('\n').length-1:0}))},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+  return ready;
 }

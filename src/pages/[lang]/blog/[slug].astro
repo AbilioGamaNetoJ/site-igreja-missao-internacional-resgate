@@ -2,6 +2,7 @@
 // Artigo do blog em espanhol e inglês (/es/blog/[slug], /en/blog/[slug]).
 // O slug é o mesmo nos três idiomas; só o prefixo muda.
 import BlogPostView from '../../../views/BlogPostView.astro';
+import NotFoundView from '../../../views/NotFoundView.astro';
 import { blogPath, languages } from '../../../i18n/routes.js';
 import { fetchPostBySlug } from '../../../lib/supabase.js';
 
@@ -9,10 +10,9 @@ export const prerender = false;
 
 const { lang, slug } = Astro.params;
 if (lang === 'pt') return Astro.redirect(blogPath('pt', slug), 302);
-if (!(lang in languages)) return new Response(null, { status: 404 });
-
-const post = await fetchPostBySlug(slug);
-if (!post) return new Response(null, { status: 404 });
+const validLanguage = lang in languages;
+const post = validLanguage ? await fetchPostBySlug(slug) : null;
+if (!validLanguage || !post) Astro.response.status = 404;
 ---
 
-<BlogPostView lang={lang} post={post} />
+{post ? <BlogPostView lang={lang} post={post} /> : <NotFoundView lang={validLanguage ? lang : 'pt'} />}

@@ -6,7 +6,8 @@
 //
 // Aqui ficam as regras que o Worker consegue aplicar (rotas sob demanda, que
 // passam por este middleware):
-//   - no subdomínio cms, só o painel e o que ele usa respondem; o resto vai ao site;
+//   - no subdomínio cms, só o painel e o que ele usa respondem; caminhos desconhecidos
+//     levam a uma 404 própria com retorno ao painel;
 //   - no domínio oficial, /admin encaminha para o subdomínio.
 //
 // Páginas pré-renderizadas (a home, por exemplo) são servidas antes do Worker e
@@ -34,10 +35,14 @@ export const onRequest = async (context, next) => {
 
   if (url.hostname === CMS_HOST) {
     if (mainHost && !isPanelResource(url.pathname)) {
-      return context.redirect(`https://${mainHost}${url.pathname}${url.search}`, 302);
+      const missingPath = new URL('/admin/not-found', url.origin);
+      missingPath.searchParams.set('path', url.pathname);
+      // Mantém o endereço que falhou na barra do navegador, mas renderiza a
+      // página de retorno do painel com o status 404.
+      return context.rewrite(missingPath);
     }
     const response = await next();
-    if (url.pathname === '/admin') response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    if (url.pathname.startsWith('/admin')) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     return response;
   }
 

@@ -1,0 +1,11 @@
+---
+import NotFoundView from '../views/NotFoundView.astro';
+
+export const prerender = false;
+
+const pathname = Astro.url.pathname;
+const lang = pathname === '/es' || pathname.startsWith('/es/') ? 'es' : pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'pt';
+Astro.response.status = 404;
+---
+
+<NotFoundView lang={lang} />

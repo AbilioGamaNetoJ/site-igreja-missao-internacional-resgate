@@ -62,6 +62,8 @@ create table if not exists public.posts (
   author text,
   -- Marca as publicações escolhidas para a vitrine da página inicial.
   is_featured boolean not null default false,
+  -- Define a única publicação que abre a listagem editorial do blog.
+  is_primary boolean not null default false,
   published_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -93,6 +95,7 @@ create table if not exists public.post_translations (
 alter table public.posts add column if not exists category text;
 alter table public.posts add column if not exists author text;
 alter table public.posts add column if not exists is_featured boolean not null default false;
+alter table public.posts add column if not exists is_primary boolean not null default false;
 alter table public.post_translations add column if not exists bible_reference text;
 
 -- Apagar uma categoria solta os posts dela (ficam sem categoria); renomear o slug acompanha.
@@ -110,6 +113,19 @@ create index if not exists posts_status_published_at_idx on public.posts (status
 create index if not exists posts_featured_published_at_idx
   on public.posts (published_at desc)
   where status = 'published' and is_featured = true;
+-- Há apenas uma publicação principal publicada no blog. Um rascunho pode ser
+-- preparado como principal sem tirar do ar a escolha vigente. Caso o banco já
+-- tenha recebido mais de uma marca publicada, conserva a atualizada por último.
+with main_post as (
+  select id from public.posts where status = 'published' and is_primary = true order by updated_at desc limit 1
+)
+update public.posts
+set is_primary = false
+where status = 'published' and is_primary = true and id not in (select id from main_post);
+
+create unique index if not exists posts_only_one_primary_idx
+  on public.posts ((is_primary))
+  where status = 'published' and is_primary = true;
 create index if not exists post_translations_post_id_idx on public.post_translations (post_id);
 
 -- updated_at se atualiza sozinho em qualquer UPDATE.

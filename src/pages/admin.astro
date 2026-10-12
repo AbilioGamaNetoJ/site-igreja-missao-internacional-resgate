@@ -592,6 +592,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         color: var(--gold);
       }
 
+      .admin-primary-badge {
+        border: 1px solid var(--gold-ink);
+        background: transparent;
+        color: var(--gold-ink);
+      }
+
       .admin-empty {
         padding: 40px 24px;
         border: 1px dashed var(--line);
@@ -975,6 +981,136 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       .admin-editor-actions .button-outline {
         background: var(--white);
+      }
+
+      .admin-editor-actions .button-outline:hover,
+      .admin-editor-actions .button-outline:focus-visible {
+        background: var(--ink);
+        color: var(--white);
+      }
+
+      .admin-editor-row .admin-editor-details .admin-field.admin-publish-field {
+        flex: 1 1 100%;
+      }
+
+      .admin-publish-toggle {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        min-height: 64px;
+        padding: 12px 14px;
+        border: 1px solid rgba(17, 18, 20, 0.12);
+        border-radius: 14px;
+        background: var(--white);
+        color: var(--ink);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-publish-toggle:hover,
+      .admin-publish-toggle:focus-visible {
+        border-color: #c2410c;
+        box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.16);
+        outline: 0;
+      }
+
+      .admin-publish-toggle:disabled {
+        cursor: default;
+        box-shadow: none;
+      }
+
+      .admin-publish-toggle:disabled:hover,
+      .admin-publish-toggle:disabled:focus-visible {
+        border-color: rgba(17, 18, 20, 0.12);
+        box-shadow: none;
+      }
+
+      .admin-publish-toggle[aria-pressed='true'] {
+        border-color: rgba(194, 65, 12, 0.45);
+        background: #fff6f3;
+      }
+
+      .admin-publish-icon {
+        display: grid;
+        flex: none;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--paper);
+        color: var(--muted);
+      }
+
+      .admin-publish-icon svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .admin-publish-toggle[aria-pressed='false'] .admin-publish-icon-on,
+      .admin-publish-toggle[aria-pressed='true'] .admin-publish-icon-off {
+        display: none;
+      }
+
+      .admin-publish-toggle[aria-pressed='true'] .admin-publish-icon {
+        background: #fde8e1;
+        color: #c2410c;
+      }
+
+      .admin-publish-copy {
+        display: grid;
+        flex: 1;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .admin-publish-copy strong {
+        font-size: 0.92rem;
+        line-height: 1.25;
+      }
+
+      .admin-publish-copy small {
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .admin-publish-switch {
+        position: relative;
+        flex: none;
+        width: 44px;
+        height: 26px;
+        border-radius: 999px;
+        background: rgba(17, 18, 20, 0.18);
+        transition: background-color 0.2s ease;
+      }
+
+      .admin-publish-switch span {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--white);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.26);
+        transition: transform 0.2s ease;
+      }
+
+      .admin-publish-toggle[aria-pressed='true'] .admin-publish-switch {
+        background: #c2410c;
+      }
+
+      .admin-publish-toggle[aria-pressed='true'] .admin-publish-switch span {
+        transform: translateX(18px);
       }
 
       @keyframes adminSpin {
@@ -3190,11 +3326,21 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
               <span id="slug-help" class="admin-field-hint">Gerado automaticamente a partir do título original.</span>
               <input id="slug" type="text" spellcheck="false" placeholder="Será gerado ao escrever o título" readonly aria-describedby="slug-help" tabindex="-1" />
             </label>
-            <p class="admin-field" style="margin-bottom: 4px; flex: 0 1 180px">
-              Situação
-              <span><span class="admin-badge" id="post-status" data-status="draft">Rascunho</span> <span id="published-at"></span></span>
-            </p>
             <div class="admin-editor-details">
+              <div class="admin-field admin-publish-field">
+                <span id="publish-label">Publicação</span>
+                <button id="btn-unpublish" class="admin-publish-toggle" type="button" aria-pressed="false" disabled aria-labelledby="publish-label publish-title">
+                  <span class="admin-publish-icon" aria-hidden="true">
+                    <svg class="admin-publish-icon-off" viewBox="0 0 24 24"><path d="M3.98 8.22A10.48 10.48 0 001.93 12C3.23 16.34 7.24 19.5 12 19.5c.99 0 1.95-.14 2.86-.4M6.23 6.23A10.45 10.45 0 0112 4.5c4.76 0 8.77 3.16 10.07 7.5a10.52 10.52 0 01-4.3 5.77M6.23 6.23L3 3m3.23 3.23l3.65 3.65m7.89 7.89L21 21m-3.23-3.23l-3.65-3.65m0 0a3 3 0 10-4.24-4.24m4.24 4.24L9.88 9.88" /></svg>
+                    <svg class="admin-publish-icon-on" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+                  </span>
+                  <span class="admin-publish-copy">
+                    <strong id="publish-title">Rascunho</strong>
+                    <small id="publish-description">Ainda não aparece no site.</small>
+                  </span>
+                  <span class="admin-publish-switch" aria-hidden="true"><span></span></span>
+                </button>
+              </div>
               <div class="admin-field" id="category-combo">
                 <span id="category-label">Categoria</span>
                 <button id="category-button" class="admin-combo-button" type="button" aria-expanded="false" aria-controls="category-menu" aria-labelledby="category-label category-current">
@@ -3212,6 +3358,16 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
               <label class="admin-field">Autor (opcional)
                 <input id="author" type="text" maxlength="90" autocomplete="off" placeholder="Quem assina o texto" />
               </label>
+              <div class="admin-field admin-feature-field">
+                <span id="primary-label">Postagem principal do blog</span>
+                <button id="primary-toggle" class="admin-feature-toggle" type="button" aria-pressed="false" aria-labelledby="primary-label primary-title">
+                  <span class="admin-feature-switch" aria-hidden="true"><span></span></span>
+                  <span>
+                    <strong id="primary-title">Usar como postagem principal</strong>
+                    <small id="primary-description">Ao publicar, ocupa o maior espaço na listagem do blog.</small>
+                  </span>
+                </button>
+              </div>
               <div class="admin-field admin-feature-field">
                 <span id="featured-label">Destaque</span>
                 <button id="featured-toggle" class="admin-feature-toggle" type="button" aria-pressed="false" aria-labelledby="featured-label featured-title">
@@ -3425,7 +3581,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         <div class="admin-editor-actions">
           <button id="btn-save-draft" class="button button-light" type="button">Salvar rascunho</button>
           <button id="btn-publish" class="button button-dark" type="button">Publicar e traduzir</button>
-          <button id="btn-unpublish" class="button button-outline" type="button" hidden>Despublicar</button>
           <button id="btn-retranslate" class="button button-outline" type="button" hidden>Atualizar traduções</button>
         </div>
           </section>
@@ -3925,10 +4080,33 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         $('#category-options').replaceChildren(...rows);
       }
 
+      function updatePublishToggle() {
+        const published = editing?.status === 'published';
+        const button = $('#btn-unpublish');
+        button.disabled = !published;
+        button.setAttribute('aria-pressed', String(published));
+        $('#publish-title').textContent = published ? 'Publicado no site' : 'Rascunho';
+        const since = editing?.publishedAt
+          ? ` Desde ${new Date(editing.publishedAt).toLocaleDateString('pt-BR')}.`
+          : '';
+        $('#publish-description').textContent = published
+          ? `Visível no blog.${since} Desligue para voltar a rascunho.`
+          : 'Ainda não aparece no site. Para publicar, use o botão no fim da página.';
+      }
+
       function updateFeaturedToggle() {
         const enabled = Boolean(editing?.isFeatured);
         $('#featured-toggle').setAttribute('aria-pressed', String(enabled));
         $('#featured-title').textContent = enabled ? 'Exibir entre os destaques da home' : 'Mostrar na página inicial';
+      }
+
+      function updatePrimaryToggle() {
+        const enabled = Boolean(editing?.isPrimary);
+        $('#primary-toggle').setAttribute('aria-pressed', String(enabled));
+        $('#primary-title').textContent = enabled ? 'Postagem principal do blog' : 'Usar como postagem principal';
+        $('#primary-description').textContent = editing?.status === 'published'
+          ? 'Substitui a postagem principal atual da listagem.'
+          : 'Ao publicar, ocupa o maior espaço na listagem do blog.';
       }
 
       async function loadCategories() {
@@ -3995,6 +4173,13 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         editing.isFeatured = !editing.isFeatured;
         updateFeaturedToggle();
         status(editing.isFeatured ? 'Esta publicação aparecerá entre os destaques ao ser publicada.' : 'Esta publicação saiu dos destaques da página inicial.');
+      });
+      $('#primary-toggle').addEventListener('click', () => {
+        editing.isPrimary = !editing.isPrimary;
+        updatePrimaryToggle();
+        status(editing.isPrimary
+          ? 'Esta publicação será a postagem principal do blog quando estiver publicada.'
+          : 'Esta publicação não será mais a postagem principal do blog.');
       });
       // Clique no fundo escurecido fecha o diálogo (o formulário ocupa o resto da caixa).
       categoryDialog.addEventListener('click', (event) => {
@@ -4079,7 +4264,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         list.replaceChildren();
         const { data, error } = await supabase
           .from('posts')
-          .select('id,slug,status,is_featured,source_lang,published_at,post_translations(lang,title,manually_edited)')
+          .select('id,slug,status,is_featured,is_primary,source_lang,published_at,post_translations(lang,title,manually_edited)')
           .order('updated_at', { ascending: false });
         if (error) {
           status(`Não foi possível carregar os posts: ${error.message}`);
@@ -4113,6 +4298,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
             featuredBadge.className = 'admin-badge admin-featured-badge';
             featuredBadge.textContent = 'Destaque';
             meta.append(featuredBadge);
+          }
+          if (post.is_primary) {
+            const primaryBadge = document.createElement('span');
+            primaryBadge.className = 'admin-badge admin-primary-badge';
+            primaryBadge.textContent = post.status === 'published' ? 'Principal do blog' : 'Principal ao publicar';
+            meta.append(primaryBadge);
           }
           meta.append(document.createTextNode(`/${post.slug}`));
           if (post.published_at) meta.append(document.createTextNode(new Date(post.published_at).toLocaleDateString('pt-BR')));
@@ -4153,7 +4344,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       // --------------------------------------------------------------- Editor
 
       function startNewPost() {
-        editing = { id: null, slug: '', sourceLang: 'pt', status: 'draft', publishedAt: null, coverImage: null, category: '', author: '', isFeatured: false, translations: { pt: null, es: null, en: null } };
+        editing = { id: null, slug: '', sourceLang: 'pt', status: 'draft', publishedAt: null, coverImage: null, category: '', author: '', isFeatured: false, isPrimary: false, translations: { pt: null, es: null, en: null } };
         fillEditor();
         showView('editor');
       }
@@ -4183,6 +4374,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           category: data.category ?? '',
           author: data.author ?? '',
           isFeatured: Boolean(data.is_featured),
+          isPrimary: Boolean(data.is_primary),
           translations: { pt: null, es: null, en: null },
         };
         for (const translation of data.post_translations ?? []) editing.translations[translation.lang] = translation;
@@ -4198,16 +4390,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         updateCategoryButton();
         $('#author').value = editing.author;
         updateFeaturedToggle();
-        $('#post-status').textContent = editing.status === 'published' ? 'Publicado' : 'Rascunho';
-        $('#post-status').dataset.status = editing.status;
-        $('#published-at').textContent = editing.publishedAt
-          ? `· ${new Date(editing.publishedAt).toLocaleDateString('pt-BR')}`
-          : '';
+        updatePrimaryToggle();
+        updatePublishToggle();
 
         setCoverPreview(editing.coverImage);
 
         $('#btn-publish').hidden = editing.status === 'published';
-        $('#btn-unpublish').hidden = editing.status !== 'published';
         $('#btn-retranslate').hidden = editing.status !== 'published';
         $('#btn-save-draft').textContent = editing.status === 'published' ? 'Salvar alterações' : 'Salvar rascunho';
 
@@ -4817,8 +5005,23 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         }
 
         if (publish && editing.status !== 'published') editing.publishedAt = new Date().toISOString();
-        if (unpublish) editing.status = 'draft';
+        if (unpublish) {
+          editing.status = 'draft';
+          editing.isPrimary = false;
+        }
         else if (publish) editing.status = 'published';
+
+        // A regra do banco também impede duplicidade, mas limpar a escolha anterior
+        // antes do upsert dá um retorno mais simples para quem está editando.
+        if (editing.isPrimary && editing.status === 'published') {
+          let clearPrimary = supabase.from('posts').update({ is_primary: false }).eq('status', 'published').eq('is_primary', true);
+          if (editing.id) clearPrimary = clearPrimary.neq('id', editing.id);
+          const { error: clearPrimaryError } = await clearPrimary;
+          if (clearPrimaryError) {
+            status(`Não foi possível definir a postagem principal: ${clearPrimaryError.message}`);
+            return null;
+          }
+        }
 
         const row = {
           slug,
@@ -4827,6 +5030,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           category: editing.category || null,
           author: $('#author').value.trim() || null,
           is_featured: editing.isFeatured,
+          is_primary: editing.isPrimary,
           status: editing.status,
           published_at: editing.publishedAt || null,
         };
@@ -4845,6 +5049,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         editing.category = data.category ?? '';
         editing.author = data.author ?? '';
         editing.isFeatured = Boolean(data.is_featured);
+        editing.isPrimary = Boolean(data.is_primary);
 
         const translationRow = {
           post_id: editing.id,
@@ -4866,8 +5071,14 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       async function saveLang(lang) {
         if (!editing.id) {
-          status('Salve o post primeiro (rascunho ou publicar).');
-          return;
+          if (!(await savePost({}))) return;
+          if (lang === editing.sourceLang) {
+            renderTabs();
+            fillPanel(lang);
+            status('Texto salvo nesta língua. A publicação ficou como rascunho.');
+            await renderList();
+            return;
+          }
         }
         const values = readPanel(lang);
         if (!values.title) {
@@ -4924,6 +5135,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         editing.category = data.category ?? '';
         editing.author = data.author ?? '';
         editing.isFeatured = Boolean(data.is_featured);
+        editing.isPrimary = Boolean(data.is_primary);
         editing.translations = { pt: null, es: null, en: null };
         for (const translation of data.post_translations ?? []) editing.translations[translation.lang] = translation;
         fillEditor();

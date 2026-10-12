@@ -1,0 +1,209 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site.js';
+
+const { path = '/admin' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página não encontrada | Painel do blog</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#111214" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300..900&family=League+Spartan:wght@600..800&display=swap" />
+  </head>
+  <body class="cms-not-found-body">
+    <main class="cms-not-found" aria-labelledby="cms-not-found-title">
+      <div class="cms-not-found-halo" aria-hidden="true"></div>
+      <a class="cms-not-found-brand" href="/admin" aria-label="Voltar ao painel do blog">
+        <img src={site.logo.src} width={site.logo.width} height={site.logo.height} alt="" />
+        <span>Área da equipe</span>
+      </a>
+
+      <section class="cms-not-found-card">
+        <p class="cms-not-found-kicker">Painel do blog <span aria-hidden="true">/</span> erro 404</p>
+        <p class="cms-not-found-code" aria-hidden="true">404</p>
+        <h1 id="cms-not-found-title">Este endereço não faz parte do painel.</h1>
+        <p>Você pode retornar para as publicações ou abrir o site público.</p>
+        <code>{path}</code>
+        <div class="cms-not-found-actions">
+          <a class="button button-gold" href="/admin">Voltar ao painel <span aria-hidden="true">→</span></a>
+          <a class="cms-not-found-site" href={site.url || '/'}>Ir para o site <span aria-hidden="true">↗</span></a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  .cms-not-found-body {
+    min-height: 100svh;
+    background: #111214;
+  }
+
+  .cms-not-found {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    overflow: hidden;
+    padding: 1.5rem;
+    background:
+      radial-gradient(circle at 50% 45%, rgba(221, 186, 103, 0.18), transparent 23rem),
+      linear-gradient(145deg, #171719, #111214 62%);
+    color: var(--white);
+    isolation: isolate;
+  }
+
+  .cms-not-found-halo {
+    position: absolute;
+    z-index: -1;
+    width: min(72vw, 46rem);
+    aspect-ratio: 1;
+    border: 1px solid rgba(221, 186, 103, 0.25);
+    border-radius: 50%;
+    box-shadow: 0 0 0 min(5vw, 4rem) rgba(221, 186, 103, 0.05), 0 0 110px rgba(221, 186, 103, 0.12);
+  }
+
+  .cms-not-found-brand {
+    position: absolute;
+    top: clamp(1.5rem, 4vw, 3rem);
+    left: clamp(1.5rem, 5vw, 5rem);
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    color: rgba(255, 255, 255, 0.68);
+    font-family: var(--display);
+    font-size: 0.73rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .cms-not-found-brand img {
+    width: auto;
+    height: 48px;
+  }
+
+  .cms-not-found-card {
+    width: min(100%, 39rem);
+    padding: clamp(2rem, 6vw, 4.5rem);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1.75rem;
+    background: rgba(25, 25, 27, 0.79);
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34);
+    text-align: center;
+    backdrop-filter: blur(14px);
+  }
+
+  .cms-not-found-kicker {
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .cms-not-found-kicker span {
+    color: rgba(255, 255, 255, 0.46);
+    padding-inline: 0.35rem;
+  }
+
+  .cms-not-found-code {
+    margin: 0.45rem 0 -0.05em;
+    color: transparent;
+    font-family: var(--display);
+    font-size: clamp(5.7rem, 16vw, 9.5rem);
+    font-weight: 800;
+    letter-spacing: -0.08em;
+    line-height: 0.9;
+    -webkit-text-stroke: 1px rgba(221, 186, 103, 0.75);
+  }
+
+  .cms-not-found-card h1 {
+    max-width: 12ch;
+    margin-inline: auto;
+    font-family: var(--display);
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+
+  .cms-not-found-card > p:not(.cms-not-found-kicker, .cms-not-found-code) {
+    max-width: 38ch;
+    margin: 1.2rem auto 0;
+    color: rgba(255, 255, 255, 0.68);
+    line-height: 1.65;
+  }
+
+  .cms-not-found-card code {
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.32rem 0.65rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 0.45rem;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.77rem;
+    overflow-wrap: anywhere;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cms-not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem 1.35rem;
+    margin-top: 2rem;
+  }
+
+  .cms-not-found-site {
+    color: var(--gold);
+    font-family: var(--display);
+    font-size: 0.86rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .cms-not-found-site:hover {
+    color: var(--gold-hover);
+  }
+
+  @media (max-width: 550px) {
+    .cms-not-found {
+      align-items: end;
+      padding: 1rem;
+    }
+
+    .cms-not-found-brand {
+      left: 1.5rem;
+    }
+
+    .cms-not-found-brand span {
+      display: none;
+    }
+
+    .cms-not-found-card {
+      border-radius: 1.35rem;
+    }
+
+    .cms-not-found-actions .button {
+      width: 100%;
+    }
+  }
+</style>

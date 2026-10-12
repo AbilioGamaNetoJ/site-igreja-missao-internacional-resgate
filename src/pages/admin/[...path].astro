@@ -1,0 +1,10 @@
+---
+import AdminNotFoundView from '../../views/AdminNotFoundView.astro';
+
+export const prerender = false;
+
+const requestedPath = Astro.url.searchParams.get('path') || `/admin/${Astro.params.path || ''}`;
+Astro.response.status = 404;
+---
+
+<AdminNotFoundView path={requestedPath} />

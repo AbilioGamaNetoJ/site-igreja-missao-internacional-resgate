@@ -1,0 +1,199 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { content } from '../i18n/content.js';
+import { blogPath, pathFor } from '../i18n/routes.js';
+
+const { lang } = Astro.props;
+const t = content[lang];
+const notFound = t.notFound;
+---
+
+<BaseLayout
+  lang={lang}
+  page="notFound"
+  meta={{
+    title: `${notFound.eyebrow} — ${notFound.title}`,
+    description: notFound.text,
+    noindex: true,
+    noCanonical: true,
+    noAlternates: true,
+    noStructuredData: true,
+  }}
+>
+  <section class="not-found" aria-labelledby="not-found-title">
+    <div class="not-found-orbit not-found-orbit-one" aria-hidden="true"></div>
+    <div class="not-found-orbit not-found-orbit-two" aria-hidden="true"></div>
+
+    <div class="not-found-inner frame" data-reveal>
+      <p class="eyebrow not-found-eyebrow">{notFound.eyebrow}</p>
+      <div class="not-found-mark" aria-hidden="true">
+        <span>404</span>
+        <i></i>
+      </div>
+      <h1 id="not-found-title">{notFound.title}</h1>
+      <p class="not-found-copy">{notFound.text}</p>
+      <div class="not-found-actions">
+        <a class="button button-gold" href={pathFor('home', lang)}>{notFound.home}<Icon name="arrow-right" size={17} /></a>
+        <a class="button button-outline" href={blogPath(lang)}>{notFound.blog}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .not-found {
+    position: relative;
+    display: grid;
+    min-height: min(710px, calc(100svh - var(--header-h)));
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 43%, rgba(221, 186, 103, 0.22), transparent min(27vw, 23rem)),
+      linear-gradient(135deg, #f6f4f1 0%, #fff 53%, #eee8de 100%);
+    isolation: isolate;
+  }
+
+  .not-found::before,
+  .not-found::after {
+    position: absolute;
+    z-index: -1;
+    width: min(38vw, 34rem);
+    aspect-ratio: 1;
+    border: 1px solid rgba(157, 116, 40, 0.22);
+    border-radius: 50%;
+    content: '';
+  }
+
+  .not-found::before {
+    top: -20%;
+    left: -12%;
+    box-shadow: 0 0 0 min(3vw, 2.5rem) rgba(221, 186, 103, 0.08);
+  }
+
+  .not-found::after {
+    right: -15%;
+    bottom: -32%;
+    box-shadow: 0 0 0 min(4vw, 3.5rem) rgba(221, 186, 103, 0.08);
+  }
+
+  .not-found-orbit {
+    position: absolute;
+    z-index: -1;
+    border: 1px dashed rgba(17, 18, 20, 0.13);
+    border-radius: 50%;
+  }
+
+  .not-found-orbit-one {
+    top: 11%;
+    left: 5%;
+    width: min(20vw, 16rem);
+    aspect-ratio: 1;
+  }
+
+  .not-found-orbit-two {
+    right: 6%;
+    bottom: 13%;
+    width: min(16vw, 13rem);
+    aspect-ratio: 1;
+  }
+
+  .not-found-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: inherit;
+    padding-block: clamp(5rem, 11vw, 8rem);
+    text-align: center;
+  }
+
+  .not-found-eyebrow {
+    color: var(--gold-ink);
+  }
+
+  .not-found-mark {
+    position: relative;
+    margin: clamp(0.8rem, 2vw, 1.35rem) 0 -0.15em;
+    color: transparent;
+    font-family: var(--display);
+    font-size: clamp(7rem, 23vw, 15rem);
+    font-weight: 800;
+    letter-spacing: -0.09em;
+    line-height: 0.85;
+    -webkit-text-stroke: clamp(1px, 0.16vw, 3px) var(--ink);
+    text-stroke: clamp(1px, 0.16vw, 3px) var(--ink);
+    user-select: none;
+  }
+
+  .not-found-mark i {
+    position: absolute;
+    top: 54%;
+    left: 10%;
+    width: 82%;
+    height: clamp(5px, 0.65vw, 9px);
+    border-radius: 999px;
+    background: var(--gold);
+    box-shadow: 0 0 0 clamp(5px, 0.8vw, 11px) rgba(221, 186, 103, 0.17);
+    transform: rotate(-7deg);
+  }
+
+  h1 {
+    max-width: 13ch;
+    margin-top: 0.65rem;
+    font-family: var(--display);
+    font-size: clamp(2.25rem, 5vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+
+  .not-found-copy {
+    max-width: 45ch;
+    margin-top: 1.25rem;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.5vw, 1.13rem);
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+
+  .not-found-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 620px) {
+    .not-found {
+      min-height: calc(100svh - var(--header-h));
+    }
+
+    .not-found-inner {
+      padding-block: 4.5rem;
+    }
+
+    .not-found-mark {
+      font-size: clamp(6.5rem, 31vw, 10rem);
+    }
+
+    .not-found-actions {
+      width: min(100%, 21rem);
+    }
+
+    .not-found-actions .button {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .not-found-mark i {
+      animation: find-path 4.5s ease-in-out infinite;
+    }
+  }
+
+  @keyframes find-path {
+    50% { transform: rotate(-7deg) translateX(9px); }
+  }
+</style>

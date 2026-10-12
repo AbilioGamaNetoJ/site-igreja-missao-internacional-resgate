@@ -62,7 +62,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
   </Story>
 
   {featuredPosts.length > 0 && (
-    <section class="featured-posts section-dark" aria-labelledby="featured-posts-title">
+    <section class="featured-posts" aria-labelledby="featured-posts-title">
       <div class="frame">
         <div class="featured-posts-heading" data-reveal>
           <div>
@@ -284,9 +284,8 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
   .featured-posts {
     overflow: hidden;
     padding-block: clamp(4.5rem, 8vw, 7rem);
-    background:
-      radial-gradient(circle at 0 0, rgba(221, 186, 103, 0.2), transparent 28%),
-      linear-gradient(122deg, #090909, #17120f);
+    background: var(--white);
+    color: var(--ink);
   }
 
   .featured-posts-heading {
@@ -298,7 +297,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
   }
 
   .featured-posts .eyebrow {
-    color: var(--gold);
+    color: var(--gold-ink);
   }
 
   .featured-posts h2 {
@@ -315,14 +314,14 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
 
   .featured-posts-heading > div:last-child > p {
     max-width: 38ch;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--muted);
     font-size: 0.96rem;
     line-height: 1.6;
   }
 
   .featured-posts-link {
     margin-top: 20px;
-    color: var(--gold);
+    color: var(--gold-ink);
   }
 
   .featured-posts-grid {
@@ -336,17 +335,17 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid var(--line);
     border-radius: clamp(20px, 2.5vw, 30px);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--white);
+    background: var(--sand);
+    color: var(--ink);
     text-decoration: none;
     transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
   }
 
   .featured-post a:hover {
-    border-color: rgba(221, 186, 103, 0.8);
-    background: rgba(255, 255, 255, 0.09);
+    border-color: var(--gold-script);
+    background: var(--paper);
     transform: translateY(-5px);
   }
 
@@ -382,7 +381,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
     flex-wrap: wrap;
     gap: 7px 12px;
     align-items: center;
-    color: var(--gold);
+    color: var(--gold-ink);
     font-family: var(--display);
     font-size: 0.68rem;
     font-weight: 700;
@@ -392,7 +391,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
 
   .featured-post-meta span {
     padding-right: 12px;
-    border-right: 1px solid rgba(221, 186, 103, 0.45);
+    border-right: 1px solid rgba(138, 100, 32, 0.35);
   }
 
   .featured-post h3 {
@@ -413,7 +412,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
     display: -webkit-box;
     margin-top: 12px;
     overflow: hidden;
-    color: rgba(255, 255, 255, 0.68);
+    color: var(--muted);
     font-size: 0.88rem;
     line-height: 1.55;
     -webkit-box-orient: vertical;
@@ -426,7 +425,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
     align-items: center;
     margin-top: auto;
     padding-top: 22px;
-    color: var(--gold);
+    color: var(--gold-ink);
     font-family: var(--display);
     font-size: 0.76rem;
     font-weight: 700;
