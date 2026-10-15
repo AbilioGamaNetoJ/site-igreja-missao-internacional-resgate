@@ -332,6 +332,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
 
   .featured-post {
     position: relative;
+    min-width: 0;
   }
 
   .featured-post a {
@@ -358,6 +359,8 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
   }
 
   .featured-post figure {
+    position: relative;
+    width: 100%;
     aspect-ratio: 1 / 0.78;
     overflow: hidden;
   }
@@ -367,6 +370,8 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
   }
 
   .featured-post img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -458,7 +463,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
 
     .featured-posts-heading,
     .featured-posts-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
 
     .featured-posts-heading {
