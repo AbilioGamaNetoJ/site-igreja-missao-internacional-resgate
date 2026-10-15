@@ -3,6 +3,7 @@
 // aparece aqui na hora, sem novo deploy.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogSearch from '../components/BlogSearch.astro';
+import Icon from '../components/Icon.astro';
 import { content } from '../i18n/content.js';
 import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
@@ -49,12 +50,20 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
         <div class="toolbar">
           {categoryOptions.length > 1 && (
             <nav class="filters" aria-label={t.blog.filterLabel}>
-              <a href={blogPath(lang)} aria-current={selected || search ? undefined : 'page'}>{t.blog.allCategories}</a>
-              {categoryOptions.map(({ slug, name }) => (
-                <a href={`${blogPath(lang)}?category=${encodeURIComponent(slug)}`} aria-current={selected === slug ? 'page' : undefined}>
-                  {name}
-                </a>
-              ))}
+              <button type="button" class="filters-arrow filters-arrow-prev" aria-label={t.blog.previousCategories}>
+                <Icon name="arrow-right" size={16} />
+              </button>
+              <div class="filters-track">
+                <a href={blogPath(lang)} aria-current={selected || search ? undefined : 'page'}>{t.blog.allCategories}</a>
+                {categoryOptions.map(({ slug, name }) => (
+                  <a href={`${blogPath(lang)}?category=${encodeURIComponent(slug)}`} aria-current={selected === slug ? 'page' : undefined}>
+                    {name}
+                  </a>
+                ))}
+              </div>
+              <button type="button" class="filters-arrow filters-arrow-next" aria-label={t.blog.nextCategories}>
+                <Icon name="arrow-right" size={16} />
+              </button>
             </nav>
           )}
           <BlogSearch lang={lang} posts={allPosts} value={search} />
@@ -158,6 +167,81 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
   </section>
 </BaseLayout>
 
+<script>
+  // No celular a faixa mostra três categorias. As setas circulam: no fim, a
+  // da direita volta ao início, e no início a da esquerda vai ao fim.
+  const mobileFilters = window.matchMedia('(max-width: 600px)');
+  const visibleCategories = 3;
+
+  const bootCategoryFilters = () => {
+    document.querySelectorAll('.filters').forEach((nav) => {
+      if (nav.dataset.bound) return;
+      nav.dataset.bound = 'true';
+      const track = nav.querySelector('.filters-track');
+      const previous = nav.querySelector('.filters-arrow-prev');
+      const next = nav.querySelector('.filters-arrow-next');
+      if (!track || !previous || !next) return;
+
+      const links = () => [...track.querySelectorAll('a')];
+      const gap = () => Number.parseFloat(getComputedStyle(track).columnGap) || 0;
+      const motion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+      const itemLeft = (link) => link.getBoundingClientRect().left - track.getBoundingClientRect().left + track.scrollLeft;
+      let page = 0;
+
+      const show = (index, behavior = 'auto') => {
+        const items = links();
+        if (!mobileFilters.matches || items.length === 0) {
+          track.style.maxWidth = '';
+          previous.disabled = true;
+          next.disabled = true;
+          return;
+        }
+        const visible = Math.min(visibleCategories, items.length);
+        const lastStart = Math.max(0, items.length - visible);
+        const span = lastStart + 1;
+        page = ((index % span) + span) % span;
+        const shown = items.slice(page, page + visible);
+        const desired = shown.reduce((sum, link, position) => sum + link.offsetWidth + (position ? gap() : 0), 0) + 4;
+        const gridGap = Number.parseFloat(getComputedStyle(nav).columnGap) || 0;
+        const available = nav.clientWidth - previous.offsetWidth - next.offsetWidth - gridGap * 2;
+        track.style.maxWidth = `${Math.min(Math.ceil(desired), Math.max(available, 0))}px`;
+        track.scrollTo({ left: itemLeft(items[page]), behavior });
+        const canMove = lastStart > 0;
+        previous.disabled = !canMove;
+        next.disabled = !canMove;
+      };
+
+      const settle = () => {
+        if (!mobileFilters.matches) return;
+        const items = links();
+        const nearest = items.reduce((best, link, index) => {
+          const distance = Math.abs(itemLeft(link) - track.scrollLeft);
+          return distance < best.distance ? { index, distance } : best;
+        }, { index: 0, distance: Infinity });
+        const visible = Math.min(visibleCategories, items.length);
+        show(Math.min(nearest.index, Math.max(0, items.length - visible)), 'auto');
+      };
+
+      previous.addEventListener('click', () => show(page - 1, motion()));
+      next.addEventListener('click', () => show(page + 1, motion()));
+      track.addEventListener('scrollend', settle);
+
+      const layout = () => {
+        const items = links();
+        const current = items.findIndex((link) => link.getAttribute('aria-current') === 'page');
+        show(current >= 0 ? current : 0);
+      };
+
+      layout();
+      document.fonts?.ready.then(layout);
+      mobileFilters.addEventListener('change', layout);
+      window.addEventListener('resize', layout);
+    });
+  };
+
+  bootCategoryFilters();
+</script>
+
 <style>
   .blog-list { padding-block: clamp(2.75rem, 5vw, 4.75rem) clamp(3.5rem, 6vw, 6rem); }
 
@@ -199,7 +283,46 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
   .filters {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 4px 18px;
+  }
+
+  .filters-track {
+    display: contents;
+  }
+
+  .filters-arrow {
+    display: none;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--white);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .filters-arrow:hover,
+  .filters-arrow:focus-visible {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+  }
+
+  .filters-arrow:disabled {
+    background: var(--white);
+    border-color: var(--line);
+    color: var(--muted);
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .filters-arrow-prev :global(svg) {
+    transform: scaleX(-1);
   }
 
   .toolbar > :global(.blog-search) { flex: 0 1 320px; margin-left: auto; }
@@ -468,7 +591,45 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
 
   @media (max-width: 600px) {
     .blog-list { padding-block: 36px 56px; }
+    .toolbar { justify-content: center; }
     .toolbar > :global(.blog-search) { flex-basis: 100%; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .filters-arrow { display: grid; }
+
+    .filters-track {
+      position: relative;
+      justify-self: center;
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      gap: 10px;
+      width: max-content;
+      min-width: 0;
+      max-width: 100%;
+      padding-block: 4px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+    }
+
+    .filters-track::-webkit-scrollbar { display: none; }
+
+    .filters-track a {
+      flex: 0 0 auto;
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
     .recent-posts ol,
     .post-grid { grid-template-columns: 1fr; }
     .recent-posts a { grid-template-columns: 82px minmax(0, 1fr); }
