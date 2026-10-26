@@ -1,6 +1,8 @@
 ---
 import '../styles/global.css';
 import { site } from '../data/site.js';
+import kumbhSansFont from '../assets/fonts/KumbhSans.woff2';
+import leagueSpartanFont from '../assets/fonts/LeagueSpartan.woff2';
 
 const { path = '/admin' } = Astro.props;
 ---
@@ -13,10 +15,9 @@ const { path = '/admin' } = Astro.props;
     <title>Página não encontrada | Painel do blog</title>
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="#111214" />
-    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300..900&family=League+Spartan:wght@600..800&display=swap" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+    <link rel="preload" href={leagueSpartanFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={kumbhSansFont} as="font" type="font/woff2" crossorigin />
   </head>
   <body class="cms-not-found-body">
     <main class="cms-not-found" aria-labelledby="cms-not-found-title">

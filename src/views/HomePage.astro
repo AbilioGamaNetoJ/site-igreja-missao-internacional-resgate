@@ -8,6 +8,7 @@ import { content } from '../i18n/content.js';
 import { blogPath, languages, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { categoryName, fetchFeaturedPosts, translationsByLang } from '../lib/supabase.js';
+import { imageSrcSet, imageUrl } from '../lib/images.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
@@ -15,11 +16,24 @@ const home = t.home;
 const pillarPages = ['church', 'gatherings', 'outreach'];
 const featuredPosts = await fetchFeaturedPosts();
 const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'short', year: 'numeric' });
+const heroImage = imageUrl(photos.congregation, { width: 1280 });
+const heroImageSrcSet = imageSrcSet(photos.congregation);
+const preachingImage = imageUrl(photos.preaching, { width: 1280 });
+const preachingImageSrcSet = imageSrcSet(photos.preaching);
 ---
 
 <BaseLayout lang={lang} page="home">
+  <link
+    slot="head"
+    rel="preload"
+    as="image"
+    href={heroImage}
+    imagesrcset={heroImageSrcSet}
+    imagesizes="100vw"
+    fetchpriority="high"
+  />
   <section class="hero section-dark">
-    <img class="hero-image" src={photos.congregation} alt="" fetchpriority="high" />
+    <img class="hero-image" src={heroImage} srcset={heroImageSrcSet} sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async" />
     <div class="hero-content frame">
       <p class="eyebrow">{home.hero.eyebrow}</p>
       <h1>{home.hero.title}</h1>
@@ -56,7 +70,7 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
         ))}
       </div>
       <figure class="pillars-photo">
-        <img src={photos.preaching} alt={t.photos.preaching} loading="lazy" />
+        <img src={preachingImage} srcset={preachingImageSrcSet} sizes="(max-width: 860px) calc(100vw - 40px), 50vw" width="1280" height="719" alt={t.photos.preaching} loading="lazy" decoding="async" />
       </figure>
     </div>
   </Story>
@@ -79,15 +93,24 @@ const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, 
           {featuredPosts.map((post, index) => {
             const translation = translationsByLang(post)[lang];
             const hasCover = Boolean(post.cover_image);
+            const coverSource = hasCover ? post.cover_image : photos.praise;
+            const coverImage = imageUrl(coverSource, { width: 768, aspectRatio: 16 / 9, quality: 68 });
+            const coverImageSrcSet = imageSrcSet(coverSource, { aspectRatio: 16 / 9, quality: 68 });
             const category = categoryName(post, lang);
             return (
               <li class={`featured-post featured-post-${index + 1}`}>
                 <a href={blogPath(lang, post.slug)} data-reveal>
                   <figure>
                     <img
-                      src={hasCover ? post.cover_image : photos.praise}
+                      src={coverImage}
+                      srcset={coverImageSrcSet}
+                      sizes="(max-width: 860px) calc(100vw - 40px), (max-width: 1180px) 30vw, 360px"
+                      width="768"
+                      height="432"
                       alt={hasCover ? translation.title : t.photos.praise}
                       loading="lazy"
+                      fetchpriority="low"
+                      decoding="async"
                     />
                   </figure>
                   <div class="featured-post-body">

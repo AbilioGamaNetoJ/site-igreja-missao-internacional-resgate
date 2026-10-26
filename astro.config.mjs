@@ -14,6 +14,10 @@ export default defineConfig({
     // Em `astro dev`, expõe vars e secrets do wrangler (.dev.vars) em locals.runtime.env.
     platformProxy: { enabled: true },
   }),
+  build: {
+    // Os estilos da página são pequenos; inline evita três requisições bloqueantes no primeiro paint.
+    inlineStylesheets: 'always',
+  },
   vite: {
     plugins: [tailwindcss()],
   },

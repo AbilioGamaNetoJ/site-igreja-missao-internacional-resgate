@@ -63,9 +63,5 @@ export async function fetchPostBySlug(slug) {
   );
   const post = Array.isArray(rows) ? rows[0] : null;
   const ready = isPostReady(post) ? post : null;
-  // #region agent log
-  const translations = ready?.post_translations ?? [];
-  fetch('http://127.0.0.1:7869/ingest/67c70e97-e7d0-437b-af9e-a01638eec5aa',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'67da8c'},body:JSON.stringify({sessionId:'67da8c',runId:'post-fix',hypothesisId:'A',location:'supabase.js:fetchPostBySlug',message:'post body fields',data:{slug,rowCount:Array.isArray(rows)?rows.length:0,ready:Boolean(ready),langs:translations.map((item)=>({lang:item.lang,bodyLen:typeof item.body==='string'?item.body.length:0,excerptLen:typeof item.excerpt==='string'?item.excerpt.length:0,hasImage:typeof item.body==='string'&&item.body.includes('!['),newlines:typeof item.body==='string'?item.body.split('\n').length-1:0}))},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   return ready;
 }

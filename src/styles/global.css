@@ -8,6 +8,23 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Kumbh Sans';
+  src: url('../assets/fonts/KumbhSans.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  /* Em conexões lentas, manter a métrica do fallback evita deslocar o hero quando a fonte chega. */
+  font-display: optional;
+}
+
+@font-face {
+  font-family: 'League Spartan';
+  src: url('../assets/fonts/LeagueSpartan.woff2') format('woff2');
+  font-weight: 600 800;
+  font-style: normal;
+  font-display: optional;
+}
+
 :root {
   --black: #000;
   --ink: #111214;

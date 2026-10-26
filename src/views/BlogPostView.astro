@@ -10,12 +10,15 @@ import { photos } from '../data/photos.js';
 import { site } from '../data/site.js';
 import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
 import { renderMarkdown } from '../lib/markdown.js';
+import { imageSrcSet, imageUrl } from '../lib/images.js';
 
 const { lang, post } = Astro.props;
 const t = content[lang];
 const translation = translationsByLang(post)[lang];
 const hasCover = Boolean(post.cover_image);
 const cover = hasCover ? post.cover_image : photos.worship;
+const optimizedCover = imageUrl(cover, { width: 1280, aspectRatio: 16 / 9, quality: 68 });
+const optimizedCoverSrcSet = imageSrcSet(cover, { aspectRatio: 16 / 9, quality: 68 });
 const coverAlt = hasCover ? translation.title : t.photos.worship;
 const base = Astro.site;
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
@@ -90,7 +93,7 @@ const jsonLd = JSON.stringify({
         </header>
 
         <figure class="article-cover">
-          <img src={cover} alt={coverAlt} fetchpriority="high" />
+          <img src={optimizedCover} srcset={optimizedCoverSrcSet} sizes="(max-width: 860px) calc(100vw - 40px), 760px" width="1280" height="720" alt={coverAlt} fetchpriority="high" decoding="async" />
         </figure>
 
         {translation.bible_reference && (
@@ -113,7 +116,7 @@ const jsonLd = JSON.stringify({
                 return (
                   <li>
                     <a href={blogPath(lang, relatedPost.slug)}>
-                      <img src={relatedCover(relatedPost)} alt={relatedAlt(relatedPost, relatedTranslation)} loading="lazy" />
+                      <img src={imageUrl(relatedCover(relatedPost), { width: 480, aspectRatio: 16 / 9, quality: 68 })} srcset={imageSrcSet(relatedCover(relatedPost), { aspectRatio: 16 / 9, quality: 68 })} sizes="96px" width="480" height="270" alt={relatedAlt(relatedPost, relatedTranslation)} loading="lazy" decoding="async" />
                       <span>
                         {relatedCategory && <small>{relatedCategory}</small>}
                         <strong>{relatedTranslation.title}</strong>
@@ -140,7 +143,7 @@ const jsonLd = JSON.stringify({
               return (
                 <li>
                   <a href={blogPath(lang, relatedPost.slug)}>
-                    <figure><img src={relatedCover(relatedPost)} alt={relatedAlt(relatedPost, relatedTranslation)} loading="lazy" /></figure>
+                    <figure><img src={imageUrl(relatedCover(relatedPost), { width: 768, aspectRatio: 16 / 9, quality: 68 })} srcset={imageSrcSet(relatedCover(relatedPost), { aspectRatio: 16 / 9, quality: 68 })} sizes="(max-width: 600px) calc(100vw - 40px), 30vw" width="768" height="432" alt={relatedAlt(relatedPost, relatedTranslation)} loading="lazy" decoding="async" /></figure>
                     <p class="post-meta">
                       {relatedCategory && <span>{relatedCategory}</span>}
                       <time datetime={relatedPost.published_at}>{dateFormatter.format(new Date(relatedPost.published_at))}</time>

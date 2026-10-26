@@ -45,8 +45,8 @@ export const site = {
     { name: 'Facebook', icon: 'facebook', href: '' },
     { name: 'YouTube', icon: 'youtube', href: '' },
   ],
-  logo: { src: '/logos/logo-horizontal.webp', width: 720, height: 416 },
-  symbol: { src: '/logos/logo-simbolo.webp', width: 400, height: 540 },
+  logo: { src: '/logos/logo-horizontal-320.webp', width: 320, height: 185 },
+  symbol: { src: '/logos/logo-simbolo-160.webp', width: 160, height: 216 },
   // Imagem que aparece ao compartilhar o link (WhatsApp, Facebook) e nos resultados de busca.
   // É um print da home. Ao mudar o topo da home, tire o print de novo.
   shareImage: { src: '/og-image.webp', width: 4800, height: 2520 },

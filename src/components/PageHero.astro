@@ -1,11 +1,14 @@
 ---
 // Banner das páginas internas. Com titleA/titleB mostra o nome da página em duas cores;
 // com title mostra uma frase de destaque e, se houver, um botão.
+import { imageSrcSet, imageUrl } from '../lib/images.js';
+
 const { image, titleA, titleB, title, cta, mono = true } = Astro.props;
+const optimizedImage = imageUrl(image, { width: 1280 });
 ---
 
 <section class:list={['page-hero', { headline: !!title }]}>
-  <img class:list={['page-hero-image', { mono }]} src={image} alt="" fetchpriority="high" />
+  <img class:list={['page-hero-image', { mono }]} src={optimizedImage} srcset={imageSrcSet(image)} sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async" />
   <div class="page-hero-content frame">
     <h1>
       {titleA ? <Fragment><span>{titleA}</span> <span class="accent">{titleB}</span></Fragment> : title}

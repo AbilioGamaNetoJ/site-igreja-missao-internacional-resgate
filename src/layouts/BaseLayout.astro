@@ -6,6 +6,8 @@ import { content } from '../i18n/content.js';
 import { defaultLang, languages, pathFor } from '../i18n/routes.js';
 import { site } from '../data/site.js';
 import { structuredData } from '../data/seo.js';
+import kumbhSansFont from '../assets/fonts/KumbhSans.woff2';
+import leagueSpartanFont from '../assets/fonts/LeagueSpartan.woff2';
 
 // `page` busca título, descrição e endereços em src/i18n/content.js e src/i18n/routes.js.
 // `meta` sobrepõe tudo isso para páginas dinâmicas (artigos do blog):
@@ -54,9 +56,8 @@ const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ 
     )}
     {canonical && <link rel="canonical" href={canonical} />}
     {alternates.map((alternate) => <link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />)}
-    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
-    <link rel="icon" type="image/png" sizes="720x720" href="/apple-touch-icon.png" />
-    <link rel="apple-touch-icon" type="image/png" sizes="720x720" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+    <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/apple-touch-icon-180.png" />
 
     <!-- Prévia do link no WhatsApp, Facebook e outras redes -->
     <meta property="og:type" content={isArticle ? 'article' : 'website'} />
@@ -84,9 +85,9 @@ const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ 
 
     <!-- Dados estruturados (schema.org) para buscadores e assistentes de IA -->
     {jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300..900&family=League+Spartan:wght@600..800&display=swap" />
+    <link rel="preload" href={leagueSpartanFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={kumbhSansFont} as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
     <script is:inline>document.documentElement.classList.add('js');</script>
   </head>
   <body>

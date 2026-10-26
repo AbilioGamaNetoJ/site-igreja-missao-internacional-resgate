@@ -8,6 +8,7 @@ import NextStep from '../components/NextStep.astro';
 import { content } from '../i18n/content.js';
 import { pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
+import { imageSrcSet, imageUrl } from '../lib/images.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
@@ -33,7 +34,7 @@ const galleryPhotos = ['hall', 'praise', 'hallTables', 'congregation'];
     </div>
     <div class="gallery-grid frame" data-reveal>
       {galleryPhotos.map((key) => (
-        <figure><img src={photos[key]} alt={t.photos[key]} loading="lazy" /></figure>
+        <figure><img src={imageUrl(photos[key], { width: 768 })} srcset={imageSrcSet(photos[key])} sizes="(max-width: 600px) calc(100vw - 40px), 33vw" width="768" height="512" alt={t.photos[key]} loading="lazy" decoding="async" /></figure>
       ))}
     </div>
   </section>

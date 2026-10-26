@@ -9,6 +9,7 @@ import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
 import { searchTerms, matchesTerms, postSearchText } from '../lib/search.js';
+import { imageSrcSet, imageUrl } from '../lib/images.js';
 
 const { lang } = Astro.props;
 const t = content[lang];
@@ -34,6 +35,8 @@ const morePosts = search ? posts : remainingPosts.slice(4);
 const resultsCount = (posts.length === 1 ? t.blog.resultsCount.one : t.blog.resultsCount.other).replace('{count}', posts.length);
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
 const cover = (post) => post.cover_image || photos.praise;
+const coverImage = (post, width = 1280) => imageUrl(cover(post), { width, aspectRatio: 16 / 9, quality: 68 });
+const coverImageSrcSet = (post) => imageSrcSet(cover(post), { aspectRatio: 16 / 9, quality: 68 });
 const coverAlt = (post, translation) => post.cover_image ? translation.title : t.photos.praise;
 ---
 
@@ -91,7 +94,7 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
                   <article class="primary-post">
                     <a href={blogPath(lang, primaryPost.slug)}>
                       <figure>
-                        <img src={cover(primaryPost)} alt={coverAlt(primaryPost, translation)} fetchpriority="high" />
+                        <img src={coverImage(primaryPost)} srcset={coverImageSrcSet(primaryPost)} sizes="(max-width: 860px) calc(100vw - 40px), 65vw" width="1280" height="720" alt={coverAlt(primaryPost, translation)} fetchpriority="high" decoding="async" />
                         <figcaption>
                           <p class="post-meta">
                           {category && <span>{category}</span>}
@@ -116,7 +119,7 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
                         <li>
                           <a href={blogPath(lang, post.slug)}>
                             <span class="recent-media">
-                              <img src={cover(post)} alt={coverAlt(post, translation)} loading="lazy" />
+                              <img src={coverImage(post, 480)} srcset={coverImageSrcSet(post)} sizes="112px" width="480" height="270" alt={coverAlt(post, translation)} loading="lazy" decoding="async" />
                             </span>
                             <span>
                               {category && <small>{category}</small>}
@@ -144,7 +147,7 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
                     <li>
                       <a class="post-card" href={blogPath(lang, post.slug)}>
                         <figure>
-                          <img src={cover(post)} alt={coverAlt(post, translation)} loading="lazy" />
+                          <img src={coverImage(post, 768)} srcset={coverImageSrcSet(post)} sizes="(max-width: 600px) calc(100vw - 40px), 30vw" width="768" height="432" alt={coverAlt(post, translation)} loading="lazy" decoding="async" />
                         </figure>
                         <div>
                           <p class="post-meta">

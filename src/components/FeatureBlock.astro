@@ -1,12 +1,15 @@
 ---
 // Bloco de foto + título em caixa alta + subtítulo manuscrito + texto.
 // Use reverse para alternar o lado da foto. O slot recebe botões ou informações extras.
+import { imageSrcSet, imageUrl } from '../lib/images.js';
+
 const { title, script, text, image, alt, position = 'center', reverse = false, variant = 'plain' } = Astro.props;
+const optimizedImage = imageUrl(image, { width: 1280 });
 ---
 
 <article class:list={['feature', `feature--${variant}`, { reverse }]} data-reveal>
   <figure class="feature-media">
-    <img src={image} alt={alt} loading="lazy" style={`object-position: ${position}`} />
+    <img src={optimizedImage} srcset={imageSrcSet(image)} sizes="(max-width: 860px) calc(100vw - 40px), 45vw" width="1280" height="1280" alt={alt} loading="lazy" decoding="async" style={`object-position: ${position}`} />
   </figure>
   <div class="feature-copy">
     <h2 class="display-title">{title}</h2>
