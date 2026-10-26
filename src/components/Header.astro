@@ -3,19 +3,22 @@ import Icon from './Icon.astro';
 import { content } from '../i18n/content.js';
 import { languages, navPages, pathFor } from '../i18n/routes.js';
 import { site, whatsappLink } from '../data/site.js';
+import { siteLink } from '../lib/site-cms.js';
 
 // altPaths sobrepõe o destino do seletor de idiomas em páginas dinâmicas
 // (artigo do blog: o mesmo slug existe nos três idiomas, cada um no seu prefixo).
 const { lang, page, altPaths } = Astro.props;
-const t = content[lang];
+const t = Astro.props.contentData ?? content[lang];
+const churchSite = Astro.props.siteData ?? site;
 const langHref = (code) => altPaths?.[code] ?? pathFor(page, code);
+const navLinkKey = (id) => `nav${id.charAt(0).toUpperCase()}${id.slice(1)}`;
 ---
 
 <div class="header-space">
 <header class="site-header" data-header>
   <div class="header-bar frame">
-    <a class="brand" href={pathFor('home', lang)}>
-      <img src={site.logo.src} width={site.logo.width} height={site.logo.height} alt={site.name} />
+    <a class="brand" href={siteLink(churchSite, 'navHome', pathFor('home', lang))}>
+      <img src={churchSite.logo.src} width={churchSite.logo.width} height={churchSite.logo.height} alt={churchSite.name} />
     </a>
 
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" data-menu-toggle data-label-open={t.ui.menu} data-label-close={t.ui.closeMenu}>
@@ -27,12 +30,12 @@ const langHref = (code) => altPaths?.[code] ?? pathFor(page, code);
       <nav aria-label={t.ui.mainNav}>
         <ul class="nav-list">
           {navPages.map((id) => (
-            <li><a href={pathFor(id, lang)} aria-current={page === id ? 'page' : undefined}>{t.nav[id]}</a></li>
+            <li><a href={siteLink(churchSite, navLinkKey(id), pathFor(id, lang))} aria-current={page === id ? 'page' : undefined}>{t.nav[id]}</a></li>
           ))}
         </ul>
       </nav>
       <div class="menu-tools">
-        <a class="button button-gold nav-cta" href={whatsappLink(t.ui.whatsappMessage)} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={16} />{t.ui.talk}</a>
+        <a class="button button-gold nav-cta" href={whatsappLink(t.ui.whatsappMessage, churchSite)} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={16} />{t.ui.talk}</a>
         <ul class="language-switcher" aria-label={t.ui.language}>
           {Object.entries(languages).map(([code, language]) => (
             <li>

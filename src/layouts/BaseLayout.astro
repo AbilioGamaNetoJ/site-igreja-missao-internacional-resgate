@@ -14,9 +14,10 @@ import leagueSpartanFont from '../assets/fonts/LeagueSpartan.woff2';
 // { title, description, path, languagePaths: { pt, es, en }, image: { src, alt },
 //   type: 'article', publishedTime, modifiedTime, noindex, jsonLd }
 const { lang, page, meta } = Astro.props;
-const t = content[lang];
+const t = Astro.props.contentData ?? content[lang];
+const churchSite = Astro.props.siteData ?? site;
 const pageTitle = meta?.title ?? t.meta.titles[page];
-const title = !meta && page === 'home' ? `${site.name} | ${pageTitle}` : `${pageTitle} | ${site.name}`;
+const title = !meta && page === 'home' ? `${churchSite.name} | ${pageTitle}` : `${pageTitle} | ${churchSite.name}`;
 const description = meta?.description ?? t.meta.descriptions[page];
 const base = Astro.site;
 const pagePath = meta?.noCanonical ? null : meta?.path ?? pathFor(page, lang);
@@ -29,7 +30,7 @@ const languagePaths = meta?.noAlternates
 // Canonical, hreflang e a imagem de compartilhamento precisam do domínio (site.url em src/data/site.js).
 const canonical = base && pagePath ? new URL(pagePath, base).href : null;
 const isArticle = meta?.type === 'article';
-const shareImage = meta?.image?.src ?? (base && new URL(site.shareImage.src, base).href);
+const shareImage = meta?.image?.src ?? (base && new URL(churchSite.shareImage.src, base).href);
 const shareImageAlt = meta?.image?.alt ?? t.meta.shareImageAlt;
 const alternates = base && languagePaths
   ? [
@@ -38,7 +39,15 @@ const alternates = base && languagePaths
     ]
   : [];
 const otherLocales = Object.entries(languages).filter(([code]) => code !== lang).map(([, language]) => language.ogLocale);
-const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ lang, page, title, base });
+const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({
+  lang,
+  page,
+  title,
+  base,
+  contentData: t,
+  siteData: churchSite,
+  mediaPhotos: Astro.props.media?.photos,
+});
 ---
 
 <!doctype html>
@@ -61,7 +70,7 @@ const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ 
 
     <!-- Prévia do link no WhatsApp, Facebook e outras redes -->
     <meta property="og:type" content={isArticle ? 'article' : 'website'} />
-    <meta property="og:site_name" content={site.name} />
+    <meta property="og:site_name" content={churchSite.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:locale" content={languages[lang].ogLocale} />
@@ -74,8 +83,8 @@ const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ 
         <meta property="og:image" content={shareImage} />
         {!meta?.image && (
           <Fragment>
-            <meta property="og:image:width" content={String(site.shareImage.width)} />
-            <meta property="og:image:height" content={String(site.shareImage.height)} />
+            <meta property="og:image:width" content={String(churchSite.shareImage.width)} />
+            <meta property="og:image:height" content={String(churchSite.shareImage.height)} />
           </Fragment>
         )}
         <meta property="og:image:alt" content={shareImageAlt} />
@@ -92,11 +101,11 @@ const jsonLd = meta?.noStructuredData ? null : meta?.jsonLd ?? structuredData({ 
   </head>
   <body>
     <a class="skip-link" href="#conteudo">{t.ui.skip}</a>
-    <Header lang={lang} page={page} altPaths={meta?.languagePaths} />
+    <Header lang={lang} page={page} altPaths={meta?.languagePaths} contentData={t} siteData={churchSite} />
     <main id="conteudo">
       <slot />
     </main>
-    <Footer lang={lang} />
+    <Footer lang={lang} contentData={t} siteData={churchSite} />
 
     <script>
       const header = document.querySelector('[data-header]');

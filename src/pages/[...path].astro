@@ -1,25 +1,29 @@
 ---
-// Gera todas as páginas nos três idiomas: /, /a-igreja, /es, /es/la-iglesia, /en/the-church...
-// Os endereços de cada página ficam em src/i18n/routes.js.
-import HomePage from '../views/HomePage.astro';
+// Páginas institucionais ficam sob demanda para refletir o conteúdo publicado
+// no CMS sem precisar gerar um deploy a cada edição.
 import ChurchPage from '../views/ChurchPage.astro';
 import GatheringsPage from '../views/GatheringsPage.astro';
 import OutreachPage from '../views/OutreachPage.astro';
 import VisitPage from '../views/VisitPage.astro';
+import PrivacyPage from '../views/PrivacyPage.astro';
+import NotFoundView from '../views/NotFoundView.astro';
 import { languages, pageIds, pathFor } from '../i18n/routes.js';
 
-export function getStaticPaths() {
-  return Object.keys(languages).flatMap((lang) =>
-    pageIds.filter((page) => page !== 'home').map((page) => ({
-      params: { path: pathFor(page, lang).slice(1) || undefined },
-      props: { lang, page },
-    })),
-  );
+export const prerender = false;
+
+const views = { church: ChurchPage, gatherings: GatheringsPage, outreach: OutreachPage, visit: VisitPage, privacy: PrivacyPage };
+const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
+let match = null;
+
+for (const lang of Object.keys(languages)) {
+  for (const page of pageIds.filter((id) => id !== 'home')) {
+    if (pathFor(page, lang) === pathname) match = { page, lang };
+  }
 }
 
-const views = { home: HomePage, church: ChurchPage, gatherings: GatheringsPage, outreach: OutreachPage, visit: VisitPage };
-const { lang, page } = Astro.props;
-const View = views[page];
+if (!match) Astro.response.status = 404;
+const View = match ? views[match.page] : NotFoundView;
+const fallbackLang = pathname === '/es' || pathname.startsWith('/es/') ? 'es' : pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'pt';
 ---
 
-<View lang={lang} />
+{match ? <View lang={match.lang} /> : <View lang={fallbackLang} />}

@@ -5,25 +5,28 @@ import IntroStatement from '../components/IntroStatement.astro';
 import FeatureBlock from '../components/FeatureBlock.astro';
 import Story from '../components/Story.astro';
 import NextStep from '../components/NextStep.astro';
-import { content } from '../i18n/content.js';
 import { pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { imageSrcSet, imageUrl } from '../lib/images.js';
+import { getPageData, publicMediaUrl, siteLink } from '../lib/site-cms.js';
 
 const { lang } = Astro.props;
-const t = content[lang];
+const cms = await getPageData('church', lang);
+const { content: t, site: siteData, media } = cms;
 const church = t.church;
 const blockPhotos = ['gathering', 'worship', 'facade'];
 const galleryPhotos = ['hall', 'praise', 'hallTables', 'congregation'];
+const photo = (key) => publicMediaUrl(media.photos?.[key], photos[key]);
+const heroMedia = media.hero ?? { type: 'image', src: photos.hallTables };
 ---
 
-<BaseLayout lang={lang} page="church">
-  <PageHero image={photos.hallTables} titleA={church.hero.a} titleB={church.hero.b} />
+<BaseLayout lang={lang} page="church" contentData={t} siteData={siteData} media={media}>
+  <PageHero image={photos.hallTables} media={heroMedia} titleA={church.hero.a} titleB={church.hero.b} />
   <IntroStatement title={church.statement} text={church.intro} />
 
   <Story>
     {church.blocks.map((block, index) => (
-      <FeatureBlock {...block} image={photos[blockPhotos[index]]} alt={t.photos[blockPhotos[index]]} reverse={index % 2 === 1} variant={index === 1 ? 'panel feature--dark' : 'panel'} />
+      <FeatureBlock {...block} image={photo(blockPhotos[index])} alt={t.photos[blockPhotos[index]]} reverse={index % 2 === 1} variant={index === 1 ? 'panel feature--dark' : 'panel'} />
     ))}
   </Story>
 
@@ -34,13 +37,13 @@ const galleryPhotos = ['hall', 'praise', 'hallTables', 'congregation'];
     </div>
     <div class="gallery-grid frame" data-reveal>
       {galleryPhotos.map((key) => (
-        <figure><img src={imageUrl(photos[key], { width: 768 })} srcset={imageSrcSet(photos[key])} sizes="(max-width: 600px) calc(100vw - 40px), 33vw" width="768" height="512" alt={t.photos[key]} loading="lazy" decoding="async" /></figure>
+        <figure><img src={imageUrl(photo(key), { width: 768 })} srcset={imageSrcSet(photo(key))} sizes="(max-width: 600px) calc(100vw - 40px), 33vw" width="768" height="512" alt={t.photos[key]} loading="lazy" decoding="async" /></figure>
       ))}
     </div>
   </section>
 
   <NextStep title={church.next.title} text={church.next.text}>
-    <a class="button button-dark" href={pathFor('gatherings', lang)}>{t.ui.seeTimes}</a>
+    <a class="button button-dark" href={siteLink(siteData, 'churchGatherings', pathFor('gatherings', lang))}>{t.ui.seeTimes}</a>
   </NextStep>
 </BaseLayout>
 

@@ -4,19 +4,21 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 import BlogSearch from '../components/BlogSearch.astro';
-import { content } from '../i18n/content.js';
 import { languages, blogPath, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
-import { site } from '../data/site.js';
 import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
 import { renderMarkdown } from '../lib/markdown.js';
 import { imageSrcSet, imageUrl } from '../lib/images.js';
+import { getPageData, publicMediaUrl } from '../lib/site-cms.js';
 
 const { lang, post } = Astro.props;
-const t = content[lang];
+const cms = await getPageData('blog', lang);
+const { content: t, site: siteData, media } = cms;
 const translation = translationsByLang(post)[lang];
 const hasCover = Boolean(post.cover_image);
-const cover = hasCover ? post.cover_image : photos.worship;
+const defaultCover = publicMediaUrl(media.photos?.worship, photos.worship);
+const defaultRelatedCover = publicMediaUrl(media.photos?.praise, photos.praise);
+const cover = hasCover ? post.cover_image : defaultCover;
 const optimizedCover = imageUrl(cover, { width: 1280, aspectRatio: 16 / 9, quality: 68 });
 const optimizedCoverSrcSet = imageSrcSet(cover, { aspectRatio: 16 / 9, quality: 68 });
 const coverAlt = hasCover ? translation.title : t.photos.worship;
@@ -33,7 +35,7 @@ const otherPosts = publishedPosts.filter((candidate) => candidate.id !== post.id
 const relatedPosts = [...sameCategoryPosts, ...otherPosts].slice(0, 6);
 const sidebarPosts = relatedPosts.slice(0, 3);
 const bottomPosts = relatedPosts.slice(3, 6);
-const relatedCover = (relatedPost) => relatedPost.cover_image || photos.praise;
+const relatedCover = (relatedPost) => relatedPost.cover_image || defaultRelatedCover;
 const relatedAlt = (relatedPost, relatedTranslation) => relatedPost.cover_image ? relatedTranslation.title : t.photos.praise;
 
 // Mesma lógica de canonical e hreflang do BaseLayout, mas com os endereços do post:
@@ -54,11 +56,11 @@ const jsonLd = JSON.stringify({
   articleSection: categoryLabel,
   author: post.author
     ? { '@type': 'Person', name: post.author }
-    : { '@type': 'Organization', name: site.name, url: base ? new URL(pathFor('home', lang), base).href : undefined },
+    : { '@type': 'Organization', name: siteData.name, url: base ? new URL(pathFor('home', lang), base).href : undefined },
   publisher: {
     '@type': 'Organization',
-    name: site.name,
-    logo: { '@type': 'ImageObject', url: base ? new URL(site.symbol.src, base).href : site.symbol.src },
+    name: siteData.name,
+    logo: { '@type': 'ImageObject', url: base ? new URL(siteData.symbol.src, base).href : siteData.symbol.src },
   },
   mainEntityOfPage: base ? new URL(languagePaths[lang], base).href : languagePaths[lang],
 }).replace(/</g, '\u003c');
@@ -67,6 +69,9 @@ const jsonLd = JSON.stringify({
 <BaseLayout
   lang={lang}
   page="blog"
+  contentData={t}
+  siteData={siteData}
+  media={media}
   meta={{
     title: translation.seo_title || translation.title,
     description: translation.seo_description || translation.excerpt || translation.title,
@@ -104,7 +109,7 @@ const jsonLd = JSON.stringify({
       </article>
 
       <aside class="article-sidebar">
-        <BlogSearch lang={lang} posts={publishedPosts} id="article-search" />
+        <BlogSearch lang={lang} posts={publishedPosts} id="article-search" contentData={t} mediaPhotos={media.photos} />
 
         {sidebarPosts.length > 0 && (
           <section class="sidebar-related" aria-labelledby="sidebar-related-title">

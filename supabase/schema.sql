@@ -1,5 +1,6 @@
--- Blog da Missão Internacional Resgate no Supabase.
--- Rode este arquivo uma vez no SQL Editor do projeto Supabase da igreja.
+-- CMS da Missão Internacional Resgate no Supabase (blog + conteúdo institucional).
+-- Rode este arquivo no SQL Editor do projeto Supabase da igreja. Ele é idempotente:
+-- pode ser executado novamente para criar as novas tabelas sem apagar conteúdo existente.
 --
 -- Como liberar o primeiro admin:
 --   1. Em Authentication → Users, crie o usuário com o e-mail da pessoa (e-mail e senha).
@@ -90,6 +91,41 @@ create table if not exists public.post_translations (
   unique (post_id, lang)
 );
 
+-- Conteúdo institucional publicado: visitantes só podem ler esta tabela.
+-- Rascunhos ficam em tabelas separadas para que o papel anon não consiga
+-- selecioná-los nem mesmo escolhendo colunas específicas no PostgREST.
+create table if not exists public.site_pages (
+  page text not null,
+  lang text not null check (lang in ('pt', 'es', 'en')),
+  content jsonb not null default '{}'::jsonb,
+  media jsonb not null default '{}'::jsonb,
+  published_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (page, lang)
+);
+
+create table if not exists public.site_page_drafts (
+  page text not null,
+  lang text not null check (lang in ('pt', 'es', 'en')),
+  content jsonb not null default '{}'::jsonb,
+  media jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (page, lang)
+);
+
+-- Configurações globais publicadas e seus rascunhos também ficam separados.
+create table if not exists public.site_settings (
+  id text primary key check (id = 'main'),
+  settings jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.site_settings_drafts (
+  id text primary key check (id = 'main'),
+  settings jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
 -- Colunas acrescentadas depois da primeira versão. Para quem já tinha as tabelas,
 -- basta rodar este arquivo de novo: o `if not exists` deixa o que já existe como está.
 alter table public.posts add column if not exists category text;
@@ -151,6 +187,22 @@ drop trigger if exists post_translations_touch_updated_at on public.post_transla
 create trigger post_translations_touch_updated_at before update on public.post_translations
   for each row execute function public.touch_updated_at();
 
+drop trigger if exists site_pages_touch_updated_at on public.site_pages;
+create trigger site_pages_touch_updated_at before update on public.site_pages
+  for each row execute function public.touch_updated_at();
+
+drop trigger if exists site_page_drafts_touch_updated_at on public.site_page_drafts;
+create trigger site_page_drafts_touch_updated_at before update on public.site_page_drafts
+  for each row execute function public.touch_updated_at();
+
+drop trigger if exists site_settings_touch_updated_at on public.site_settings;
+create trigger site_settings_touch_updated_at before update on public.site_settings
+  for each row execute function public.touch_updated_at();
+
+drop trigger if exists site_settings_drafts_touch_updated_at on public.site_settings_drafts;
+create trigger site_settings_drafts_touch_updated_at before update on public.site_settings_drafts
+  for each row execute function public.touch_updated_at();
+
 -- ---------------------------------------------------------------------------
 -- RLS
 -- ---------------------------------------------------------------------------
@@ -159,6 +211,10 @@ alter table public.admins enable row level security;
 alter table public.categories enable row level security;
 alter table public.posts enable row level security;
 alter table public.post_translations enable row level security;
+alter table public.site_pages enable row level security;
+alter table public.site_page_drafts enable row level security;
+alter table public.site_settings enable row level security;
+alter table public.site_settings_drafts enable row level security;
 
 -- Diz se quem chama é admin. security definer evita depender da política da
 -- própria tabela admins (que só deixa cada um ver a si mesmo).
@@ -261,6 +317,44 @@ create policy "admins apagam traducoes"
   to authenticated
   using (public.is_admin());
 
+drop policy if exists "conteudo publicado leitura publica" on public.site_pages;
+create policy "conteudo publicado leitura publica"
+  on public.site_pages for select
+  using (true);
+
+drop policy if exists "admins escrevem conteudo publicado" on public.site_pages;
+create policy "admins escrevem conteudo publicado"
+  on public.site_pages for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "admins gerenciam rascunhos do site" on public.site_page_drafts;
+create policy "admins gerenciam rascunhos do site"
+  on public.site_page_drafts for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "configuracoes leitura publica" on public.site_settings;
+create policy "configuracoes leitura publica"
+  on public.site_settings for select
+  using (true);
+
+drop policy if exists "admins escrevem configuracoes" on public.site_settings;
+create policy "admins escrevem configuracoes"
+  on public.site_settings for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "admins gerenciam rascunhos de configuracoes" on public.site_settings_drafts;
+create policy "admins gerenciam rascunhos de configuracoes"
+  on public.site_settings_drafts for all
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
 -- ---------------------------------------------------------------------------
 -- Storage: bucket público blog
 -- ---------------------------------------------------------------------------
@@ -270,6 +364,14 @@ create policy "admins apagam traducoes"
 insert into storage.buckets (id, name, public)
 values ('blog', 'blog', true)
 on conflict (id) do nothing;
+
+-- Mídia institucional (fotos e vídeos do site), separada dos arquivos do blog.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('site', 'site', true, 104857600, array['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'video/mp4', 'video/webm'])
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
 
 drop policy if exists "admins enviam imagens do blog" on storage.objects;
 create policy "admins enviam imagens do blog"
@@ -289,3 +391,22 @@ create policy "admins apagam imagens do blog"
   on storage.objects for delete
   to authenticated
   using (bucket_id = 'blog' and public.is_admin());
+
+drop policy if exists "admins enviam midia do site" on storage.objects;
+create policy "admins enviam midia do site"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'site' and public.is_admin());
+
+drop policy if exists "admins atualizam midia do site" on storage.objects;
+create policy "admins atualizam midia do site"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'site' and public.is_admin())
+  with check (bucket_id = 'site' and public.is_admin());
+
+drop policy if exists "admins apagam midia do site" on storage.objects;
+create policy "admins apagam midia do site"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'site' and public.is_admin());

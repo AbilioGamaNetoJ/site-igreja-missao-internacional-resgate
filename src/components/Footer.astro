@@ -3,24 +3,28 @@ import Icon from './Icon.astro';
 import { content } from '../i18n/content.js';
 import { navPages, pathFor } from '../i18n/routes.js';
 import { site, whatsappLink } from '../data/site.js';
+import { siteLink } from '../lib/site-cms.js';
 
 const { lang } = Astro.props;
-const t = content[lang];
+const t = Astro.props.contentData ?? content[lang];
+const churchSite = Astro.props.siteData ?? site;
 const year = new Date().getFullYear();
+const navLinkKey = (id) => `nav${id.charAt(0).toUpperCase()}${id.slice(1)}`;
 ---
 
 <footer class="site-footer">
   <div class="footer-grid frame">
     <div class="footer-brand">
-      <img src={site.symbol.src} width={site.symbol.width} height={site.symbol.height} alt={site.name} loading="lazy" />
+      <img src={churchSite.symbol.src} width={churchSite.symbol.width} height={churchSite.symbol.height} alt={churchSite.name} loading="lazy" />
       <p>{t.footer.about}</p>
-      <a class="button button-light" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
+      <a class="button button-light" href={siteLink(churchSite, 'footerVisit', pathFor('visit', lang))}>{t.ui.planVisit}</a>
     </div>
 
     <div>
       <h2 class="footer-title">{t.footer.navTitle}</h2>
       <ul class="footer-list">
-        {navPages.map((id) => <li><a href={pathFor(id, lang)}>{t.nav[id]}</a></li>)}
+        {navPages.map((id) => <li><a href={siteLink(churchSite, navLinkKey(id), pathFor(id, lang))}>{t.nav[id]}</a></li>)}
+        <li><a href={siteLink(churchSite, 'navPrivacy', pathFor('privacy', lang))}>{t.footer.privacy}</a></li>
       </ul>
     </div>
 
@@ -34,17 +38,17 @@ const year = new Date().getFullYear();
     <div>
       <h2 class="footer-title">{t.footer.contactTitle}</h2>
       <ul class="footer-list footer-contact">
-        <li><Icon name="phone" size={18} /><a href={site.phone.href}>{site.phone.display}</a></li>
-        <li><Icon name="whatsapp" size={18} /><a href={whatsappLink(t.ui.whatsappMessage)} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
-        <li><Icon name="pin" size={18} /><a href={site.map.link} target="_blank" rel="noopener noreferrer">{site.address.street}<br />{site.address.city}</a></li>
-        {site.email && <li><Icon name="mail" size={18} /><a href={`mailto:${site.email}`}>{site.email}</a></li>}
+        <li><Icon name="phone" size={18} /><a href={churchSite.phone.href}>{churchSite.phone.display}</a></li>
+        <li><Icon name="whatsapp" size={18} /><a href={whatsappLink(t.ui.whatsappMessage, churchSite)} target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+        <li><Icon name="pin" size={18} /><a href={churchSite.map.link} target="_blank" rel="noopener noreferrer">{churchSite.address.street}<br />{churchSite.address.city}</a></li>
+        {churchSite.email && <li><Icon name="mail" size={18} /><a href={`mailto:${churchSite.email}`}>{churchSite.email}</a></li>}
       </ul>
     </div>
   </div>
 
   <div class="footer-bottom frame">
     <ul class="social" aria-label={t.footer.socialTitle}>
-      {site.social.map((network) => (
+      {churchSite.social.map((network) => (
         <li><a href={network.href || '#'} aria-label={network.name} target={network.href ? '_blank' : undefined} rel={network.href ? 'noopener noreferrer' : undefined}><Icon name={network.icon} size={18} /></a></li>
       ))}
     </ul>

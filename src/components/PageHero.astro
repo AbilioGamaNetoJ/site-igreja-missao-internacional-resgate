@@ -2,13 +2,21 @@
 // Banner das páginas internas. Com titleA/titleB mostra o nome da página em duas cores;
 // com title mostra uma frase de destaque e, se houver, um botão.
 import { imageSrcSet, imageUrl } from '../lib/images.js';
+import { publicMediaUrl } from '../lib/site-cms.js';
 
-const { image, titleA, titleB, title, cta, mono = true } = Astro.props;
-const optimizedImage = imageUrl(image, { width: 1280 });
+const { image, titleA, titleB, title, cta, mono = true, media } = Astro.props;
+const mediaSource = publicMediaUrl(media?.src, image);
+const video = media?.type === 'video' && publicMediaUrl(media?.src);
+const poster = publicMediaUrl(media?.poster, image);
+const optimizedImage = imageUrl(video ? poster : mediaSource, { width: 1280 });
 ---
 
 <section class:list={['page-hero', { headline: !!title }]}>
-  <img class:list={['page-hero-image', { mono }]} src={optimizedImage} srcset={imageSrcSet(image)} sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async" />
+  {video ? (
+    <video class:list={['page-hero-image', 'page-hero-video', { mono }]} src={publicMediaUrl(media.src)} poster={poster} autoplay muted loop playsinline aria-hidden="true"></video>
+  ) : (
+    <img class:list={['page-hero-image', { mono }]} src={optimizedImage} srcset={imageSrcSet(mediaSource)} sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async" />
+  )}
   <div class="page-hero-content frame">
     <h1>
       {titleA ? <Fragment><span>{titleA}</span> <span class="accent">{titleB}</span></Fragment> : title}
@@ -46,6 +54,10 @@ const optimizedImage = imageUrl(image, { width: 1280 });
 
   .page-hero-image.mono {
     filter: grayscale(1) contrast(1.08) brightness(0.5);
+  }
+
+  .page-hero-video {
+    object-fit: cover;
   }
 
   .page-hero-content {

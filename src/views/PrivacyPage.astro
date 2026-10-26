@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPageData } from '../lib/site-cms.js';
+import { renderMarkdown } from '../lib/markdown.js';
+
+const { lang } = Astro.props;
+const cms = await getPageData('privacy', lang);
+const privacy = cms.content.privacy;
+---
+
+<BaseLayout lang={lang} page="privacy" contentData={cms.content} siteData={cms.site} media={cms.media}>
+  <section class="privacy section">
+    <div class="frame">
+      <header class="privacy-heading" data-reveal>
+        <p class="eyebrow">{cms.content.footer.privacy}</p>
+        <h1>{privacy.hero.title}</h1>
+      </header>
+      <article class="privacy-body" set:html={renderMarkdown(privacy.body)} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .privacy {
+    min-height: 55vh;
+    background: var(--sand);
+  }
+
+  .frame {
+    max-width: 900px;
+  }
+
+  .privacy-heading {
+    padding-bottom: clamp(2rem, 5vw, 3.5rem);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .eyebrow {
+    margin-bottom: 12px;
+    color: var(--gold-ink);
+  }
+
+  h1 {
+    color: var(--ink);
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .privacy-body {
+    max-width: 72ch;
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+    color: var(--ink);
+    font-size: 1.05rem;
+    line-height: 1.8;
+  }
+
+  .privacy-body :global(h2),
+  .privacy-body :global(h3) {
+    margin: 2em 0 0.6em;
+    font-family: var(--display);
+    line-height: 1.2;
+  }
+
+  .privacy-body :global(p + p),
+  .privacy-body :global(ul),
+  .privacy-body :global(ol) {
+    margin-top: 1.1em;
+  }
+
+  .privacy-body :global(a) {
+    color: var(--gold-ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+
+  .privacy-body :global(li + li) {
+    margin-top: 0.45em;
+  }
+</style>

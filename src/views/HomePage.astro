@@ -4,25 +4,33 @@ import Icon from '../components/Icon.astro';
 import QuickLinks from '../components/QuickLinks.astro';
 import Story from '../components/Story.astro';
 import DarkBand from '../components/DarkBand.astro';
-import { content } from '../i18n/content.js';
 import { blogPath, languages, pathFor } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { categoryName, fetchFeaturedPosts, translationsByLang } from '../lib/supabase.js';
 import { imageSrcSet, imageUrl } from '../lib/images.js';
+import { getPageData, publicMediaUrl, siteLink } from '../lib/site-cms.js';
 
 const { lang } = Astro.props;
-const t = content[lang];
+const [cms, featuredPosts] = await Promise.all([getPageData('home', lang), fetchFeaturedPosts()]);
+const { content: t, site: siteData, media } = cms;
 const home = t.home;
 const pillarPages = ['church', 'gatherings', 'outreach'];
-const featuredPosts = await fetchFeaturedPosts();
+const pillarLinkKeys = ['homePillarChurch', 'homePillarGatherings', 'homePillarOutreach'];
 const featuredDateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'short', year: 'numeric' });
-const heroImage = imageUrl(photos.congregation, { width: 1280 });
-const heroImageSrcSet = imageSrcSet(photos.congregation);
-const preachingImage = imageUrl(photos.preaching, { width: 1280 });
-const preachingImageSrcSet = imageSrcSet(photos.preaching);
+const sitePhoto = (key) => publicMediaUrl(media.photos?.[key], photos[key]);
+const hero = media.hero ?? {};
+const fallbackHeroImage = sitePhoto('congregation');
+const heroImageSource = publicMediaUrl(hero.src, fallbackHeroImage);
+const heroPoster = publicMediaUrl(hero.poster, fallbackHeroImage);
+const hasHeroVideo = hero.type === 'video' && Boolean(publicMediaUrl(hero.src));
+const heroImage = imageUrl(hasHeroVideo ? heroPoster : heroImageSource, { width: 1280 });
+const heroImageSrcSet = imageSrcSet(hasHeroVideo ? heroPoster : heroImageSource);
+const preachingSource = sitePhoto('preaching');
+const preachingImage = imageUrl(preachingSource, { width: 1280 });
+const preachingImageSrcSet = imageSrcSet(preachingSource);
 ---
 
-<BaseLayout lang={lang} page="home">
+<BaseLayout lang={lang} page="home" contentData={t} siteData={siteData} media={media}>
   <link
     slot="head"
     rel="preload"
@@ -33,14 +41,18 @@ const preachingImageSrcSet = imageSrcSet(photos.preaching);
     fetchpriority="high"
   />
   <section class="hero section-dark">
-    <img class="hero-image" src={heroImage} srcset={heroImageSrcSet} sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async" />
+    {hasHeroVideo ? (
+      <video class="hero-image hero-video" src={publicMediaUrl(hero.src)} poster={heroPoster} autoplay muted loop playsinline aria-hidden="true"></video>
+    ) : (
+      <img class="hero-image" src={heroImage} srcset={heroImageSrcSet} sizes="100vw" width="1280" height="853" alt="" fetchpriority="high" decoding="async" />
+    )}
     <div class="hero-content frame">
       <p class="eyebrow">{home.hero.eyebrow}</p>
       <h1>{home.hero.title}</h1>
       <p class="hero-welcome">{home.hero.welcome}</p>
       <p class="hero-schedule">{home.hero.schedule.split(' · ').map((item, index) => <Fragment>{index > 0 && ' '}<span>{item}</span></Fragment>)}</p>
       <p class="hero-intro">{home.hero.intro}</p>
-      <a class="button button-gold" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
+      <a class="button button-gold" href={siteLink(siteData, 'homePlanVisit', pathFor('visit', lang))}>{t.ui.planVisit}</a>
     </div>
   </section>
 
@@ -65,7 +77,7 @@ const preachingImageSrcSet = imageSrcSet(photos.preaching);
             <h2 class="display-title">{pillar.title}</h2>
             <p class="script">{pillar.script}</p>
             <p class="body-text rich" set:html={pillar.text} />
-            <a class="arrow-link" href={pathFor(pillarPages[index], lang)}>{pillar.link}<Icon name="arrow-right" size={18} /></a>
+            <a class="arrow-link" href={siteLink(siteData, pillarLinkKeys[index], pathFor(pillarPages[index], lang))}>{pillar.link}<Icon name="arrow-right" size={18} /></a>
           </article>
         ))}
       </div>
@@ -85,7 +97,7 @@ const preachingImageSrcSet = imageSrcSet(photos.preaching);
           </div>
           <div>
             <p>{home.featured.intro}</p>
-            <a class="arrow-link featured-posts-link" href={blogPath(lang)}>{home.featured.link}<Icon name="arrow-right" size={18} /></a>
+            <a class="arrow-link featured-posts-link" href={siteLink(siteData, 'homeBlog', blogPath(lang))}>{home.featured.link}<Icon name="arrow-right" size={18} /></a>
           </div>
         </div>
 
@@ -93,7 +105,7 @@ const preachingImageSrcSet = imageSrcSet(photos.preaching);
           {featuredPosts.map((post, index) => {
             const translation = translationsByLang(post)[lang];
             const hasCover = Boolean(post.cover_image);
-            const coverSource = hasCover ? post.cover_image : photos.praise;
+            const coverSource = hasCover ? post.cover_image : sitePhoto('praise');
             const coverImage = imageUrl(coverSource, { width: 768, aspectRatio: 16 / 9, quality: 68 });
             const coverImageSrcSet = imageSrcSet(coverSource, { aspectRatio: 16 / 9, quality: 68 });
             const category = categoryName(post, lang);
@@ -132,10 +144,10 @@ const preachingImageSrcSet = imageSrcSet(photos.preaching);
   )}
 
   <DarkBand label={home.mission.label} title={home.mission.statement}>
-    <a class="dark-band-link" href={pathFor('church', lang)}>{home.mission.link} <span aria-hidden="true">&gt;&gt;</span></a>
+    <a class="dark-band-link" href={siteLink(siteData, 'homeMission', pathFor('church', lang))}>{home.mission.link} <span aria-hidden="true">&gt;&gt;</span></a>
   </DarkBand>
 
-  <QuickLinks lang={lang} />
+  <QuickLinks lang={lang} contentData={t} siteData={siteData} />
 </BaseLayout>
 
 <style>
@@ -157,6 +169,10 @@ const preachingImageSrcSet = imageSrcSet(photos.preaching);
     height: 100%;
     object-fit: cover;
     filter: brightness(0.38);
+  }
+
+  .hero-video {
+    object-fit: cover;
   }
 
   .hero-content {

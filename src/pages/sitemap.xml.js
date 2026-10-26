@@ -1,5 +1,5 @@
 // Gera /sitemap.xml com todas as páginas nos três idiomas, agora sob demanda:
-// além das 15 páginas institucionais, lista o blog e cada post publicado
+// além das páginas institucionais nos três idiomas, lista o blog e cada post publicado
 // (um post novo entra no sitemap na hora, sem novo deploy).
 // Cada endereço lista as suas traduções (hreflang), já que os caminhos mudam de idioma para idioma.
 // Precisa do domínio: sem site.url em src/data/site.js, o arquivo não é gerado.

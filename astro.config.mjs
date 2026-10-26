@@ -6,8 +6,8 @@ import { site } from './src/data/site.js';
 export default defineConfig({
   // O domínio fica em src/data/site.js. Vazio, as tags que dependem dele não são geradas.
   site: site.url || undefined,
-  // As páginas institucionais continuam pré-renderizadas; blog, admin, sitemap e tradução
-  // são sob demanda (prerender = false em cada rota), então um post novo entra no ar sem deploy.
+  // As páginas institucionais, o blog, o admin, o sitemap e a tradução são renderizados
+  // sob demanda para refletir conteúdo publicado sem um novo deploy.
   adapter: cloudflare({
     // O site não usa imagens do Astro: passthrough evita provisionar o binding do Cloudflare Images.
     imageService: 'passthrough',

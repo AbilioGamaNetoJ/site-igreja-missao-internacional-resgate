@@ -2,7 +2,7 @@
 
 Site institucional da **Missão Internacional Resgate**, igreja em Forquilhinhas, São José (SC). O conteúdo apresenta a comunidade, os horários dos encontros, as ações de cuidado e as informações para quem quer visitar.
 
-O site é estático, feito com [Astro](https://astro.build) 7 e [Tailwind CSS](https://tailwindcss.com) 4 (pelo plugin `@tailwindcss/vite`), e publicado na [Cloudflare Workers](https://developers.cloudflare.com/workers/static-assets/) a partir da pasta `dist/`. As dependências e o servidor local usam o [Bun](https://bun.sh). O conteúdo está disponível em três idiomas:
+O site usa [Astro](https://astro.build) 7 e [Tailwind CSS](https://tailwindcss.com) 4 (pelo plugin `@tailwindcss/vite`), e é publicado na [Cloudflare Workers](https://developers.cloudflare.com/workers/static-assets/) a partir de `dist/`. As páginas públicas são renderizadas pelo Worker para ler conteúdo publicado no Supabase. As dependências e o servidor local usam o [Bun](https://bun.sh). O conteúdo está disponível em três idiomas:
 
 - **Português** na raiz (`/`)
 - **Espanhol** em `/es`
@@ -19,12 +19,14 @@ Cada página tem um endereço traduzido por idioma.
 | Encontros | `/encontros` | `/es/encuentros` | `/en/gatherings` |
 | Ações | `/acoes` | `/es/acciones` | `/en/outreach` |
 | Visite | `/visite` | `/es/visitanos` | `/en/visit` |
+| Política de privacidade | `/privacidade` | `/es/privacidad` | `/en/privacy` |
 
-- **Início** apresenta a igreja, os três pilares (acolher, crescer e servir) e os horários.
+- **Início** apresenta a igreja, os três pilares (acolher, crescer e servir), os horários e os destaques do blog.
 - **A Igreja** conta quem é a comunidade, os cultos em espanhol e a história da casa.
 - **Encontros** lista os horários de sexta, sábado e domingo e o que esperar de uma primeira visita.
 - **Ações** descreve as doações de roupas e a mesa compartilhada.
 - **Visite** reúne endereço, mapa, perguntas frequentes e contato por WhatsApp e telefone.
+- **Política de privacidade** tem conteúdo editável por idioma; o texto inicial informa que a política está em elaboração.
 
 ## Instalação
 
@@ -44,13 +46,13 @@ O servidor local sobe em [http://localhost:4321](http://localhost:4321).
 | Comando | O que faz |
 | --- | --- |
 | `bun dev` | Sobe o site em modo de desenvolvimento |
-| `bun run build` | Gera o site estático na pasta `dist/` |
+| `bun run build` | Gera o Worker e os assets estáticos na pasta `dist/` |
 | `bun run preview` | Serve localmente o resultado do build |
 | `bun run deploy` | Gera o site e publica na Cloudflare Workers |
 
 ## Publicar na Cloudflare
 
-A configuração fica em `wrangler.jsonc`. O Astro gera as páginas institucionais no build e o Wrangler envia a pasta `dist/` como arquivos estáticos; blog, admin, sitemap e tradução são renderizados sob demanda pelo mesmo Worker (adapter `@astrojs/cloudflare`). O site fica na conta da Cloudflare da igreja, no Worker `site-igreja-missao-internacional-resgate`. O endereço oficial é **https://missaointernacionalresgate.com.br**, definido em `url` no `src/data/site.js`. O Worker também responde em [site-igreja-missao-internacional-resgate.igrejamissaoresgateint.workers.dev](https://site-igreja-missao-internacional-resgate.igrejamissaoresgateint.workers.dev), mas as páginas apontam o canonical para o domínio oficial.
+A configuração fica em `wrangler.jsonc`. O Astro e o Wrangler publicam o Worker e os assets estáticos da pasta `dist/`; as páginas públicas leem as versões publicadas do Supabase sob demanda pelo adapter `@astrojs/cloudflare`. O site fica na conta da Cloudflare da igreja, no Worker `site-igreja-missao-internacional-resgate`. O endereço oficial é **https://missaointernacionalresgate.com.br**, definido em `url` no `src/data/site.js`. O Worker também responde em [site-igreja-missao-internacional-resgate.igrejamissaoresgateint.workers.dev](https://site-igreja-missao-internacional-resgate.igrejamissaoresgateint.workers.dev), mas as páginas apontam o canonical para o domínio oficial.
 
 ### Credenciais
 
@@ -91,11 +93,11 @@ O Wrangler lê o `.env` sozinho, sem precisar de `wrangler login`.
 
 ## Blog
 
-O blog roda em `/blog`, `/es/blog` e `/en/blog`, com painel de edição em [cms.missaointernacionalresgate.com.br](https://cms.missaointernacionalresgate.com.br/admin) (também em `/admin` do domínio oficial, que redireciona para lá; fora do menu e dos buscadores). As páginas institucionais continuam pré-renderizadas; blog, admin, sitemap e tradução são renderizados sob demanda pelo Worker, então um post novo entra no ar na hora, sem novo deploy.
+O blog roda em `/blog`, `/es/blog` e `/en/blog`, com painel de edição em [cms.missaointernacionalresgate.com.br](https://cms.missaointernacionalresgate.com.br/admin) (também em `/admin` do domínio oficial, que redireciona para lá; fora do menu e dos buscadores). Páginas institucionais, blog, admin, sitemap, `llms.txt` e tradução são renderizados sob demanda pelo Worker para refletir alterações publicadas sem deploy.
 
 ### Configuração única (Supabase)
 
-1. Crie o projeto no [Supabase](https://supabase.com) da igreja e rode o `supabase/schema.sql` no SQL Editor. Ele cria as tabelas `posts` e `post_translations`, a tabela `admins`, as políticas de leitura e escrita (RLS) e o bucket público `blog` para as imagens.
+1. Crie o projeto no [Supabase](https://supabase.com) da igreja e rode o `supabase/schema.sql` no SQL Editor. Ele cria as tabelas do blog e das páginas do site, rascunhos privados, a tabela `admins`, políticas RLS e os buckets públicos `blog` e `site`.
 2. Em **Authentication → Users**, crie o usuário de cada pessoa que vai escrever (e-mail e senha, cadastro aberto continua desligado).
 3. Libere o admin copiando o UID do usuário e rodando no SQL Editor:
 
@@ -114,13 +116,23 @@ O blog roda em `/blog`, `/es/blog` e `/en/blog`, com painel de edição em [cms.
 - No editor, **Postagem principal do blog** escolhe a única matéria maior no topo da listagem. Se nenhuma for escolhida, a publicação mais recente ocupa esse espaço.
 - O corpo é Markdown sem HTML cru, com capa e imagens no Storage. Leitura pública usa a chave anônima; escrita exige sessão de admin (RLS).
 
+### Conteúdo institucional no CMS
+
+Na sidebar do painel, **Conteúdo do site** abre editores para Início, A Igreja, Encontros, Ações, Visite, Blog, Política de privacidade, textos compartilhados e informações da igreja. As páginas têm abas PT/ES/EN; textos, SEO, perguntas frequentes e alternativas das imagens usam o conteúdo atual como ponto de partida.
+
+- **Salvar rascunho** grava em tabelas privadas para admins. **Publicar alterações** atualiza a versão que o site exibe.
+- O hero de cada página aceita foto ou vídeo MP4/WebM; as imagens das seções podem ser enviadas ao bucket `site` ou apontadas por URL.
+- Telefone, WhatsApp, endereço, mapa, e-mail, redes sociais, horários estruturados e destinos de botões ficam em **Informações da igreja**.
+- O primeiro acesso não exige migrar textos: o editor carrega `src/i18n/content.js` como valor inicial e grava cada idioma quando for salvo/publicado.
+- Em instalações que já usam o blog, rode `supabase/schema.sql` novamente para criar as novas tabelas/políticas e o bucket `site`. As tabelas existentes são preservadas.
+
 ### Painel em subdomínio próprio (cms)
 
 O painel também responde em **https://cms.missaointernacionalresgate.com.br** — o mesmo Worker, com um domínio próprio. A configuração tem duas partes no painel da Cloudflare (conta da igreja), feitas uma única vez:
 
 1. **Ligar o subdomínio ao Worker**: Workers & Pages → `site-igreja-missao-internacional-resgate` → Settings → Domains & Routes → **Add → Custom domain** → `cms.missaointernacionalresgate.com.br`. A Cloudflare cria o DNS e o certificado sozinha. (Se o domínio oficial foi ligado assim, é o mesmo caminho.)
 
-2. **Duas Redirect Rules** (Rules → Redirect Rules), para os caminhos que são servidos antes do Worker (páginas pré-renderizadas) e que o middleware (`src/middleware.js`) não alcança:
+2. **Duas Redirect Rules** (Rules → Redirect Rules), para arquivos estáticos de assets que podem ser servidos antes do Worker e que o middleware (`src/middleware.js`) não alcança:
 
    | # | Condição | Destino |
    |---|---|---|
@@ -134,12 +146,12 @@ Para desfazer: remova as regras e o Custom Domain no painel, e apague o `src/mid
 
 ## Onde editar
 
-- Textos de cada idioma: `src/i18n/content.js`
-- Títulos e descrições de cada página no Google: campo `meta` de cada idioma em `src/i18n/content.js`
+- Conteúdo inicial/fallback por idioma: `src/i18n/content.js`; conteúdo publicado é gerenciado no CMS
+- Títulos e descrições de cada página no Google: seção SEO no editor da página
 - Endereços das páginas: `src/i18n/routes.js`
-- Domínio, nome, telefone, endereço, CEP, horários e redes: `src/data/site.js`
-- Imagens públicas (logos, fotos, favicon): pasta `images/`
-- Imagem da prévia do link no WhatsApp e nas redes: `images/og-image.webp`, um print da home. Ao mudar o topo da home, tire o print de novo.
+- Domínio e dados fallback: `src/data/site.js`; contatos, endereço, CEP, horários, redes, links e logos publicados são gerenciados no CMS
+- Imagens públicas de fallback e favicon: pasta `images/`; imagens e vídeos publicados podem ser enviados pelo CMS
+- Imagem de compartilhamento fallback: `images/og-image.webp`; a imagem publicada pode ser trocada em Informações da igreja
 
 ## SEO e IA
 
@@ -151,9 +163,9 @@ O objetivo é a igreja aparecer nas buscas do bairro (Forquilhinhas), de São Jo
 | Dados estruturados (JSON-LD) | `src/data/seo.js` | Endereço, CEP, horários, idioma dos cultos, área atendida e perguntas frequentes em formato que buscadores e IAs entendem |
 | `/robots.txt` | `src/pages/robots.txt.js` | Libera o site para todos os robôs, com permissão explícita para os de IA |
 | `/llms.txt` | `src/pages/llms.txt.js` | Resumo em Markdown para modelos de linguagem |
-| `/sitemap.xml` | `src/pages/sitemap.xml.js` | Lista as 15 páginas com as traduções de cada uma |
+| `/sitemap.xml` | `src/pages/sitemap.xml.js` | Lista as 18 páginas institucionais (6 páginas × 3 idiomas), o blog e os posts publicados |
 
-Tudo é gerado a partir de `src/data/site.js` e `src/i18n/content.js`. Ao mudar um texto, os dados estruturados e o `llms.txt` acompanham. A exceção são os horários: eles aparecem em dois lugares, `times` em `content.js` e `schedule` em `site.js`, e os dois precisam ser atualizados.
+Os metadados, dados estruturados e `llms.txt` usam as versões publicadas do CMS; os arquivos `src/data/site.js` e `src/i18n/content.js` permanecem como fallback. Os horários exibidos e os horários estruturados (`times` e `schedule`) podem ser ajustados nos editores de Textos compartilhados e Informações da igreja.
 
 ### Ligar o domínio ao site
 

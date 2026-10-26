@@ -10,9 +10,8 @@
 //     levam a uma 404 própria com retorno ao painel;
 //   - no domínio oficial, /admin encaminha para o subdomínio.
 //
-// Páginas pré-renderizadas (a home, por exemplo) são servidas antes do Worker e
-// não passam por aqui: para elas, o README documenta as Redirect Rules da
-// Cloudflare que completam o encaminhamento.
+// Arquivos estáticos de assets podem ser servidos antes do Worker e não passam
+// por aqui: para eles, o README documenta as Redirect Rules complementares.
 import { site } from './data/site.js';
 
 export const CMS_HOST = 'cms.missaointernacionalresgate.com.br';

@@ -1,17 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
-import { content } from '../i18n/content.js';
 import { blogPath, pathFor } from '../i18n/routes.js';
+import { getPageData, siteLink } from '../lib/site-cms.js';
 
 const { lang } = Astro.props;
-const t = content[lang];
+const cms = await getPageData('global', lang);
+const { content: t, site: siteData } = cms;
 const notFound = t.notFound;
 ---
 
 <BaseLayout
   lang={lang}
   page="notFound"
+  contentData={t}
+  siteData={siteData}
   meta={{
     title: `${notFound.eyebrow} — ${notFound.title}`,
     description: notFound.text,
@@ -34,8 +37,8 @@ const notFound = t.notFound;
       <h1 id="not-found-title">{notFound.title}</h1>
       <p class="not-found-copy">{notFound.text}</p>
       <div class="not-found-actions">
-        <a class="button button-gold" href={pathFor('home', lang)}>{notFound.home}<Icon name="arrow-right" size={17} /></a>
-        <a class="button button-outline" href={blogPath(lang)}>{notFound.blog}</a>
+        <a class="button button-gold" href={siteLink(siteData, 'notFoundHome', pathFor('home', lang))}>{notFound.home}<Icon name="arrow-right" size={17} /></a>
+        <a class="button button-outline" href={siteLink(siteData, 'notFoundBlog', blogPath(lang))}>{notFound.blog}</a>
       </div>
     </div>
   </section>

@@ -1,5 +1,5 @@
 // Informações para buscadores e assistentes de IA: endereços completos e o JSON-LD (schema.org) de cada página.
-// Tudo sai de src/data/site.js e src/i18n/content.js, então os dados se atualizam sozinhos quando o conteúdo muda.
+// Usa os defaults locais como fallback; layouts passam os dados publicados do CMS quando disponíveis.
 import { site } from './site.js';
 import { photos } from './photos.js';
 import { content } from '../i18n/content.js';
@@ -9,44 +9,44 @@ import { languages, pathFor } from '../i18n/routes.js';
 export const absoluteUrl = (path, base) => (base ? new URL(path, base).href : path);
 
 // Endereço em uma linha, no formato usado no Brasil.
-export const fullAddress = () => {
-  const { street, neighborhood, locality, region, postalCode } = site.address;
+export const fullAddress = (siteData = site) => {
+  const { street, neighborhood, locality, region, postalCode } = siteData.address;
   return `${street} - ${neighborhood}, ${locality} - ${region}, ${postalCode}, Brasil`;
 };
 
 const pageTypes = { church: 'AboutPage', visit: 'FAQPage' };
 
-export function structuredData({ lang, page, title, base }) {
-  const t = content[lang];
+export function structuredData({ lang, page, title, base, contentData, siteData = site, mediaPhotos = {} }) {
+  const t = contentData ?? content[lang];
   const url = (path) => absoluteUrl(path, base);
   const homeUrl = url('/');
   const pageUrl = url(pathFor(page, lang));
   const churchId = `${homeUrl}#igreja`;
   const websiteId = `${homeUrl}#site`;
-  const sameAs = site.social.map((network) => network.href).filter(Boolean);
+  const sameAs = siteData.social.map((network) => network.href).filter(Boolean);
 
   // A igreja é ao mesmo tempo um lugar (Church) e uma organização, o que libera campos como logo e idiomas.
   const church = {
     '@type': ['Church', 'Organization'],
     '@id': churchId,
-    name: site.name,
+    name: siteData.name,
     description: t.meta.descriptions.home,
     url: homeUrl,
-    logo: { '@type': 'ImageObject', url: url(site.symbol.src), width: site.symbol.width, height: site.symbol.height },
-    image: [photos.facade, photos.hall, photos.congregation].map(url),
-    telephone: site.phone.international,
+    logo: { '@type': 'ImageObject', url: url(siteData.symbol.src), width: siteData.symbol.width, height: siteData.symbol.height },
+    image: [mediaPhotos.facade || photos.facade, mediaPhotos.hall || photos.hall, mediaPhotos.congregation || photos.congregation].map(url),
+    telephone: siteData.phone.international,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: `${site.address.street} - ${site.address.neighborhood}`,
-      addressLocality: site.address.locality,
-      addressRegion: site.address.region,
-      postalCode: site.address.postalCode,
-      addressCountry: site.address.country,
+      streetAddress: `${siteData.address.street} - ${siteData.address.neighborhood}`,
+      addressLocality: siteData.address.locality,
+      addressRegion: siteData.address.region,
+      postalCode: siteData.address.postalCode,
+      addressCountry: siteData.address.country,
     },
-    hasMap: site.map.link,
-    areaServed: site.areaServed.map((name) => ({ '@type': 'Place', name })),
-    knowsLanguage: [site.serviceLanguage, 'pt-BR'],
-    openingHoursSpecification: site.schedule.map(({ day, opens, closes }) => ({
+    hasMap: siteData.map.link,
+    areaServed: siteData.areaServed.map((name) => ({ '@type': 'Place', name })),
+    knowsLanguage: [siteData.serviceLanguage, 'pt-BR'],
+    openingHoursSpecification: siteData.schedule.map(({ day, opens, closes }) => ({
       '@type': 'OpeningHoursSpecification',
       dayOfWeek: `https://schema.org/${day}`,
       opens,
@@ -61,7 +61,7 @@ export function structuredData({ lang, page, title, base }) {
     '@type': 'WebSite',
     '@id': websiteId,
     url: homeUrl,
-    name: site.name,
+    name: siteData.name,
     inLanguage: Object.values(languages).map((language) => language.htmlLang),
     publisher: { '@id': churchId },
   };

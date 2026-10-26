@@ -9,16 +9,18 @@ import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { translationsByLang, categoryName } from '../lib/supabase.js';
 import { postSearchText } from '../lib/search.js';
+import { publicMediaUrl } from '../lib/site-cms.js';
 
 const { lang, posts = [], value = '', id = 'blog-search' } = Astro.props;
-const t = content[lang];
+const t = Astro.props.contentData ?? content[lang];
 const locale = languages[lang].htmlLang;
+const defaultCover = publicMediaUrl(Astro.props.mediaPhotos?.praise, photos.praise);
 const dateFormatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 
 const index = posts.map((post) => ({
   title: translationsByLang(post)[lang].title,
   url: blogPath(lang, post.slug),
-  cover: post.cover_image || photos.praise,
+  cover: post.cover_image || defaultCover,
   category: categoryName(post, lang),
   date: dateFormatter.format(new Date(post.published_at)),
   text: postSearchText(post, lang, locale),

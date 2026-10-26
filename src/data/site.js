@@ -1,5 +1,5 @@
-// Dados fixos da igreja, compartilhados por todas as páginas e idiomas.
-// Itens marcados com PROVISÓRIO aguardam o conteúdo oficial.
+// Valores iniciais e fallback para dados globais da igreja, compartilhados por
+// todas as páginas e idiomas. O CMS pode publicar substituições em tempo real.
 
 const address = 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José, SC';
 
@@ -10,6 +10,13 @@ export const site = {
   url: 'https://missaointernacionalresgate.com.br',
   phone: { display: '(48) 98831-3964', href: 'tel:+5548988313964', international: '+55 48 98831-3964' },
   whatsapp: 'https://wa.me/5548988313964',
+  // Destinos de botões podem ser substituídos pelo CMS; vazios mantêm o caminho local traduzido.
+  links: {
+    navHome: '', navChurch: '', navGatherings: '', navOutreach: '', navVisit: '', navBlog: '', navPrivacy: '',
+    homePlanVisit: '', homePillarChurch: '', homePillarGatherings: '', homePillarOutreach: '',
+    homeMission: '', homeBlog: '', churchGatherings: '', gatheringsVisit: '', gatheringsMap: '',
+    visitGatherings: '', visitMap: '', footerVisit: '', notFoundHome: '', notFoundBlog: '',
+  },
   address: {
     street: 'Rua Vereador Manoel Mariano, 2014',
     city: 'Forquilhinhas · São José · SC',
@@ -53,4 +60,12 @@ export const site = {
 };
 
 // Link do WhatsApp com a mensagem padrão já escrita. O texto de cada idioma fica em ui.whatsappMessage, em src/i18n/content.js.
-export const whatsappLink = (message) => `${site.whatsapp}?text=${encodeURIComponent(message)}`;
+export const whatsappLink = (message, settings = site) => {
+  try {
+    const url = new URL(settings.whatsapp || site.whatsapp);
+    url.searchParams.set('text', message);
+    return url.href;
+  } catch {
+    return `${site.whatsapp}?text=${encodeURIComponent(message)}`;
+  }
+};

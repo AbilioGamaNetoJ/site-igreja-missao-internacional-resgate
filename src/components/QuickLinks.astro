@@ -2,17 +2,21 @@
 // Atalhos para as outras páginas, em linha, sobre fundo claro.
 import { content } from '../i18n/content.js';
 import { navPages, pathFor } from '../i18n/routes.js';
+import { site } from '../data/site.js';
+import { siteLink } from '../lib/site-cms.js';
 
 const { lang, current, title } = Astro.props;
-const t = content[lang];
+const t = Astro.props.contentData ?? content[lang];
+const churchSite = Astro.props.siteData ?? site;
 const pages = navPages.filter((id) => id !== current);
+const navLinkKey = (id) => `nav${id.charAt(0).toUpperCase()}${id.slice(1)}`;
 ---
 
 <section class="quick-links section">
   <div class="frame" data-reveal>
     {title && <h2>{title}</h2>}
     <ul>
-      {pages.map((id) => <li><a class="button button-dark" href={pathFor(id, lang)}>{t.nav[id]}</a></li>)}
+      {pages.map((id) => <li><a class="button button-dark" href={siteLink(churchSite, navLinkKey(id), pathFor(id, lang))}>{t.nav[id]}</a></li>)}
     </ul>
   </div>
 </section>

@@ -4,15 +4,16 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogSearch from '../components/BlogSearch.astro';
 import Icon from '../components/Icon.astro';
-import { content } from '../i18n/content.js';
 import { languages, blogPath } from '../i18n/routes.js';
 import { photos } from '../data/photos.js';
 import { fetchPublishedPosts, translationsByLang, categoryName } from '../lib/supabase.js';
 import { searchTerms, matchesTerms, postSearchText } from '../lib/search.js';
 import { imageSrcSet, imageUrl } from '../lib/images.js';
+import { getPageData, publicMediaUrl } from '../lib/site-cms.js';
 
 const { lang } = Astro.props;
-const t = content[lang];
+const cms = await getPageData('blog', lang);
+const { content: t, site: siteData, media } = cms;
 const allPosts = await fetchPublishedPosts();
 
 // O filtro só oferece categorias que têm post publicado; um ?category= desconhecido
@@ -34,13 +35,14 @@ const recentPosts = remainingPosts.slice(0, 4);
 const morePosts = search ? posts : remainingPosts.slice(4);
 const resultsCount = (posts.length === 1 ? t.blog.resultsCount.one : t.blog.resultsCount.other).replace('{count}', posts.length);
 const dateFormatter = new Intl.DateTimeFormat(languages[lang].htmlLang, { day: 'numeric', month: 'long', year: 'numeric' });
-const cover = (post) => post.cover_image || photos.praise;
+const defaultCover = publicMediaUrl(media.photos?.praise, photos.praise);
+const cover = (post) => post.cover_image || defaultCover;
 const coverImage = (post, width = 1280) => imageUrl(cover(post), { width, aspectRatio: 16 / 9, quality: 68 });
 const coverImageSrcSet = (post) => imageSrcSet(cover(post), { aspectRatio: 16 / 9, quality: 68 });
 const coverAlt = (post, translation) => post.cover_image ? translation.title : t.photos.praise;
 ---
 
-<BaseLayout lang={lang} page="blog">
+<BaseLayout lang={lang} page="blog" contentData={t} siteData={siteData} media={media}>
   <section class="blog-list" aria-labelledby="blog-title">
     <div class="frame">
       <header class="blog-heading">
@@ -69,7 +71,7 @@ const coverAlt = (post, translation) => post.cover_image ? translation.title : t
               </button>
             </nav>
           )}
-          <BlogSearch lang={lang} posts={allPosts} value={search} />
+          <BlogSearch lang={lang} posts={allPosts} value={search} contentData={t} mediaPhotos={media.photos} />
         </div>
       )}
 

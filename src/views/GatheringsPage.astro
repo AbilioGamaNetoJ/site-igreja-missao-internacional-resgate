@@ -6,21 +6,24 @@ import FeatureBlock from '../components/FeatureBlock.astro';
 import Story from '../components/Story.astro';
 import NextStep from '../components/NextStep.astro';
 import Icon from '../components/Icon.astro';
-import { content } from '../i18n/content.js';
 import { pathFor } from '../i18n/routes.js';
-import { site, whatsappLink } from '../data/site.js';
+import { whatsappLink } from '../data/site.js';
 import { photos } from '../data/photos.js';
+import { getPageData, publicMediaUrl, siteLink } from '../lib/site-cms.js';
 
 const { lang } = Astro.props;
-const t = content[lang];
+const cms = await getPageData('gatherings', lang);
+const { content: t, site: siteData, media } = cms;
 const gatherings = t.gatherings;
 const [expect, firstTime] = gatherings.blocks;
 // Quem já escolheu o dia precisa saber como chegar: reaproveita o texto da página Visite.
 const { location } = t.visit;
+const photo = (key) => publicMediaUrl(media.photos?.[key], photos[key]);
+const heroMedia = media.hero ?? { type: 'image', src: photos.praise };
 ---
 
-<BaseLayout lang={lang} page="gatherings">
-  <PageHero image={photos.praise} titleA={gatherings.hero.a} titleB={gatherings.hero.b} />
+<BaseLayout lang={lang} page="gatherings" contentData={t} siteData={siteData} media={media}>
+  <PageHero image={photos.praise} media={heroMedia} titleA={gatherings.hero.a} titleB={gatherings.hero.b} />
   <IntroStatement title={gatherings.statement} text={gatherings.intro} />
 
   <section class="times section section-dark">
@@ -34,20 +37,20 @@ const { location } = t.visit;
           </li>
         ))}
       </ul>
-      <p class="times-address"><Icon name="pin" size={18} /><span>{site.address.street}</span><span class="times-sep" aria-hidden="true">·</span><span>{site.address.city}</span></p>
+      <p class="times-address"><Icon name="pin" size={18} /><span>{siteData.address.street}</span><span class="times-sep" aria-hidden="true">·</span><span>{siteData.address.city}</span></p>
     </div>
   </section>
 
   <Story>
-    <FeatureBlock {...expect} image={photos.preaching} alt={t.photos.preaching} />
-    <FeatureBlock {...firstTime} image={photos.hall} alt={t.photos.hall} reverse>
-      <a class="button button-gold" href={whatsappLink(t.ui.whatsappMessage)} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} />{t.ui.whatsapp}</a>
+    <FeatureBlock {...expect} image={photo('preaching')} alt={t.photos.preaching} />
+    <FeatureBlock {...firstTime} image={photo('hall')} alt={t.photos.hall} reverse>
+      <a class="button button-gold" href={whatsappLink(t.ui.whatsappMessage, siteData)} target="_blank" rel="noopener noreferrer"><Icon name="whatsapp" size={20} />{t.ui.whatsapp}</a>
     </FeatureBlock>
   </Story>
 
   <NextStep title={location.title} text={location.text}>
-    <a class="button button-dark" href={pathFor('visit', lang)}>{t.ui.planVisit}</a>
-    <a class="button button-outline" href={site.map.link} target="_blank" rel="noopener noreferrer">{t.ui.openMap}</a>
+    <a class="button button-dark" href={siteLink(siteData, 'gatheringsVisit', pathFor('visit', lang))}>{t.ui.planVisit}</a>
+    <a class="button button-outline" href={siteLink(siteData, 'gatheringsMap', siteData.map.link)} target="_blank" rel="noopener noreferrer">{t.ui.openMap}</a>
   </NextStep>
 </BaseLayout>
 

@@ -1,7 +1,6 @@
 ---
-// Painel do blog em português: entrar, listar, escrever em Markdown, enviar imagens,
-// salvar rascunho, publicar (traduzindo as outras duas línguas na hora) e corrigir
-// cada língua. Fora do menu e dos buscadores (noindex).
+// Painel de conteúdo: administração do blog e edição das páginas institucionais,
+// em português. Fora do menu e dos buscadores (noindex).
 //
 // O navegador fala direto com o Supabase usando a sessão do admin; quem protege a
 // escrita é a RLS do banco (supabase/schema.sql). Só a tradução passa pelo Worker
@@ -19,7 +18,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel do blog | Missão Internacional Resgate</title>
+    <title>Painel de conteúdo | Missão Internacional Resgate</title>
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png" />
     <style is:global>
@@ -2975,7 +2974,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           bottom: 0;
           left: 0;
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(4, minmax(0, 1fr));
           min-height: 72px;
           max-width: 100%;
           padding: 6px max(12px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
@@ -3128,6 +3127,210 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           padding: 22px 18px;
         }
       }
+
+      .admin-site-target-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .admin-site-target {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 20px;
+        align-items: center;
+        min-height: 118px;
+        padding: 22px 24px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+        color: var(--ink);
+        text-align: left;
+        cursor: pointer;
+        transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .admin-site-target:hover {
+        transform: translateY(-2px);
+        border-color: rgba(157, 116, 40, 0.48);
+        box-shadow: 0 10px 24px rgba(30, 26, 19, 0.08);
+      }
+
+      .admin-site-target:focus-visible {
+        outline: 3px solid var(--gold);
+        outline-offset: 3px;
+      }
+
+      .admin-site-target strong {
+        font-family: var(--display);
+        font-size: 1.18rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .admin-site-target small {
+        grid-column: 1;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      .admin-site-target span {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        color: var(--gold-ink);
+        font-size: 1.4rem;
+      }
+
+      .admin-site-sections {
+        display: grid;
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .admin-site-card {
+        min-width: 0;
+        padding: clamp(20px, 3vw, 30px);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .admin-site-card h2 {
+        margin-bottom: 20px;
+        font-family: var(--display);
+        font-size: 1.28rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+      }
+
+      .admin-site-fields {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0 18px;
+      }
+
+      .admin-site-fields .admin-field {
+        margin-bottom: 16px;
+      }
+
+      .admin-site-array-item {
+        grid-column: 1 / -1;
+        margin: 2px 0 12px;
+        padding: 14px 16px 2px;
+        border: 1px solid rgba(17, 18, 20, 0.08);
+        border-radius: 12px;
+        background: rgba(246, 244, 241, 0.72);
+      }
+
+      .admin-site-array-item h3 {
+        margin-bottom: 12px;
+        color: var(--gold-ink);
+        font-family: var(--display);
+        font-size: 0.87rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .admin-site-upload-control {
+        display: inline-flex;
+        align-items: center;
+        min-height: 2.25rem;
+        padding: 0.38rem 0.8rem;
+        border: 1px solid rgba(157, 116, 40, 0.3);
+        border-radius: 9px;
+        background: var(--paper);
+        color: var(--gold-ink);
+        font-size: 0.76rem;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .admin-site-upload-control:hover {
+        background: rgba(221, 186, 103, 0.22);
+      }
+
+      .admin-site-fields .admin-field:has(textarea),
+      .admin-site-field-wide {
+        grid-column: 1 / -1;
+      }
+
+      .admin-site-upload {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin: 8px 0 18px;
+        padding: 14px 16px;
+        border: 1px dashed rgba(157, 116, 40, 0.45);
+        border-radius: 12px;
+        background: rgba(221, 186, 103, 0.09);
+      }
+
+      .admin-site-upload p {
+        color: var(--muted);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .admin-site-upload .button {
+        flex: 0 0 auto;
+      }
+
+      .admin-site-media-group {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .admin-site-media-preview {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        border-radius: 12px;
+        background: var(--paper);
+      }
+
+      .admin-site-media-preview img,
+      .admin-site-media-preview video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .admin-site-actions {
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 640px) {
+        .admin-site-target-grid,
+        .admin-site-fields,
+        .admin-site-media-group {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .admin-site-fields .admin-field:has(textarea),
+        .admin-site-field-wide {
+          grid-column: auto;
+        }
+
+        .admin-site-target {
+          min-height: 96px;
+          padding: 18px;
+        }
+
+        .admin-site-upload {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .admin-site-upload .button {
+          width: 100%;
+        }
+      }
     </style>
   </head>
 
@@ -3161,7 +3364,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           <div class="admin-login-card">
             <p>Área da equipe</p>
             <h1 id="login-title">Acesse o <span>painel.</span></h1>
-            <p id="login-description" class="admin-login-description">Entre com suas credenciais para administrar as publicações do blog.</p>
+            <p id="login-description" class="admin-login-description">Entre com suas credenciais para administrar o blog e o conteúdo institucional do site.</p>
             <form id="login-form">
               <label class="admin-field">E-mail
                 <input id="login-email" type="email" autocomplete="username" inputmode="email" required />
@@ -3222,6 +3425,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
             <span>Nova publicação</span>
           </button>
+          <button class="admin-nav-link" type="button" data-nav="site" title="Conteúdo do site">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16M4 12h16M4 18.5h9" /><circle cx="18" cy="18" r="3" /></svg>
+            <span>Conteúdo do site</span>
+          </button>
         </nav>
 
         <div class="admin-sidebar-footer">
@@ -3273,11 +3480,49 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
               <button id="new-post" class="button button-gold" type="button">Nova publicação <span aria-hidden="true">→</span></button>
             </div>
             <p class="admin-hint" id="admin-hint" hidden>
-              Sua conta ainda não está liberada como administradora do blog. Ela consegue entrar, mas não
-              consegue escrever: peça para alguém rodar o insert da tabela <code>admins</code> (supabase/schema.sql)
+              Sua conta ainda não está liberada como administradora do CMS. Ela consegue entrar, mas não
+              consegue editar: peça para alguém rodar o insert da tabela <code>admins</code> (supabase/schema.sql)
               com o seu usuário.
             </p>
             <ul class="admin-posts" id="post-list"></ul>
+          </section>
+
+          <section id="view-site" hidden aria-labelledby="site-title">
+            <div class="admin-list-head">
+              <div>
+                <p class="admin-kicker">Site institucional</p>
+                <h1 id="site-title">Conteúdo do site</h1>
+                <p>Edite textos, imagens, links e informações da igreja em cada idioma.</p>
+              </div>
+            </div>
+            <div id="site-target-grid" class="admin-site-target-grid"></div>
+          </section>
+
+          <section id="view-site-editor" hidden aria-labelledby="site-editor-title">
+            <div class="admin-editor-head">
+              <div class="admin-editor-titlebar">
+                <div class="admin-editor-copy">
+                  <p class="admin-kicker">Site institucional <span aria-hidden="true">/</span> Editor</p>
+                  <div class="admin-editor-title-row">
+                    <h1 id="site-editor-title">Editar página</h1>
+                    <button id="site-editor-back" class="button button-outline admin-editor-back" type="button">← Conteúdo do site</button>
+                  </div>
+                  <p id="site-editor-description">Altere os campos desta página e publique quando estiver tudo pronto.</p>
+                </div>
+              </div>
+              <div id="site-language-tabs" class="admin-tabs" role="tablist" aria-label="Idioma do conteúdo">
+                <button class="admin-tab" type="button" data-site-lang="pt" aria-selected="true">Português</button>
+                <button class="admin-tab" type="button" data-site-lang="es" aria-selected="false">Español</button>
+                <button class="admin-tab" type="button" data-site-lang="en" aria-selected="false">English</button>
+              </div>
+              <div id="site-editor-fields" class="admin-site-sections"></div>
+              <div id="site-editor-media" class="admin-site-sections" hidden></div>
+              <div class="admin-editor-actions admin-site-actions">
+                <button id="site-save-draft" class="button button-light" type="button">Salvar rascunho</button>
+                <button id="site-publish" class="button button-dark" type="button">Publicar alterações</button>
+                <a id="site-open-live" class="button button-outline" href="/" target="_blank" rel="noopener noreferrer">Ver página publicada ↗</a>
+              </div>
+            </div>
           </section>
 
           <section id="view-profile" class="admin-profile" hidden aria-labelledby="profile-title">
@@ -3625,6 +3870,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       <nav class="admin-mobile-nav" aria-label="Navegação principal">
         <button type="button" data-nav="list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14M5 10h14M5 16h9M5 22h14" /></svg><span>Posts</span></button>
         <button class="admin-mobile-create" type="button" data-new-post aria-label="Nova publicação"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><span>Novo</span></button>
+        <button type="button" data-nav="site"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16M4 12h16M4 18.5h9" /><circle cx="18" cy="18" r="3" /></svg><span>Site</span></button>
         <button type="button" data-nav="profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M4.5 21c.8-4 3.3-6 7.5-6s6.7 2 7.5 6" /></svg><span>Perfil</span></button>
       </nav>
     </div>
@@ -3654,10 +3900,47 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
     <script>
       import { createClient } from '@supabase/supabase-js';
+      import { content as DEFAULT_CONTENT } from '../i18n/content.js';
+      import { site as DEFAULT_SITE } from '../data/site.js';
+      import { blogPath, pathFor } from '../i18n/routes.js';
 
       const $ = (selector) => document.querySelector(selector);
       const FIELDS = ['title', 'excerpt', 'bible_reference', 'body', 'seo_title', 'seo_description'];
       const LANGS = ['pt', 'es', 'en'];
+      const SITE_TARGETS = [
+        { id: 'home', title: 'Início', description: 'Hero, pilares, missão e destaques do blog.' },
+        { id: 'church', title: 'A Igreja', description: 'Apresentação, blocos de conteúdo e galeria.' },
+        { id: 'gatherings', title: 'Encontros', description: 'Horários, informações e chamadas para ação.' },
+        { id: 'outreach', title: 'Ações', description: 'Projetos, imagens e formas de ajudar.' },
+        { id: 'visit', title: 'Visite', description: 'Endereço, mapa, contato e perguntas frequentes.' },
+        { id: 'blog', title: 'Blog', description: 'Textos da listagem e chamadas do blog.' },
+        { id: 'privacy', title: 'Política de privacidade', description: 'Texto público em português, espanhol e inglês.' },
+        { id: 'global', title: 'Textos compartilhados', description: 'Navegação, botões, rodapé, horários e acessibilidade.' },
+        { id: 'settings', title: 'Informações da igreja', description: 'Telefone, WhatsApp, endereço, links, mapa e redes.' },
+      ];
+      const SITE_MEDIA = {
+        home: { hero: '/image3.webp', photos: { congregation: '/image3.webp', preaching: '/image2.webp', praise: '/image5.webp' } },
+        church: { hero: '/igreja-espaco2.webp', photos: { gathering: '/image4.webp', worship: '/image1.webp', facade: '/capa.webp', hall: '/igreja-espaco.webp', praise: '/image5.webp', hallTables: '/igreja-espaco2.webp', congregation: '/image3.webp' } },
+        gatherings: { hero: '/image5.webp', photos: { preaching: '/image2.webp', hall: '/igreja-espaco.webp' } },
+        outreach: { hero: '/image1.webp', photos: { praise: '/image5.webp', hallTables: '/igreja-espaco2.webp' } },
+        visit: { hero: '/igreja-espaco.webp', photos: { facade: '/capa.webp' } },
+        blog: { photos: { praise: '/image5.webp', worship: '/image1.webp' } },
+      };
+      const SITE_LABELS = {
+        hero: 'Abertura', eyebrow: 'Texto de apoio', title: 'Título', titleA: 'Título · parte 1', titleB: 'Título · parte 2',
+        welcome: 'Boas-vindas', schedule: 'Horários em destaque', intro: 'Introdução', statement: 'Frase principal', script: 'Subtítulo manuscrito',
+        text: 'Texto', body: 'Conteúdo', link: 'Texto do link', label: 'Rótulo', description: 'Descrição', excerpt: 'Resumo',
+        q: 'Pergunta', a: 'Resposta', day: 'Dia', hour: 'Horário', name: 'Nome', display: 'Número exibido', href: 'Link / destino',
+        international: 'Telefone internacional', phone: 'Telefone', whatsapp: 'Link do WhatsApp', email: 'E-mail', street: 'Rua e número', city: 'Cidade e bairro',
+        neighborhood: 'Bairro', locality: 'Município', region: 'Estado', postalCode: 'CEP', country: 'País',
+        embed: 'Endereço do mapa incorporado', serviceLanguage: 'Idioma dos encontros', areaServed: 'Área atendida', opens: 'Abertura (JSON-LD)', closes: 'Fechamento (JSON-LD)',
+        shareImageAlt: 'Texto alternativo da imagem de compartilhamento', rights: 'Direitos autorais', about: 'Apresentação no rodapé',
+        navTitle: 'Título da navegação', timesTitle: 'Título dos horários', contactTitle: 'Título do contato', socialTitle: 'Título das redes',
+        planVisit: 'Botão “planeje sua visita”', seeTimes: 'Botão “ver horários”', openMap: 'Botão “abrir mapa”', whatsappMessage: 'Mensagem inicial do WhatsApp',
+        mainNav: 'Acessibilidade da navegação', skip: 'Acessibilidade: pular conteúdo', language: 'Acessibilidade: idioma', menu: 'Abrir menu', closeMenu: 'Fechar menu',
+        searchPlaceholder: 'Texto de busca', searchSubmit: 'Botão de busca', src: 'Arquivo ou URL da imagem/vídeo', poster: 'Imagem de capa do vídeo',
+        logo: 'Logo horizontal', symbol: 'Símbolo da igreja', shareImage: 'Imagem de compartilhamento',
+      };
 
       const supabaseUrl = document.body.dataset.supabaseUrl;
       const supabaseAnon = document.body.dataset.supabaseAnon;
@@ -3671,8 +3954,14 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
       const VIEW_DETAILS = {
         list: ['Blog', 'Publicações'],
         editor: ['Blog', 'Editor'],
+        site: ['Site', 'Conteúdo'],
+        'site-editor': ['Site', 'Editor'],
         profile: ['Conta', 'Meu perfil'],
       };
+
+      let currentSiteTarget = null;
+      let currentSiteLanguage = 'pt';
+      let currentSiteEditor = null;
 
       const slugify = (text) =>
         text
@@ -3711,7 +4000,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
 
       function showView(name) {
         const isLogin = name === 'login';
-        for (const view of ['login', 'list', 'editor', 'profile']) {
+        for (const view of ['login', 'list', 'editor', 'site', 'site-editor', 'profile']) {
           const element = $(`#view-${view}`);
           if (element) element.hidden = view !== name;
         }
@@ -3720,7 +4009,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
           const [section, page] = VIEW_DETAILS[name] ?? VIEW_DETAILS.list;
           $('#admin-context-section').textContent = section;
           $('#admin-context-page').textContent = page;
-          const activeNav = name === 'editor' ? 'list' : name;
+          const activeNav = name === 'editor' ? 'list' : name.startsWith('site') ? 'site' : name;
           for (const navButton of document.querySelectorAll('[data-nav]')) {
             if (navButton.dataset.nav === activeNav) navButton.setAttribute('aria-current', 'page');
             else navButton.removeAttribute('aria-current');
@@ -3810,7 +4099,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         $('#login-title').innerHTML = isRecovery ? 'Defina uma <span>nova senha.</span>' : 'Acesse o <span>painel.</span>';
         $('#login-description').textContent = isRecovery
           ? 'Escolha uma senha nova para voltar a acessar o painel do blog.'
-          : 'Entre com suas credenciais para administrar as publicações do blog.';
+          : 'Entre com suas credenciais para administrar o blog e o conteúdo institucional do site.';
         if (isRecovery) {
           $('#reset-password').focus();
         }
@@ -3946,9 +4235,384 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? '';
         button.addEventListener('click', async () => {
           const destination = button.dataset.nav;
           if (destination === 'list') await enterList();
+          if (destination === 'site') await enterSite();
           if (destination === 'profile') await openProfile();
         });
       }
+
+      // ------------------------------------------------------ Conteúdo do site
+
+      const copyValue = (value) => structuredClone(value);
+      const mergeValue = (base, override) => {
+        if (override === undefined || override === null) return copyValue(base);
+        if (Array.isArray(override)) return copyValue(override);
+        if (typeof override !== 'object') return copyValue(override);
+        const result = base && typeof base === 'object' && !Array.isArray(base) ? copyValue(base) : {};
+        for (const [key, value] of Object.entries(override)) {
+          result[key] = value && typeof value === 'object' && !Array.isArray(value)
+            ? mergeValue(result[key], value)
+            : copyValue(value);
+        }
+        return result;
+      };
+      const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      })[character]);
+
+      function defaultSiteContent(target, lang) {
+        const languageContent = DEFAULT_CONTENT[lang] ?? DEFAULT_CONTENT.pt;
+        if (target === 'global') {
+          return { global: {
+            nav: copyValue(languageContent.nav),
+            ui: copyValue(languageContent.ui),
+            footer: copyValue(languageContent.footer),
+            times: copyValue(languageContent.times),
+            photos: copyValue(languageContent.photos),
+            notFound: copyValue(languageContent.notFound),
+            shareImageAlt: languageContent.meta.shareImageAlt,
+          } };
+        }
+        return {
+          ...copyValue(languageContent[target] ?? {}),
+          __seo: {
+            title: languageContent.meta.titles[target] ?? '',
+            description: languageContent.meta.descriptions[target] ?? '',
+          },
+        };
+      }
+
+      function defaultSiteMedia(target) {
+        const defaults = SITE_MEDIA[target];
+        if (!defaults) return {};
+        return {
+          ...(defaults.hero ? { hero: { type: 'image', src: defaults.hero, poster: defaults.hero } } : {}),
+          photos: copyValue(defaults.photos),
+        };
+      }
+
+      function targetTitle(target) {
+        return SITE_TARGETS.find((item) => item.id === target)?.title ?? target;
+      }
+
+      function formatSitePath(path) {
+        return path.map((part) => /^\d+$/.test(String(part)) ? `Item ${Number(part) + 1}` : (SITE_LABELS[part] ?? String(part)
+          .replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (letter) => letter.toUpperCase()))).join(' · ');
+      }
+
+      function shouldUseTextarea(path, value) {
+        return String(value).length > 95 || /(body|text|intro|statement|description|answer|message|excerpt|about|whatsappMessage|shareImageAlt)$/i.test(path.at(-1));
+      }
+
+      function renderSiteField(path, value) {
+        const label = formatSitePath(path);
+        const key = path.at(-1);
+        const pathString = path.join('.');
+        const wide = shouldUseTextarea(path, value);
+        const fieldId = `site-field-${pathString.replace(/[^a-z0-9_-]/gi, '-')}`;
+        const control = typeof value === 'number'
+          ? `<input id="${fieldId}" type="number" data-site-path="${escapeHtml(pathString)}" value="${escapeHtml(value)}" />`
+          : wide
+            ? `<textarea id="${fieldId}" rows="${String(value).length > 220 ? 7 : 4}" data-site-path="${escapeHtml(pathString)}">${escapeHtml(value)}</textarea>`
+            : `<input id="${fieldId}" type="text" data-site-path="${escapeHtml(pathString)}" value="${escapeHtml(value)}" />`;
+        const upload = currentSiteTarget === 'settings' && /^(logo|symbol|shareImage)\.src$/.test(pathString)
+          ? `<label class="admin-site-upload-control">Enviar arquivo<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-site-setting-file="${escapeHtml(pathString)}" hidden /></label>`
+          : '';
+        const assist = key === 'body' || key === 'text' || key === 'intro' || key === 'description'
+          ? '<small class="admin-field-hint">Você pode usar Markdown simples e os destaques em &lt;strong&gt;texto&lt;/strong&gt;.</small>'
+          : '';
+        return `<div class="admin-field${wide ? ' admin-site-field-wide' : ''}"><label for="${fieldId}">${escapeHtml(label)}</label>${assist}${control}${upload}</div>`;
+      }
+
+      function renderNestedSiteFields(value, path) {
+        if (Array.isArray(value)) {
+          return value.map((item, index) => {
+            const itemPath = [...path, String(index)];
+            return `<div class="admin-site-array-item"><h3>${escapeHtml(formatSitePath(itemPath))}</h3>${renderNestedSiteFields(item, itemPath)}</div>`;
+          }).join('');
+        }
+        if (value && typeof value === 'object') {
+          return `<div class="admin-site-fields">${Object.entries(value).map(([key, item]) => renderNestedSiteFields(item, [...path, key])).join('')}</div>`;
+        }
+        if (typeof value === 'string' || typeof value === 'number') return renderSiteField(path, value);
+        return '';
+      }
+
+      function currentSiteState() {
+        if (!currentSiteEditor) return null;
+        if (currentSiteTarget === 'settings') return currentSiteEditor.settings;
+        return currentSiteEditor.languages[currentSiteLanguage];
+      }
+
+      function sitePathFor(target, lang) {
+        if (target === 'blog') return blogPath(lang);
+        if (target === 'settings' || target === 'global') return '/';
+        return pathFor(target, lang);
+      }
+
+      function renderSiteTargets() {
+        $('#site-target-grid').innerHTML = SITE_TARGETS.map((target) => `
+          <button class="admin-site-target" type="button" data-site-target="${target.id}">
+            <strong>${escapeHtml(target.title)}</strong>
+            <small>${escapeHtml(target.description)}</small>
+            <span aria-hidden="true">→</span>
+          </button>`).join('');
+      }
+
+      async function enterSite() {
+        await hydrateUser();
+        await checkAdminHint();
+        renderSiteTargets();
+        showView('site');
+      }
+
+      async function readCmsRow(table, filters) {
+        let query = supabase.from(table).select('*');
+        for (const [column, value] of Object.entries(filters)) query = query.eq(column, value);
+        const { data, error } = await query.maybeSingle();
+        if (error) return null;
+        return data;
+      }
+
+      async function openSiteTarget(target) {
+        currentSiteTarget = target;
+        currentSiteLanguage = 'pt';
+        showView('site-editor');
+        $('#site-editor-title').textContent = targetTitle(target);
+        $('#site-editor-description').textContent = target === 'settings'
+          ? 'Atualize uma vez os contatos, endereço, mapa, redes sociais e destinos de links usados em todo o site.'
+          : 'Edite os campos desta página nos três idiomas. Salvar rascunho mantém a versão publicada no ar.';
+        $('#site-language-tabs').hidden = target === 'settings';
+        $('#site-editor-media').hidden = !SITE_MEDIA[target];
+        $('#site-open-live').hidden = target === 'global' || target === 'settings';
+        $('#site-open-live').href = sitePathFor(target, 'pt');
+        currentSiteEditor = null;
+
+        if (target === 'settings') {
+          const [draft, published] = await Promise.all([
+            readCmsRow('site_settings_drafts', { id: 'main' }),
+            readCmsRow('site_settings', { id: 'main' }),
+          ]);
+          currentSiteEditor = { settings: mergeValue(DEFAULT_SITE, draft?.settings ?? published?.settings) };
+        } else {
+          const languageRows = await Promise.all(LANGS.map(async (lang) => {
+            const [draft, published] = await Promise.all([
+              readCmsRow('site_page_drafts', { page: target, lang }),
+              readCmsRow('site_pages', { page: target, lang }),
+            ]);
+            const source = draft ?? published;
+            return [lang, {
+              content: mergeValue(defaultSiteContent(target, lang), source?.content),
+              media: mergeValue(defaultSiteMedia(target), source?.media),
+            }];
+          }));
+          currentSiteEditor = { languages: Object.fromEntries(languageRows) };
+        }
+
+        renderSiteEditor();
+      }
+
+      function renderSiteEditor() {
+        if (!currentSiteEditor) return;
+        const languageControls = document.querySelectorAll('[data-site-lang]');
+        languageControls.forEach((button) => {
+          button.hidden = currentSiteTarget === 'settings';
+          button.setAttribute('aria-selected', String(button.dataset.siteLang === currentSiteLanguage));
+        });
+        const state = currentSiteState();
+        const root = currentSiteTarget === 'settings'
+          ? state
+          : currentSiteTarget === 'global'
+            ? state.content.global
+            : state.content;
+        $('#site-editor-fields').innerHTML = Object.entries(root ?? {}).filter(([key]) => !(currentSiteTarget === 'settings' && key === 'url')).map(([key, value]) =>
+          `<section class="admin-site-card"><h2>${escapeHtml(formatSitePath([key]))}</h2>${renderNestedSiteFields(value, currentSiteTarget === 'settings' ? [key] : currentSiteTarget === 'global' ? ['global', key] : [key])}</section>`,
+        ).join('') || '<p class="admin-empty">Não há campos editáveis nesta página.</p>';
+        renderSiteMedia();
+        if (currentSiteTarget !== 'settings') $('#site-open-live').href = sitePathFor(currentSiteTarget, currentSiteLanguage);
+      }
+
+      function renderMediaInput(label, path, value, accept) {
+        const fieldId = `site-media-${path.replace(/[^a-z0-9_-]/gi, '-')}`;
+        return `<div class="admin-field admin-site-field-wide"><label for="${fieldId}">${escapeHtml(label)}</label>
+          <input id="${fieldId}" type="text" data-site-media-path="${escapeHtml(path)}" value="${escapeHtml(value)}" placeholder="URL ou caminho /images/..." />
+          <label class="admin-site-upload-control">Enviar arquivo<input type="file" accept="${accept}" data-site-media-file="${escapeHtml(path)}" hidden /></label>
+        </div>`;
+      }
+
+      function renderSiteMedia() {
+        const host = $('#site-editor-media');
+        if (!SITE_MEDIA[currentSiteTarget] || currentSiteTarget === 'settings') {
+          host.innerHTML = '';
+          return;
+        }
+        const media = currentSiteState()?.media ?? defaultSiteMedia(currentSiteTarget);
+        const hero = media.hero ?? {};
+        const preview = hero.type === 'video'
+          ? `<video src="${escapeHtml(hero.src)}" poster="${escapeHtml(hero.poster)}" muted playsinline controls></video>`
+          : `<img src="${escapeHtml(hero.src)}" alt="Prévia do hero" />`;
+        const heroSection = SITE_MEDIA[currentSiteTarget].hero ? `
+          <section class="admin-site-card">
+            <h2>Hero</h2>
+            <div class="admin-site-media-group">
+              <div class="admin-site-media-preview">${preview}</div>
+              <div>
+                <label class="admin-field">Tipo de mídia
+                  <select data-site-media-type="hero.type"><option value="image" ${hero.type !== 'video' ? 'selected' : ''}>Foto</option><option value="video" ${hero.type === 'video' ? 'selected' : ''}>Vídeo</option></select>
+                </label>
+                ${renderMediaInput(hero.type === 'video' ? 'Arquivo ou URL do vídeo (MP4/WebM)' : 'Arquivo ou URL da foto', 'hero.src', hero.src ?? '', hero.type === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp,image/avif')}
+                ${hero.type === 'video' ? renderMediaInput('Imagem de capa do vídeo', 'hero.poster', hero.poster ?? '', 'image/jpeg,image/png,image/webp,image/avif') : ''}
+              </div>
+            </div>
+          </section>` : '';
+        const photos = Object.entries(SITE_MEDIA[currentSiteTarget].photos ?? {}).map(([key, fallback]) => {
+          const source = media.photos?.[key] ?? fallback;
+          return `<div class="admin-site-media-group">
+            <div class="admin-site-media-preview"><img src="${escapeHtml(source)}" alt="Prévia: ${escapeHtml(key)}" loading="lazy" /></div>
+            <div><h3>${escapeHtml(formatSitePath([key]))}</h3>${renderMediaInput('Imagem da seção', `photos.${key}`, source, 'image/jpeg,image/png,image/webp,image/avif')}</div>
+          </div>`;
+        }).join('');
+        host.innerHTML = `
+          ${heroSection}
+          <section class="admin-site-card"><h2>Imagens das seções</h2><div class="admin-site-sections">${photos}</div></section>`;
+      }
+
+      function updateSiteValue(path, value, container) {
+        const parts = path.split('.');
+        let target = container;
+        for (const part of parts.slice(0, -1)) {
+          const key = /^\d+$/.test(part) ? Number(part) : part;
+          target = target[key];
+          if (!target) return;
+        }
+        const last = parts.at(-1);
+        target[/^\d+$/.test(last) ? Number(last) : last] = value;
+      }
+
+      $('#site-target-grid').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-site-target]');
+        if (button) openSiteTarget(button.dataset.siteTarget);
+      });
+      $('#site-editor-back').addEventListener('click', () => showView('site'));
+      $('#site-language-tabs').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-site-lang]');
+        if (!button || !currentSiteEditor || currentSiteTarget === 'settings') return;
+        currentSiteLanguage = button.dataset.siteLang;
+        renderSiteEditor();
+      });
+      $('#site-editor-fields').addEventListener('input', (event) => {
+        const field = event.target.closest('[data-site-path]');
+        if (!field) return;
+        const container = currentSiteTarget === 'settings' ? currentSiteEditor.settings : currentSiteState().content;
+        const value = field.type === 'number' ? Number(field.value) : field.value;
+        updateSiteValue(field.dataset.sitePath, value, container);
+      });
+      $('#site-editor-fields').addEventListener('change', async (event) => {
+        const fileInput = event.target.closest('[data-site-setting-file]');
+        if (!fileInput?.files?.length) return;
+        await uploadSiteAsset(fileInput.files[0], fileInput.dataset.siteSettingFile, 'settings');
+        fileInput.value = '';
+      });
+      $('#site-editor-media').addEventListener('input', (event) => {
+        const field = event.target.closest('[data-site-media-path]');
+        if (field) updateSiteValue(field.dataset.siteMediaPath, field.value, currentSiteState().media);
+      });
+      $('#site-editor-media').addEventListener('change', async (event) => {
+        const mediaType = event.target.closest('[data-site-media-type]');
+        if (mediaType) {
+          updateSiteValue(mediaType.dataset.siteMediaType, mediaType.value, currentSiteState().media);
+          renderSiteMedia();
+          return;
+        }
+        const fileInput = event.target.closest('[data-site-media-file]');
+        if (!fileInput?.files?.length) return;
+        await uploadSiteAsset(fileInput.files[0], fileInput.dataset.siteMediaFile, 'media');
+        fileInput.value = '';
+      });
+
+      async function uploadSiteAsset(file, path, kind) {
+        if (!file || !supabase || !currentSiteEditor) return;
+        if (file.size > 100 * 1024 * 1024) {
+          status('O arquivo ultrapassa o limite de 100 MB. Comprima o vídeo ou escolha outro arquivo.');
+          return;
+        }
+        const allowed = kind === 'media' && path === 'hero.src' && currentSiteState().media.hero?.type === 'video'
+          ? ['video/mp4', 'video/webm']
+          : ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+        if (!allowed.includes(file.type)) {
+          status(kind === 'media' && path === 'hero.src' && currentSiteState().media.hero?.type === 'video'
+            ? 'Use um vídeo MP4 ou WebM.'
+            : 'Use uma imagem JPG, PNG, WebP ou AVIF.');
+          return;
+        }
+        const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || (file.type.startsWith('video/') ? 'mp4' : 'webp');
+        const targetFolder = kind === 'settings' ? 'settings' : `${currentSiteTarget}/${currentSiteLanguage}`;
+        const objectPath = `${targetFolder}/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+        status('Enviando mídia para o site…');
+        const { error } = await supabase.storage.from('site').upload(objectPath, file, {
+          contentType: file.type,
+          cacheControl: '31536000',
+          upsert: false,
+        });
+        if (error) {
+          status(`Não foi possível enviar a mídia: ${error.message}`);
+          return;
+        }
+        const { data } = supabase.storage.from('site').getPublicUrl(objectPath);
+        const container = kind === 'settings' ? currentSiteEditor.settings : currentSiteState().media;
+        updateSiteValue(path, data.publicUrl, container);
+        renderSiteEditor();
+        status('Mídia enviada. Salve o rascunho ou publique para aplicar a alteração.');
+      }
+
+      function validSiteContent() {
+        return true;
+      }
+
+      async function saveSiteContent(publish) {
+        if (!currentSiteEditor || !validSiteContent()) return;
+        const saveButton = publish ? $('#site-publish') : $('#site-save-draft');
+        saveButton.disabled = true;
+        if (currentSiteTarget === 'settings') {
+          const row = { id: 'main', settings: currentSiteEditor.settings };
+          const { error: draftError } = await supabase.from('site_settings_drafts').upsert(row, { onConflict: 'id' });
+          if (draftError) {
+            saveButton.disabled = false;
+            status(`Não foi possível salvar: ${draftError.message}. Confira se o schema atualizado já foi aplicado no Supabase.`);
+            return;
+          }
+          if (publish) {
+            const { error: publishError } = await supabase.from('site_settings').upsert(row, { onConflict: 'id' });
+            if (publishError) {
+              saveButton.disabled = false;
+              status(`O rascunho foi salvo, mas não foi publicado: ${publishError.message}`);
+              return;
+            }
+          }
+        } else {
+          const state = currentSiteState();
+          const row = { page: currentSiteTarget, lang: currentSiteLanguage, content: state.content, media: state.media };
+          const { error: draftError } = await supabase.from('site_page_drafts').upsert(row, { onConflict: 'page,lang' });
+          if (draftError) {
+            saveButton.disabled = false;
+            status(`Não foi possível salvar: ${draftError.message}. Confira se o schema atualizado já foi aplicado no Supabase.`);
+            return;
+          }
+          if (publish) {
+            const { error: publishError } = await supabase.from('site_pages').upsert(row, { onConflict: 'page,lang' });
+            if (publishError) {
+              saveButton.disabled = false;
+              status(`O rascunho foi salvo, mas não foi publicado: ${publishError.message}`);
+              return;
+            }
+          }
+        }
+        saveButton.disabled = false;
+        status(publish ? 'Conteúdo publicado. As páginas já estão atualizadas.' : 'Rascunho salvo. A versão publicada continua no ar.');
+      }
+
+      $('#site-save-draft').addEventListener('click', () => saveSiteContent(false));
+      $('#site-publish').addEventListener('click', () => saveSiteContent(true));
 
       $('#profile-form').addEventListener('submit', async (event) => {
         event.preventDefault();

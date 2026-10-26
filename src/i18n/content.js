@@ -7,13 +7,14 @@ export const content = {
   pt: {
     // Título e descrição de cada página nos buscadores. A descrição da home também descreve a igreja nos dados estruturados.
     meta: {
-      titles: { home: 'Igreja evangélica em São José, SC', church: 'A Igreja em Forquilhinhas, São José', gatherings: 'Horários dos cultos em espanhol', outreach: 'Ações sociais e doação de roupas', visit: 'Endereço em Forquilhinhas, São José', blog: 'Blog' },
+      titles: { home: 'Igreja evangélica em São José, SC', church: 'A Igreja em Forquilhinhas, São José', gatherings: 'Horários dos cultos em espanhol', outreach: 'Ações sociais e doação de roupas', visit: 'Endereço em Forquilhinhas, São José', privacy: 'Política de privacidade', blog: 'Blog' },
       descriptions: {
         home: 'Igreja evangélica no bairro Forquilhinhas, em São José (SC), de portas abertas para gente de todos os países. Cultos em espanhol às sextas, sábados e domingos.',
         church: 'Conheça a Missão Internacional Resgate, igreja evangélica em Forquilhinhas, São José (SC), formada por gente de muitos países e com cultos em espanhol.',
         gatherings: 'Cultos em espanhol em São José (SC): sextas das 20h às 21h30, sábados das 16h às 18h e domingos das 10h às 12h, no bairro Forquilhinhas.',
         outreach: 'Doação de roupas e mesa compartilhada: veja como a Missão Internacional Resgate cuida de quem chega de outros países em São José (SC).',
         visit: 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José (SC). Veja o mapa, os horários dos cultos em espanhol e fale com a gente pelo WhatsApp.',
+        privacy: 'Conheça como as informações são tratadas ao visitar o site da Missão Internacional Resgate.',
         blog: 'Mensagens, novidades e reflexões da Missão Internacional Resgate, igreja evangélica em Forquilhinhas, São José (SC).',
       },
       // Texto alternativo da imagem de compartilhamento (images/og-image.webp, um print da home).
@@ -70,6 +71,7 @@ export const content = {
       about: 'Uma igreja evangélica em São José de portas abertas para gente de todos os cantos do mundo.',
       navTitle: 'Navegação', timesTitle: 'Horários', contactTitle: 'Contato', socialTitle: 'Redes sociais',
       rights: 'Missão Internacional Resgate. Todos os direitos reservados.',
+      privacy: 'Política de privacidade',
     },
     photos: {
       facade: 'Fachada da igreja com bandeiras de vários países',
@@ -156,17 +158,22 @@ export const content = {
         { q: 'Ficou alguma dúvida?', a: 'Chame a gente no WhatsApp ou ligue para (48) 98831-3964. Vamos adorar conversar com você.' },
       ],
     },
+    privacy: {
+      hero: { title: 'Política de privacidade' },
+      body: 'O conteúdo desta política está em elaboração e será publicado após revisão pela equipe da igreja.',
+    },
   },
 
   es: {
     meta: {
-      titles: { home: 'Iglesia evangélica en São José, SC', church: 'La Iglesia en Forquilhinhas, São José', gatherings: 'Horarios de los cultos en español', outreach: 'Acciones solidarias y donación de ropa', visit: 'Dirección en Forquilhinhas, São José', blog: 'Blog' },
+      titles: { home: 'Iglesia evangélica en São José, SC', church: 'La Iglesia en Forquilhinhas, São José', gatherings: 'Horarios de los cultos en español', outreach: 'Acciones solidarias y donación de ropa', visit: 'Dirección en Forquilhinhas, São José', privacy: 'Política de privacidad', blog: 'Blog' },
       descriptions: {
         home: 'Iglesia evangélica con cultos en español en Forquilhinhas, São José (SC), en la Gran Florianópolis. Viernes, sábados y domingos, abierta a todos los países.',
         church: 'Conoce Missão Internacional Resgate, una iglesia evangélica en Forquilhinhas, São José (SC), hecha de gente de muchos países y con cultos en español.',
         gatherings: 'Cultos en español en São José (SC), en la Gran Florianópolis: viernes de 20:00 a 21:30, sábados de 16:00 a 18:00 y domingos de 10:00 a 12:00.',
         outreach: 'Donación de ropa y mesa compartida: así cuida Missão Internacional Resgate a quienes llegan de otros países a São José (SC).',
         visit: 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José (SC), en la Gran Florianópolis. Mira el mapa y los horarios, y escríbenos por WhatsApp.',
+        privacy: 'Conoce cómo se trata la información al visitar el sitio de Missão Internacional Resgate.',
         blog: 'Mensajes, novedades y reflexiones de Missão Internacional Resgate, iglesia evangélica en Forquilhinhas, São José (SC).',
       },
       shareImageAlt: 'Página de inicio del sitio de Missão Internacional Resgate: "Uma casa para quem veio de longe.", con los horarios de los cultos',
@@ -221,6 +228,7 @@ export const content = {
       about: 'Una iglesia evangélica en São José con las puertas abiertas para gente de todos los rincones del mundo.',
       navTitle: 'Navegación', timesTitle: 'Horarios', contactTitle: 'Contacto', socialTitle: 'Redes sociales',
       rights: 'Missão Internacional Resgate. Todos los derechos reservados.',
+      privacy: 'Política de privacidad',
     },
     photos: {
       facade: 'Fachada de la iglesia con banderas de varios países',
@@ -306,17 +314,22 @@ export const content = {
         { q: '¿Te quedó alguna duda?', a: 'Escríbenos por WhatsApp o llámanos al (48) 98831-3964. Nos encantará conversar contigo.' },
       ],
     },
+    privacy: {
+      hero: { title: 'Política de privacidad' },
+      body: 'El contenido de esta política está en preparación y se publicará después de la revisión del equipo de la iglesia.',
+    },
   },
 
   en: {
     meta: {
-      titles: { home: 'Evangelical church in São José, SC', church: 'The Church in Forquilhinhas, São José', gatherings: 'Spanish-language service times', outreach: 'Outreach and clothing donations', visit: 'Address in Forquilhinhas, São José', blog: 'Blog' },
+      titles: { home: 'Evangelical church in São José, SC', church: 'The Church in Forquilhinhas, São José', gatherings: 'Spanish-language service times', outreach: 'Outreach and clothing donations', visit: 'Address in Forquilhinhas, São José', privacy: 'Privacy policy', blog: 'Blog' },
       descriptions: {
         home: 'An evangelical church in Forquilhinhas, São José (SC), Brazil, open to people from every country. Services in Spanish on Fridays, Saturdays, and Sundays.',
         church: 'Meet Missão Internacional Resgate: an evangelical church in Forquilhinhas, São José (SC), with people from many countries and services in Spanish.',
         gatherings: 'Spanish-language services in São José (SC), Greater Florianópolis: Fridays 8–9:30 PM, Saturdays 4–6 PM, and Sundays 10 AM–12 PM, in Forquilhinhas.',
         outreach: 'Clothing donations and a shared table: how Missão Internacional Resgate cares for people arriving from other countries in São José (SC), Brazil.',
         visit: 'Rua Vereador Manoel Mariano, 2014, Forquilhinhas, São José (SC), Brazil. See the map and service times, and message us on WhatsApp.',
+        privacy: 'Learn how information is handled when you visit the Missão Internacional Resgate website.',
         blog: 'Messages, news, and reflections from Missão Internacional Resgate, an evangelical church in Forquilhinhas, São José (SC), Brazil.',
       },
       shareImageAlt: 'Missão Internacional Resgate home page: "Uma casa para quem veio de longe." ("A home for those who came from afar"), with service times',
@@ -371,6 +384,7 @@ export const content = {
       about: 'An evangelical church in São José with open doors for people from every corner of the world.',
       navTitle: 'Explore', timesTitle: 'Gathering times', contactTitle: 'Contact', socialTitle: 'Social media',
       rights: 'Missão Internacional Resgate. All rights reserved.',
+      privacy: 'Privacy policy',
     },
     photos: {
       facade: 'Front of the church building with flags from many countries',
@@ -455,6 +469,10 @@ export const content = {
         { q: 'What should I wear?', a: 'Whatever feels comfortable. What matters most is that you’re here with us.' },
         { q: 'Still have questions?', a: 'Send us a message on WhatsApp or call (48) 98831-3964. We’d love to hear from you.' },
       ],
+    },
+    privacy: {
+      hero: { title: 'Privacy policy' },
+      body: 'This policy is being prepared and will be published after review by the church team.',
     },
   },
 };
